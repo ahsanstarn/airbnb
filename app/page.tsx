@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Users, Calendar, Search, X, Heart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -22,12 +24,12 @@ const categories = [
 ];
 
 const listings = [
-  { id: 1, title: 'Panoramic Suite with city views', location: 'Tbilisi, Vera', price: 280, rating: 4.96, badge: 'Guest favorite', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop', dates: 'Jun 1–6' },
-  { id: 2, title: 'Wine Country Villa with vineyard', location: 'Kakheti, Sighnaghi', price: 150, rating: 4.89, badge: null, img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&h=500&fit=crop', dates: 'Jun 8–13' },
-  { id: 3, title: 'Modern seaside apartment', location: 'Batumi, Boulevard', price: 95, rating: 4.72, badge: null, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=500&fit=crop', dates: 'Jun 15–20' },
-  { id: 4, title: 'Mountain lodge with Kazbek views', location: 'Kazbegi, Stepantsminda', price: 120, rating: 4.93, badge: 'Guest favorite', img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&h=500&fit=crop', dates: 'Jun 5–10' },
-  { id: 5, title: 'Cozy Old Town guesthouse', location: 'Tbilisi, Abanotubani', price: 65, rating: 4.85, badge: null, img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=500&fit=crop', dates: 'Jun 10–15' },
-  { id: 6, title: 'Boutique hotel on Rustaveli', location: 'Tbilisi, Rustaveli', price: 195, rating: 4.91, badge: null, img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=500&fit=crop', dates: 'Jun 3–8' },
+  { id: 1, title: 'Panoramic Suite with city views', location: 'Tbilisi, Vera', price: 280, rating: 4.96, img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop' },
+  { id: 2, title: 'Wine Country Villa with vineyard', location: 'Kakheti, Sighnaghi', price: 150, rating: 4.89, img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&h=500&fit=crop' },
+  { id: 3, title: 'Modern seaside apartment', location: 'Batumi, Boulevard', price: 95, rating: 4.72, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=500&fit=crop' },
+  { id: 4, title: 'Mountain lodge with Kazbek views', location: 'Kazbegi, Stepantsminda', price: 120, rating: 4.93, img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&h=500&fit=crop' },
+  { id: 5, title: 'Cozy Old Town guesthouse', location: 'Tbilisi, Abanotubani', price: 65, rating: 4.85, img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=500&fit=crop' },
+  { id: 6, title: 'Boutique hotel on Rustaveli', location: 'Tbilisi, Rustaveli', price: 195, rating: 4.91, img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=500&fit=crop' },
 ];
 
 const uniqueFeatures = [
@@ -42,24 +44,12 @@ export default function HomePage() {
   const [activeCat, setActiveCat] = useState('all');
   const [savedListings, setSavedListings] = useState<number[]>([]);
   const [scrolled, setScrolled] = useState(false);
-  const [expandedImg, setExpandedImg] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 100);
     window.addEventListener('scroll', handleScroll);
-    
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add(styles.visible);
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll(`.${styles.reveal}`).forEach(el => observer.observe(el));
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const toggleSave = (e: React.MouseEvent, id: number) => {
@@ -69,7 +59,6 @@ export default function HomePage() {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
 
   useEffect(() => {
@@ -83,115 +72,136 @@ export default function HomePage() {
     fetchListings();
   }, []);
 
-  const handleFeatureClick = (title: string) => {
-    if (title === 'Trip Mood Planner') router.push('/chat');
-    else if (title === 'Georgian Table') router.push('/search?cat=restaurants');
-    else alert(`Feature "${title}" is coming soon! Our team in Tbilisi is working on it.`);
+  const getExpandedImg = () => {
+    if (!expandedId) return null;
+    if (typeof expandedId === 'string') {
+      if (expandedId === 'hot1') return 'https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1200&h=800&fit=crop';
+      if (expandedId === 'hot2') return 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1200&h=800&fit=crop';
+      if (expandedId === 'hot3') return 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&h=800&fit=crop';
+    }
+    const listing = liveListings.find(l => l.id === expandedId);
+    return listing?.images?.[0] || listing?.img || null;
   };
 
   return (
     <>
       <Navbar />
 
-      {/* Expanded Image Modal */}
-      {expandedImg && (
-        <div className={styles.imgModal} onClick={() => setExpandedImg(null)}>
-          <div className={styles.modalContent}>
-            <Image src={expandedImg} alt="Expanded" width={1200} height={800} className={styles.expandedImg} />
-            <button className={styles.closeBtn}>×</button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {expandedId && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className={styles.imgModal} 
+            onClick={() => setExpandedId(null)}
+          >
+            <motion.div 
+              layoutId={expandedId.toString()}
+              className={styles.modalContent}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <Image 
+                src={getExpandedImg() || ''} 
+                alt="Expanded" 
+                width={1200} 
+                height={800} 
+                className={styles.expandedImg} 
+                priority
+              />
+              <button className={styles.closeBtn} onClick={() => setExpandedId(null)}><X size={32}/></button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <main className={styles.mainContainer}>
         {/* === HERO SECTION === */}
         <section className={styles.hero}>
           <div className={styles.heroBg}>
-            <Image 
-              src="/hero.png" 
-              alt="Tbilisi Sunset" 
-              fill 
-              priority
-              className={styles.heroImg}
-            />
+            <Image src="/hero.png" alt="Tbilisi Sunset" fill priority className={styles.heroImg} />
             <div className={styles.heroOverlay}></div>
             <div className={styles.cloudMask}></div>
           </div>
 
           <div className={`container ${styles.heroContent}`}>
-            <div className={styles.heroTitleWrap}>
-              <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
+              className={styles.heroTitleWrap}
+            >
+              <h1 className={styles.heroTitle}>EXPLORE SAKARTVELO</h1>
+            </motion.div>
             
             <div className={styles.heroCenter}>
-              <div className={styles.heroText}>
-                <span className={styles.heroLabel}>Discover Sakartvelo</span>
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 1 }}
+                className={styles.heroText}
+              >
+                <span className={styles.heroLabel}>Welcome Home</span>
                 <p className={styles.heroDesc}>
-                  Discover Georgia&apos;s best places to stay and visit. 
-                  Find suitable ones for you and your family.
+                  Discover Georgia&apos;s hidden gems, from the high peaks of Svaneti to the vineyards of Kakheti.
                 </p>
-              </div>
+              </motion.div>
 
               <div className={styles.hotspots}>
-                <div className={`${styles.hotspot} ${styles.hot1}`} onClick={() => setExpandedImg('https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1200&h=800&fit=crop')}>
-                  <div className={styles.hotspotCircle}>
-                    <Image src="https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=400&h=400&fit=crop" alt="Caucasus" fill priority />
-                  </div>
-                </div>
-                <div className={`${styles.hotspot} ${styles.hot2}`} onClick={() => setExpandedImg('https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1200&h=800&fit=crop')}>
-                  <div className={styles.hotspotCircle}>
-                    <Image src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400&h=400&fit=crop" alt="Kakheti" fill priority />
-                  </div>
-                </div>
-                <div className={`${styles.hotspot} ${styles.hot3}`} onClick={() => setExpandedImg('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&h=800&fit=crop')}>
-                  <div className={styles.hotspotCircle}>
-                    <Image src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=400&fit=crop" alt="Batumi" fill priority />
-                  </div>
-                  <div className={styles.pulse}></div>
-                </div>
+                {[1, 2, 3].map((i) => (
+                  <motion.div
+                    key={`hot${i}`}
+                    layoutId={`hot${i}`}
+                    className={`${styles.hotspot} ${styles[`hot${i}`]}`}
+                    onClick={() => setExpandedId(`hot${i}`)}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8 + i * 0.2, type: 'spring' }}
+                  >
+                    <div className={styles.hotspotCircle}>
+                      <Image src="/hotspot.png" alt={`Location ${i}`} fill />
+                    </div>
+                    {i === 3 && <div className={styles.pulse}></div>}
+                  </motion.div>
+                ))}
               </div>
             </div>
 
-            <div className={styles.searchContainer}>
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 1 }}
+              className={styles.searchContainer}
+            >
               <div className={styles.searchBar}>
                 <div className={styles.searchItem}>
-                  <span className={styles.searchIcon}>📍</span>
+                  <MapPin size={24} className={styles.searchIcon} />
                   <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Georgia</span>
-                    <span className={styles.searchSub}>Choose destination</span>
+                    <span className={styles.searchTitle}>Destination</span>
+                    <span className={styles.searchSub}>Where are you going?</span>
                   </div>
                 </div>
                 <div className={styles.searchDivider}></div>
                 <div className={styles.searchItem}>
-                  <span className={styles.searchIcon}>📅</span>
+                  <Calendar size={24} className={styles.searchIcon} />
                   <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Check in</span>
+                    <span className={styles.searchTitle}>Arrival</span>
                     <span className={styles.searchSub}>Add date</span>
                   </div>
                 </div>
                 <div className={styles.searchDivider}></div>
                 <div className={styles.searchItem}>
-                  <span className={styles.searchIcon}>📅</span>
+                  <Users size={24} className={styles.searchIcon} />
                   <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Check out</span>
-                    <span className={styles.searchSub}>Add date</span>
-                  </div>
-                </div>
-                <div className={styles.searchDivider}></div>
-                <div className={styles.searchItem}>
-                  <span className={styles.searchIcon}>👥</span>
-                  <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Visitors</span>
-                    <span className={styles.searchSub}>Add guests</span>
+                    <span className={styles.searchTitle}>Guests</span>
+                    <span className={styles.searchSub}>Add visitors</span>
                   </div>
                 </div>
                 <button className={styles.searchBtn} onClick={() => router.push('/search')}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                  </svg>
+                  <Search size={28} />
                 </button>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -214,9 +224,9 @@ export default function HomePage() {
         </div>
 
         {/* === RECOMMENDED SECTION === */}
-        <section className={`container ${styles.recommended} ${styles.reveal}`}>
+        <section className={`container ${styles.recommended}`}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.serifTitle}>Recommended Places to Stay</h2>
+            <h2 className={styles.serifTitle}>Recommended Places</h2>
             <Link href="/search" className={styles.seeAllBtn}>See All</Link>
           </div>
 
@@ -224,27 +234,28 @@ export default function HomePage() {
             {liveListings
               .filter((listing) => {
                 if (activeCat === 'all') return true;
-                const categoryMap: Record<string, string[]> = {
-                  hotels: ['hotel', 'lodge', 'suite', 'resort', 'stay'],
-                  apartments: ['apartment', 'flat', 'studio', 'condo', 'loft'],
-                  guesthouses: ['guesthouse', 'villa', 'house', 'cottage', 'cabin'],
-                };
-                const keywords = categoryMap[activeCat] || [activeCat];
-                return keywords.some(kw => listing.type?.toLowerCase().includes(kw) || listing.title?.toLowerCase().includes(kw));
+                const keywords = (activeCat === 'hotels') ? ['hotel', 'stay'] : [activeCat];
+                return keywords.some(kw => listing.title?.toLowerCase().includes(kw));
               })
               .map((listing) => (
-              <div key={listing.id} className={`${styles.card} ${styles.reveal}`}>
-                <div className={styles.cardImageWrap} onClick={() => setExpandedImg(listing.images?.[0] || listing.img)}>
+              <motion.div 
+                key={listing.id} 
+                className={styles.card}
+                whileHover={{ y: -10 }}
+              >
+                <motion.div 
+                  layoutId={listing.id.toString()}
+                  className={styles.cardImageWrap} 
+                  onClick={() => setExpandedId(listing.id)}
+                >
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill className={styles.cardImage} />
                   <div className={styles.cardPriceTag}>
                     ₾{listing.price} <span className={styles.cardPriceUnit}>/ night</span>
                   </div>
                   <button className={styles.cardFav} onClick={(e) => toggleSave(e, listing.id)}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill={savedListings.includes(listing.id) ? "var(--accent)" : "rgba(255,255,255,0.3)"} stroke="white" strokeWidth="2">
-                      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-                    </svg>
+                    <Heart size={20} fill={savedListings.includes(listing.id) ? "var(--accent)" : "rgba(0,0,0,0.1)"} />
                   </button>
-                </div>
+                </motion.div>
                 <Link href={`/listing/${listing.id}`} className={styles.cardContent}>
                   <h3 className={styles.cardTitle}>{listing.title}</h3>
                   <div className={styles.cardMeta}>
@@ -252,52 +263,34 @@ export default function HomePage() {
                     <span className={styles.cardRating}>★ {listing.rating}</span>
                   </div>
                 </Link>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Unique Features */}
-        <section className={`container ${styles.features} ${styles.reveal}`}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.serifTitle}>Only on Kaya</h2>
-            <p className={styles.sectionSubtitle}>Four features you won&apos;t find anywhere else</p>
-          </div>
-          <div className={styles.featuresGrid}>
-            {uniqueFeatures.map((feat) => (
-              <div key={feat.title} className={`${styles.featureCard} ${styles.reveal}`} onClick={() => handleFeatureClick(feat.title)}>
-                <span className={styles.featureIcon}>{feat.icon}</span>
-                <h3 className={styles.featureTitle}>{feat.title}</h3>
-                <p className={styles.featureDesc}>{feat.desc}</p>
-                <span className={styles.featureTag}>{feat.tag}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
         {/* AI Banner */}
-        <section className={`container ${styles.aiSection} ${styles.reveal}`}>
+        <section className={`container ${styles.aiSection}`}>
           <div className={styles.aiBanner}>
             <div className={styles.aiContent}>
-              <span className={styles.aiLabel}>AI Travel Assistant</span>
+              <span className={styles.aiLabel}>AI Assistant</span>
               <h2 className={styles.serifTitle}>Meet KLARA</h2>
-              <p className={styles.aiDesc}>Your AI travel companion who knows Georgia inside out. Ask about hotels, hidden gems, weather, or culture.</p>
-              <Link href="/chat" className={styles.aiBtn}>Start Chatting</Link>
+              <p className={styles.aiDesc}>Your AI travel companion who knows Georgia inside out.</p>
+              <Link href="/chat" className={styles.aiBtn}>Chat Now</Link>
             </div>
             <div className={styles.aiVisual}>
               <div className={styles.aiChatBox}>
                 <div className={styles.aiMsg}>&quot;Find me a wine cellar in Kakheti...&quot;</div>
-                <div className={`${styles.aiMsg} ${styles.aiReply}`}>&quot;I found 3 verified wineries with tasting rooms nearby.&quot;</div>
+                <div className={`${styles.aiMsg} ${styles.aiReply}`}>&quot;I found 3 verified wineries nearby.&quot;</div>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className={`container ${styles.cta} ${styles.reveal}`}>
+        <section className={`container ${styles.cta}`}>
           <div className={styles.ctaInner}>
             <h2 className={styles.ctaTitle}>List your property on Kaya</h2>
-            <p className={styles.ctaDesc}>Join Georgia&apos;s fastest-growing travel marketplace. Flat ₾20/month — no commissions.</p>
+            <p className={styles.ctaDesc}>Join Georgia&apos;s fastest-growing marketplace.</p>
             <Link href="/login" className={styles.ctaBtn}>Get started</Link>
           </div>
         </section>
