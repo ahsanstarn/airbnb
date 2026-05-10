@@ -119,8 +119,7 @@ export default function HomePage() {
               >
                 <span className={styles.heroLabel}>Discover Sakartvelo</span>
                 <p className={styles.heroDesc}>
-                  Find the most unique places to stay and experience across Georgia. 
-                  Authentic, verified, and curated for you.
+                  Find the most unique places to stay and experience across Georgia.
                 </p>
               </motion.div>
 
@@ -155,10 +154,9 @@ export default function HomePage() {
                   <MapPin size={24} />
                   <div className={styles.searchLabels}>
                     <span className={styles.searchTitle}>Destination</span>
-                    <span className={styles.searchSub}>Where are you going?</span>
+                    <span className={styles.searchSub}>Where to?</span>
                   </div>
                 </div>
-                <div className={styles.searchDivider}></div>
                 <div className={styles.searchItem}>
                   <Calendar size={24} />
                   <div className={styles.searchLabels}>
@@ -166,7 +164,6 @@ export default function HomePage() {
                     <span className={styles.searchSub}>Add date</span>
                   </div>
                 </div>
-                <div className={styles.searchDivider}></div>
                 <div className={styles.searchItem}>
                   <Users size={24} />
                   <div className={styles.searchLabels}>
@@ -175,7 +172,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <button className={styles.searchBtn} onClick={() => router.push('/search')}>
-                  <Search size={32} />
+                  <Search size={28} />
                 </button>
               </div>
             </motion.div>
