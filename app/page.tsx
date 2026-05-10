@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Calendar, Search, X, Heart, Map } from 'lucide-react';
+import { MapPin, Users, Calendar, Search, X, Map } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -34,7 +33,6 @@ const listings = [
 export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
-  const [savedListings, setSavedListings] = useState<number[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
