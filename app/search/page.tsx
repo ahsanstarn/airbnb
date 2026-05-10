@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { supabase } from '../../lib/supabase';
 import Navbar from '../components/Navbar';
 import Map from '../components/Map';
 import styles from './search.module.css';
@@ -27,8 +28,24 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState('Recommended');
   const [region, setRegion] = useState('All Regions');
   const [type, setType] = useState('All Types');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [liveListings, setLiveListings] = useState<any[]>(allListings);
 
-  const filtered = allListings
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        const { data, error } = await supabase.from('listings').select('*');
+        if (!error && data && data.length > 0) {
+          setLiveListings(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch from Supabase', err);
+      }
+    }
+    fetchListings();
+  }, []);
+
+  const filtered = liveListings
     .filter(l => region === 'All Regions' || l.location.includes(region))
     .filter(l => type === 'All Types' || l.type === type)
     .filter(l => l.price >= priceRange[0] && l.price <= priceRange[1])
@@ -82,7 +99,7 @@ export default function SearchPage() {
               {filtered.map(listing => (
                 <Link key={listing.id} href={`/listing/${listing.id}`} className={styles.card}>
                   <div className={styles.cardImg}>
-                    <Image src={listing.img} alt={listing.title} fill sizes="(max-width:768px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
+                    <Image src={listing.images?.[0] || listing.img || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop'} alt={listing.title} fill sizes="(max-width:768px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
                     <button className={styles.cardFav} onClick={e => e.preventDefault()} aria-label="Save">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(0,0,0,0.5)" stroke="white" strokeWidth="2">
                         <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>

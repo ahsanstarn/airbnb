@@ -27,12 +27,10 @@ const reviews = [
 ];
 
 export default function ListingPage({ params }: { params: { id: string } }) {
-  const listing = listingData[params.id] || defaultData;
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState(2);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [liveListing, setLiveListing] = useState<any>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,7 +38,29 @@ export default function ListingPage({ params }: { params: { id: string } }) {
         setUserId(session.user.id);
       }
     });
-  }, []);
+
+    async function fetchListing() {
+      try {
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('id', params.id)
+          .single();
+        if (!error && data) {
+          setLiveListing(data);
+        }
+      } catch {
+        console.error('Failed to fetch listing from Supabase');
+      }
+    }
+    fetchListing();
+  }, [params.id]);
+
+  const listing = liveListing || listingData[params.id] || defaultData;
+
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [guests, setGuests] = useState(2);
 
   const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)) : 3;
   const total = listing.price * nights;
@@ -59,26 +79,22 @@ export default function ListingPage({ params }: { params: { id: string } }) {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          listingId: params.id, // Using real UUID in production
-          userId,
-          checkIn,
-          checkOut,
-          guests,
-          totalAmount: total
-        })
+      const { error } = await supabase.from('bookings').insert({
+        listing_id: params.id,
+        user_id: userId,
+        check_in: checkIn,
+        check_out: checkOut,
+        guests: guests,
+        total_amount: total,
+        status: 'PENDING'
       });
 
-      const data = await res.json();
-      if (data.success) {
+      if (!error) {
         alert('Reservation successfully created!');
         setCheckIn('');
         setCheckOut('');
       } else {
-        throw new Error(data.error);
+        throw error;
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -111,7 +127,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
             <Image src={listing.images[0]} alt={listing.title} fill sizes="50vw" style={{ objectFit: 'cover' }} priority />
           </div>
           <div className={styles.photoGrid}>
-            {listing.images.slice(1, 5).map((img, i) => (
+            {listing.images?.slice(1, 5).map((img: string, i: number) => (
               <div key={i} className={styles.photoSmall}>
                 <Image src={img} alt={`Photo ${i + 2}`} fill sizes="25vw" style={{ objectFit: 'cover' }} />
               </div>
@@ -173,7 +189,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
             <div className={styles.amenities}>
               <h3>What this place offers</h3>
               <div className={styles.amenitiesGrid}>
-                {listing.amenities.map(a => (
+                {listing.amenities?.map((a: string) => (
                   <div key={a} className={styles.amenity}>✓ {a}</div>
                 ))}
               </div>

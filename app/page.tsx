@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import styles from './page.module.css';
@@ -44,6 +45,28 @@ const uniqueFeatures = [
 
 export default function HomePage() {
   const [activeCat, setActiveCat] = useState('all');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [liveListings, setLiveListings] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .limit(8);
+        
+        if (!error && data && data.length > 0) {
+          setLiveListings(data);
+        } else {
+          setLiveListings(listings); // Fallback to mock
+        }
+      } catch {
+        setLiveListings(listings); // Fallback to mock
+      }
+    }
+    fetchListings();
+  }, []);
 
   return (
     <>
@@ -77,11 +100,11 @@ export default function HomePage() {
       {/* Listing Grid */}
       <main className={`${styles.main} container`}>
         <div className={styles.grid}>
-          {listings.map((listing) => (
+          {liveListings.map((listing) => (
             <Link key={listing.id} href={`/listing/${listing.id}`} className={styles.card}>
               <div className={styles.cardImageWrap}>
                 <Image
-                  src={listing.img}
+                  src={listing.images?.[0] || listing.img || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop'}
                   alt={listing.title}
                   fill
                   sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
