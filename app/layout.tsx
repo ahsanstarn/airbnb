@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   },
 };
 
+import CustomCursor from "./components/CustomCursor";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <CustomCursor />
         {children}
       </body>
     </html>
