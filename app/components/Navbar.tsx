@@ -22,25 +22,52 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    const checkAdmin = async (email: string) => {
+      if (!email || typeof window === 'undefined' || !window.crypto?.subtle) return false;
+      const hashBuffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.toLowerCase().trim()));
+      const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      const isKayaAdmin = hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b';
+      if (isKayaAdmin) {
+        localStorage.setItem('kaya_admin', 'true');
+      } else {
+        localStorage.removeItem('kaya_admin');
+      }
+      return isKayaAdmin;
+    };
+
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user as { email: string } | null;
       setUser(currentUser);
-      
-      if (currentUser?.email && typeof window !== 'undefined' && window.crypto?.subtle) {
-        window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(currentUser.email.toLowerCase().trim()))
-          .then(hashBuffer => {
-            const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-            if (hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b') {
-              localStorage.setItem('kaya_admin', 'true');
-              setIsAdmin(true);
-            }
-          }).catch(() => {
-            setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
-          });
+      if (currentUser?.email) {
+        checkAdmin(currentUser.email).then(setIsAdmin);
+      } else {
+        setIsAdmin(false);
       }
     });
-    setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
-  }, []);
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user as { email: string } | null;
+      setUser(currentUser);
+      if (currentUser?.email) {
+        const adminStatus = await checkAdmin(currentUser.email);
+        setIsAdmin(adminStatus);
+      } else {
+        setIsAdmin(false);
+        localStorage.removeItem('kaya_admin');
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('kaya_admin');
+        router.push('/');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
@@ -77,7 +104,12 @@ export default function Navbar() {
         </form>
 
         <div className={styles.right}>
-          <Link href="/login" className={styles.hostLink}>List your property</Link>
+          <Link 
+            href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} 
+            className={styles.hostLink}
+          >
+            List your property
+          </Link>
           
           <div className={styles.langWrapper}>
             <button className={styles.langBtn} onClick={() => setLangOpen(!langOpen)}>
@@ -134,7 +166,13 @@ export default function Navbar() {
           <Link href="/muse" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Muse — Georgia Guide</Link>
           <Link href="/chat" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>KLARA AI Assistant</Link>
           <div className={styles.mobileDivider}></div>
-          <Link href="/login" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Log in</Link>
+          <Link 
+            href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} 
+            className={styles.mobileLink} 
+            onClick={() => setMobileOpen(false)}
+          >
+            {user ? (isAdmin ? "Admin Panel" : "Dashboard") : "Log in"}
+          </Link>
         </div>
       )}
     </header>
