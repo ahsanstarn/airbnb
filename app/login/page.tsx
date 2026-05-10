@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     try {
       if (mode === 'register') {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -38,7 +38,7 @@ export default function LoginPage() {
         alert('Registration successful! Please check your email to verify.');
         setMode('login');
       } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
@@ -46,8 +46,12 @@ export default function LoginPage() {
         if (signInError) throw signInError;
         router.push('/');
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during authentication');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'An error occurred during authentication');
+      } else {
+        setError('An error occurred during authentication');
+      }
     } finally {
       setLoading(false);
     }
@@ -55,15 +59,19 @@ export default function LoginPage() {
 
   const handleOAuth = async (provider: 'google' | 'facebook') => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       });
       if (error) throw error;
-    } catch (err: any) {
-      setError(err.message || 'OAuth error');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'OAuth error');
+      } else {
+        setError('OAuth error');
+      }
     }
   };
 

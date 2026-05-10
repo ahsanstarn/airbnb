@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { supabase } from '../../../lib/supabase';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -81,8 +80,12 @@ export default function ListingPage({ params }: { params: { id: string } }) {
       } else {
         throw new Error(data.error);
       }
-    } catch (err: any) {
-      alert(`Error making reservation: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(`Error making reservation: ${err.message}`);
+      } else {
+        alert('Error making reservation');
+      }
     } finally {
       setLoading(false);
     }
