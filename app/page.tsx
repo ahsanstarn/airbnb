@@ -124,15 +124,15 @@ export default function HomePage() {
                 className={styles.searchWrapper}
               >
                 <div className={`${styles.searchPill} ${styles.liquidGlass}`}>
-                  <div className={styles.searchItem}>
+                  <div className={styles.searchItem} onClick={() => router.push('/search')} role="button" tabIndex={0}>
                     <span className={styles.searchLabel}>Location</span>
                     <span className={styles.searchVal}>Where to?</span>
                   </div>
-                  <div className={styles.searchItem}>
+                  <div className={styles.searchItem} onClick={() => router.push('/search')} role="button" tabIndex={0}>
                     <span className={styles.searchLabel}>Check in</span>
                     <span className={styles.searchVal}>Add dates</span>
                   </div>
-                  <div className={styles.searchItem}>
+                  <div className={styles.searchItem} onClick={() => router.push('/search')} role="button" tabIndex={0}>
                     <span className={styles.searchLabel}>Guests</span>
                     <span className={styles.searchVal}>Add visitors</span>
                   </div>

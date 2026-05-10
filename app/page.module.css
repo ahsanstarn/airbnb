@@ -5,14 +5,11 @@
 
 /* === REAL LIQUID GLASS SYSTEM === */
 .liquidGlass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-  backdrop-filter: blur(32px) saturate(200%) brightness(1.1);
-  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 
-    inset 0 0 32px rgba(255, 255, 255, 0.1),
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    0 20px 60px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(48px) saturate(150%);
+  -webkit-backdrop-filter: blur(48px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -22,10 +19,10 @@
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle 400px at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.4) 0%, transparent 50%);
+  background: radial-gradient(circle 500px at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.15) 0%, transparent 60%);
   pointer-events: none;
   z-index: 1;
-  opacity: 0.6;
+  opacity: 0.5;
   transition: opacity 0.3s ease;
 }
 
@@ -34,8 +31,7 @@
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: 
-    linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -113,7 +109,7 @@
   justify-content: flex-end;
   align-items: center;
   padding-bottom: 6vh;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* Search Bar - Fixed Cutoff */
@@ -124,18 +120,15 @@
 
 .searchPill {
   padding: 0.75rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
-  backdrop-filter: blur(32px) saturate(200%) brightness(1.08);
-  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(48px) saturate(150%);
+  -webkit-backdrop-filter: blur(48px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 
-    inset 0 0 24px rgba(255, 255, 255, 0.1),
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   pointer-events: auto;
   transition: all 0.3s ease;
 }
@@ -147,9 +140,12 @@
   padding: 0.5rem 1.5rem;
   border-radius: var(--radius-full);
   cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
 }
 
 .searchItem:hover { background: rgba(255,255,255,0.1); }
+.searchItem:active { transform: scale(0.98); }
 .searchLabel { font-size: 0.75rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 4px; }
 .searchVal { font-size: 0.95rem; font-weight: 700; color: white; }
 
@@ -183,13 +179,11 @@
   z-index: 50;
   transition: all 0.3s ease;
   pointer-events: auto;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    inset 0 0 16px rgba(255, 255, 255, 0.08),
-    0 4px 16px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .hotspot:hover { 
@@ -228,14 +222,11 @@
   border-radius: var(--radius-xl);
   overflow-x: auto;
   scrollbar-width: none;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
-    inset 0 0 24px rgba(255, 255, 255, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 20px 60px rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(48px) saturate(150%);
+  -webkit-backdrop-filter: blur(48px) saturate(150%);
 }
 
 .catBtn {
