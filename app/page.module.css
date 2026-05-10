@@ -3,7 +3,7 @@
   background: var(--bg-primary);
 }
 
-/* === HERO SECTION === */
+/* === HERO SECTION - PARALLAX MOUNTAIN SANDWICH === */
 .hero {
   position: relative;
   height: 100vh;
@@ -12,7 +12,7 @@
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  background: #E8D8C4;
+  background: #1a1a1a; /* Dark base for cinematic feel */
 }
 
 .heroBg {
@@ -24,9 +24,47 @@
   z-index: 0;
 }
 
-.heroImg {
+/* Bottom layer: The full image (sky and mountains) */
+.heroImgBg {
   object-fit: cover;
+  opacity: 0.9;
+  z-index: 1;
+}
+
+/* Middle layer: The large cinematic text */
+.heroTitleWrap {
+  position: absolute;
+  top: 15%; /* Positioned behind the mountain peaks */
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(4rem, 15vw, 12rem);
+  font-weight: 900;
+  color: white;
+  text-align: center;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  /* Soft glow to separate from sky */
+  text-shadow: 0 0 50px rgba(255, 255, 255, 0.2);
   opacity: 0.95;
+}
+
+/* Top layer: The same image but clipped to just the mountains and city */
+.heroImgFg {
+  object-fit: cover;
+  z-index: 3;
+  /* This clip-path isolates the mountains and everything below them */
+  /* Precisely tuned for /hero.png mountains */
+  clip-path: polygon(0 35%, 15% 25%, 35% 45%, 60% 15%, 85% 35%, 100% 25%, 100% 100%, 0 100%);
+  pointer-events: none;
 }
 
 .heroOverlay {
@@ -35,8 +73,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 100%);
-  z-index: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(245, 235, 224, 0.8) 100%);
+  z-index: 4;
 }
 
 .cloudMask {
@@ -44,46 +82,35 @@
   bottom: -2px;
   left: 0;
   width: 100%;
-  height: 45%;
-  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245, 235, 224, 1) 30%, transparent 100%);
-  z-index: 2;
+  height: 35%;
+  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245, 235, 224, 0.9) 20%, transparent 100%);
+  z-index: 5;
 }
 
+/* === HERO CONTENT (Buttons and Text) === */
 .heroContent {
   position: relative;
-  z-index: 10;
+  z-index: 20; /* Above all mountain layers */
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 40px;
-}
-
-.heroTitleWrap {
-  margin-bottom: 3rem;
-}
-
-.heroTitle {
-  font-size: clamp(3rem, 12vw, 7rem);
-  font-weight: 900;
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.05em;
-  text-align: center;
-  line-height: 0.9;
-  text-transform: uppercase;
+  justify-content: flex-end;
+  height: 100%;
+  padding-bottom: 80px;
 }
 
 .heroCenter {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   margin-bottom: 4rem;
 }
 
 .heroText {
-  max-width: 450px;
+  max-width: 480px;
+  padding-bottom: 2rem;
 }
 
 .heroLabel {
@@ -92,19 +119,20 @@
   color: white;
   display: block;
   margin-bottom: 1rem;
-  text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  text-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .heroDesc {
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 1.25rem;
   line-height: 1.6;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .hotspots {
   position: relative;
   width: 400px;
-  height: 350px;
+  height: 300px;
 }
 
 .hotspot {
@@ -116,7 +144,12 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
   cursor: pointer;
-  z-index: 5;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.hotspot:hover {
+  transform: scale(1.1) translateY(-10px);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .hotspotCircle {
@@ -128,32 +161,13 @@
 }
 
 .hot1 { top: 0; right: 100px; width: 90px; height: 90px; }
-.hot2 { top: 120px; right: 0; width: 70px; height: 70px; }
-.hot3 { bottom: 0; right: 60px; width: 180px; height: 180px; }
-
-.pulse {
-  position: absolute;
-  top: -15px;
-  left: -15px;
-  right: -15px;
-  bottom: -15px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  animation: pulse 3s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.4); opacity: 0; }
-}
+.hot2 { top: 100px; right: 0; width: 70px; height: 70px; }
+.hot3 { bottom: 0; right: 50px; width: 160px; height: 160px; }
 
 /* === SEARCH BAR === */
 .searchContainer {
-  width: 100%;
+  width: 90%;
   max-width: 1100px;
-  z-index: 20;
-  margin-top: auto;
-  margin-bottom: 80px; /* Precise gap to avoid overlapping catBar */
 }
 
 .searchBar {
@@ -161,8 +175,8 @@
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
-  padding: 12px;
-  box-shadow: var(--shadow-xl);
+  padding: 10px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.15);
   border: 1px solid rgba(0,0,0,0.05);
 }
 
@@ -174,21 +188,13 @@
   padding: 16px 24px;
   cursor: pointer;
   border-radius: var(--radius-full);
-  transition: background 0.2s;
 }
 
 .searchItem:hover { background: rgba(0,0,0,0.03); }
 
-.searchLabels {
-  display: flex;
-  flex-direction: row; /* Align horizontal to prevent height bloom */
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.searchTitle { font-weight: 800; font-size: 1rem; color: #1a1a1a; }
-.searchSub { font-size: 0.9rem; color: #6a6a6a; }
+.searchLabels { display: flex; flex-direction: column; }
+.searchTitle { font-weight: 800; font-size: 0.9rem; color: #1a1a1a; }
+.searchSub { font-size: 0.8rem; color: #6a6a6a; }
 
 .searchBtn {
   width: 64px;
@@ -212,7 +218,7 @@
 .catScroll {
   display: flex;
   justify-content: center;
-  gap: 4rem;
+  gap: 5rem;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -220,34 +226,19 @@
 .catScroll::-webkit-scrollbar { display: none; }
 
 .catItem {
-  background: transparent !important; /* Force reset */
-  border: none !important;
-  padding: 0 !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   opacity: 0.4;
-  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
   color: #1a1a1a;
   flex-shrink: 0;
-  cursor: pointer;
 }
 
 .catItemActive { opacity: 1; transform: translateY(-4px); }
-
 .catIcon { font-size: 2rem; }
-
-.catLabel { 
-  font-family: var(--font-heading); /* Fixed font */
-  font-size: 0.85rem; 
-  font-weight: 900; 
-  text-transform: uppercase; 
-  letter-spacing: 0.1em; 
-  background: transparent !important;
-  border: none !important;
-  -webkit-text-stroke: 0 !important; /* Remove any stroke */
-}
+.catLabel { font-size: 0.85rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
 
 /* === GRID SECTION === */
 .recommended { padding: 4rem 0 10rem; }
@@ -296,7 +287,6 @@
   font-size: 1.85rem; 
   margin-bottom: 0.75rem; 
   color: #1a1a1a; 
-  letter-spacing: -0.02em;
 }
 
 .cardMeta { 
@@ -356,13 +346,13 @@
 }
 
 @media (max-width: 1024px) {
-  .heroCenter { flex-direction: column; gap: 4rem; }
+  .heroCenter { flex-direction: column; align-items: flex-start; gap: 4rem; }
   .hotspots { width: 100%; height: 350px; }
-  .heroTitle { font-size: 4rem; }
+  .heroTitle { font-size: 4rem; top: 30%; }
+  .heroImgFg { clip-path: polygon(0 45%, 20% 35%, 40% 55%, 60% 25%, 80% 45%, 100% 35%, 100% 100%, 0 100%); }
 }
 
 @media (max-width: 768px) {
-  .heroContent { margin-top: 100px; }
   .heroTitle { font-size: 3rem; }
   .grid { grid-template-columns: 1fr; }
   .searchBar { flex-direction: column; padding: 2rem; border-radius: var(--radius-lg); }

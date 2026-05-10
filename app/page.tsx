@@ -95,31 +95,38 @@ export default function HomePage() {
         {/* === HERO SECTION === */}
         <section className={styles.hero}>
           <div className={styles.heroBg}>
-            <Image src="/hero.png" alt="Georgia" fill priority className={styles.heroImg} />
+            {/* Layer 1: Background Sky/Mountains */}
+            <Image src="/hero.png" alt="Background" fill priority className={styles.heroImgBg} />
+            
+            {/* Layer 2: Middle Text (Behind mountains) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+              className={styles.heroTitleWrap}
+            >
+              <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
+            </motion.div>
+
+            {/* Layer 3: Foreground Mountains (Clipped) */}
+            <Image src="/hero.png" alt="Foreground" fill priority className={styles.heroImgFg} />
+            
             <div className={styles.heroOverlay}></div>
             <div className={styles.cloudMask}></div>
           </div>
 
           <div className={`container ${styles.heroContent}`}>
-            <motion.div 
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-              className={styles.heroTitleWrap}
-            >
-              <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
-            </motion.div>
-            
             <div className={styles.heroCenter}>
               <motion.div 
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5, duration: 1 }}
+                transition={{ delay: 0.8, duration: 1 }}
                 className={styles.heroText}
               >
                 <span className={styles.heroLabel}>Discover Sakartvelo</span>
                 <p className={styles.heroDesc}>
-                  Find the most unique places to stay and experience across Georgia.
+                  Experience the Caucasus like never before. 
+                  Authentic, verified, and curated travel marketplace.
                 </p>
               </motion.div>
 
@@ -132,21 +139,20 @@ export default function HomePage() {
                     onClick={() => setExpandedId(`hot${i}`)}
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.8 + i * 0.2, type: 'spring' }}
+                    transition={{ delay: 1 + i * 0.2, type: 'spring' }}
                   >
                     <div className={styles.hotspotCircle}>
                       <Image src="/hotspot.png" alt={`Location ${i}`} fill />
                     </div>
-                    {i === 3 && <div className={styles.pulse}></div>}
                   </motion.div>
                 ))}
               </div>
             </div>
 
             <motion.div 
-              initial={{ opacity: 0, y: 100 }}
+              initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 1 }}
+              transition={{ delay: 1.4, duration: 1 }}
               className={styles.searchContainer}
             >
               <div className={styles.searchBar}>
