@@ -107,13 +107,19 @@ export default function HomePage() {
               if (activeCat === 'all') return true;
               // Map categories to types/keywords loosely for demonstration
               const categoryMap: Record<string, string[]> = {
-                hotels: ['hotel', 'lodge', 'suite'],
-                apartments: ['apartment', 'flat', 'studio', 'suite'],
-                guesthouses: ['guesthouse', 'villa', 'house'],
-                restaurants: ['restaurant', 'cafe', 'dining'],
-                wineries: ['wine', 'vineyard', 'cellar'],
-                tours: ['tour', 'guide', 'trip'],
-                experiences: ['experience', 'unique'],
+                hotels: ['hotel', 'lodge', 'suite', 'resort', 'stay'],
+                apartments: ['apartment', 'flat', 'studio', 'condo', 'loft'],
+                guesthouses: ['guesthouse', 'villa', 'house', 'cottage', 'cabin'],
+                restaurants: ['restaurant', 'cafe', 'dining', 'food', 'supper', 'feast'],
+                wineries: ['wine', 'vineyard', 'cellar', 'degustation'],
+                cars: ['car', 'rental', 'drive', 'auto', 'vehicle'],
+                tours: ['tour', 'guide', 'trip', 'hiking', 'explore'],
+                experiences: ['experience', 'unique', 'lesson', 'class', 'activity'],
+                beauty: ['beauty', 'salon', 'hair', 'makeup', 'nails'],
+                spas: ['spa', 'wellness', 'massage', 'sauna', 'bath', 'relax'],
+                photographers: ['photo', 'camera', 'shoot', 'video'],
+                chefs: ['chef', 'cook', 'kitchen', 'meal', 'suva'],
+                transport: ['transport', 'shuttle', 'bus', 'van', 'airport', 'transfer'],
               };
               const keywords = categoryMap[activeCat] || [activeCat];
               return keywords.some(kw => 
