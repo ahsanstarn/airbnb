@@ -192,10 +192,10 @@ export default function HomePage() {
               hotels, hidden gems, weather, or culture — KLARA plans your perfect trip.
             </p>
             <div className={styles.aiTags}>
-              <span className={styles.aiTag}>🏨 Hotels</span>
-              <span className={styles.aiTag}>🗺️ Itineraries</span>
-              <span className={styles.aiTag}>🌤️ Weather</span>
-              <span className={styles.aiTag}>🍷 Local tips</span>
+              <Link href="/chat" className={styles.aiTag} style={{textDecoration: 'none'}}>🏨 Hotels</Link>
+              <Link href="/chat" className={styles.aiTag} style={{textDecoration: 'none'}}>🗺️ Itineraries</Link>
+              <Link href="/chat" className={styles.aiTag} style={{textDecoration: 'none'}}>🌤️ Weather</Link>
+              <Link href="/chat" className={styles.aiTag} style={{textDecoration: 'none'}}>🍷 Local tips</Link>
             </div>
             <Link href="/chat" className="btn btn-primary btn-lg">
               Chat with KLARA
