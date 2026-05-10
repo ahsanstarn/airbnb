@@ -95,10 +95,8 @@ export default function HomePage() {
         {/* === HERO SECTION === */}
         <section className={styles.hero}>
           <div className={styles.heroBg}>
-            {/* Layer 1: Background Sky/Mountains */}
             <Image src="/hero.png" alt="Background" fill priority className={styles.heroImgBg} />
             
-            {/* Layer 2: Middle Text (Behind mountains) */}
             <motion.div 
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
@@ -108,15 +106,14 @@ export default function HomePage() {
               <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
             </motion.div>
 
-            {/* Layer 3: Foreground Mountains (Clipped) */}
             <Image src="/hero.png" alt="Foreground" fill priority className={styles.heroImgFg} />
             
             <div className={styles.heroOverlay}></div>
             <div className={styles.cloudMask}></div>
           </div>
 
-          <div className={`container ${styles.heroContent}`}>
-            <div className={styles.heroCenter}>
+          <div className={styles.heroContent}>
+            <div className={`container ${styles.heroCenter}`}>
               <motion.div 
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}

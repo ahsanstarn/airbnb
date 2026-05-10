@@ -3,16 +3,16 @@
   background: var(--bg-primary);
 }
 
-/* === HERO SECTION - PARALLAX MOUNTAIN SANDWICH === */
+/* === HERO SECTION - TRUE MOUNTAIN DEPTH === */
 .hero {
   position: relative;
   height: 100vh;
   min-height: 850px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end; /* Move search bar to bottom */
   overflow: hidden;
-  background: #1a1a1a; /* Dark base for cinematic feel */
+  background: #0d0d0d;
 }
 
 .heroBg {
@@ -24,17 +24,16 @@
   z-index: 0;
 }
 
-/* Bottom layer: The full image (sky and mountains) */
 .heroImgBg {
   object-fit: cover;
-  opacity: 0.9;
+  opacity: 0.95;
   z-index: 1;
 }
 
-/* Middle layer: The large cinematic text */
+/* The Cinematic Text - Positioned at the mountain ridge line */
 .heroTitleWrap {
   position: absolute;
-  top: 15%; /* Positioned behind the mountain peaks */
+  top: 22%; /* Tucked slightly behind the peaks */
   left: 0;
   width: 100%;
   z-index: 2;
@@ -45,25 +44,23 @@
 
 .heroTitle {
   font-family: var(--font-heading);
-  font-size: clamp(4rem, 15vw, 12rem);
+  font-size: clamp(3rem, 12vw, 8.5rem); /* Reduced from 12rem to fix overlap */
   font-weight: 900;
   color: white;
   text-align: center;
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   text-transform: uppercase;
-  /* Soft glow to separate from sky */
-  text-shadow: 0 0 50px rgba(255, 255, 255, 0.2);
-  opacity: 0.95;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+  opacity: 0.98;
 }
 
-/* Top layer: The same image but clipped to just the mountains and city */
+/* The Foreground Layer - Smoothly follows the Tbilisi mountain line */
 .heroImgFg {
   object-fit: cover;
   z-index: 3;
-  /* This clip-path isolates the mountains and everything below them */
-  /* Precisely tuned for /hero.png mountains */
-  clip-path: polygon(0 35%, 15% 25%, 35% 45%, 60% 15%, 85% 35%, 100% 25%, 100% 100%, 0 100%);
+  /* Refined to follow the actual peaks of /hero.png without sharp jagged triangles */
+  clip-path: polygon(0 38%, 10% 32%, 20% 30%, 30% 38%, 40% 45%, 50% 35%, 60% 18%, 70% 30%, 80% 35%, 90% 30%, 100% 25%, 100% 100%, 0 100%);
   pointer-events: none;
 }
 
@@ -73,7 +70,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(245, 235, 224, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 40%, rgba(245, 235, 224, 0.9) 100%);
   z-index: 4;
 }
 
@@ -82,21 +79,20 @@
   bottom: -2px;
   left: 0;
   width: 100%;
-  height: 35%;
-  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245, 235, 224, 0.9) 20%, transparent 100%);
+  height: 40%;
+  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245, 235, 224, 1) 25%, transparent 100%);
   z-index: 5;
 }
 
-/* === HERO CONTENT (Buttons and Text) === */
+/* === HERO CONTENT === */
 .heroContent {
   position: relative;
-  z-index: 20; /* Above all mountain layers */
+  z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-  padding-bottom: 80px;
+  width: 100%;
+  padding-bottom: 60px;
 }
 
 .heroCenter {
@@ -105,64 +101,52 @@
   align-items: flex-end;
   width: 100%;
   max-width: 1200px;
-  margin-bottom: 4rem;
+  margin-bottom: 3.5rem;
 }
 
 .heroText {
   max-width: 480px;
-  padding-bottom: 2rem;
+  padding-bottom: 1.5rem;
 }
 
 .heroLabel {
   font-family: var(--font-serif);
-  font-size: 3rem;
+  font-size: 2.75rem;
   color: white;
   display: block;
-  margin-bottom: 1rem;
-  text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  margin-bottom: 0.75rem;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
 .heroDesc {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.25rem;
-  line-height: 1.6;
-  text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1.2rem;
+  line-height: 1.5;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.4);
 }
 
+/* Hotspots moved down to avoid text overlap */
 .hotspots {
   position: relative;
-  width: 400px;
-  height: 300px;
+  width: 350px;
+  height: 250px;
 }
 
 .hotspot {
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(15px);
+  backdrop-filter: blur(20px);
   padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.hotspot:hover {
-  transform: scale(1.1) translateY(-10px);
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.hotspotCircle {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  position: relative;
-}
-
-.hot1 { top: 0; right: 100px; width: 90px; height: 90px; }
-.hot2 { top: 100px; right: 0; width: 70px; height: 70px; }
-.hot3 { bottom: 0; right: 50px; width: 160px; height: 160px; }
+.hot1 { top: 0; right: 100px; width: 70px; height: 70px; }
+.hot2 { top: 100px; right: 0; width: 60px; height: 60px; }
+.hot3 { bottom: 0; right: 50px; width: 140px; height: 140px; }
 
 /* === SEARCH BAR === */
 .searchContainer {
@@ -176,7 +160,7 @@
   display: flex;
   align-items: center;
   padding: 10px;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.15);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.15);
   border: 1px solid rgba(0,0,0,0.05);
 }
 
@@ -210,9 +194,8 @@
 
 /* === CATEGORY BAR === */
 .catBar {
-  padding: 4rem 0;
+  padding: 3.5rem 0;
   background: var(--bg-primary);
-  border-top: 1px solid rgba(0,0,0,0.03);
 }
 
 .catScroll {
@@ -222,8 +205,6 @@
   overflow-x: auto;
   scrollbar-width: none;
 }
-
-.catScroll::-webkit-scrollbar { display: none; }
 
 .catItem {
   display: flex;
@@ -348,12 +329,12 @@
 @media (max-width: 1024px) {
   .heroCenter { flex-direction: column; align-items: flex-start; gap: 4rem; }
   .hotspots { width: 100%; height: 350px; }
-  .heroTitle { font-size: 4rem; top: 30%; }
-  .heroImgFg { clip-path: polygon(0 45%, 20% 35%, 40% 55%, 60% 25%, 80% 45%, 100% 35%, 100% 100%, 0 100%); }
+  .heroTitle { font-size: 4rem; top: 35%; }
+  .heroImgFg { clip-path: polygon(0 50%, 20% 40%, 40% 60%, 60% 30%, 80% 50%, 100% 40%, 100% 100%, 0 100%); }
 }
 
 @media (max-width: 768px) {
-  .heroTitle { font-size: 3rem; }
+  .heroTitle { font-size: 2.5rem; }
   .grid { grid-template-columns: 1fr; }
   .searchBar { flex-direction: column; padding: 2rem; border-radius: var(--radius-lg); }
   .searchItem { width: 100%; border-bottom: 1px solid rgba(0,0,0,0.05); }
