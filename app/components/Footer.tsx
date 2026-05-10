@@ -20,13 +20,13 @@ export default function Footer() {
             <Link href="/muse">Muse — Georgia Guide</Link>
             <Link href="/chat">KLARA AI Assistant</Link>
             <Link href="/blog">Blog & Articles</Link>
-            <Link href="/muse#events">Events Calendar</Link>
-            <Link href="/muse#phrasebook">Georgian Phrasebook</Link>
+            <Link href="/muse">Events Calendar</Link>
+            <Link href="/muse">Georgian Phrasebook</Link>
           </div>
           <div className={styles.col}>
             <h4 className={styles.colTitle}>Hosting</h4>
             <Link href="/login">List your property</Link>
-            <Link href="/about#hosting">How hosting works</Link>
+            <Link href="/about">How hosting works</Link>
             <Link href="/pricing">Pricing</Link>
             <Link href="/resources">Host resources</Link>
           </div>
