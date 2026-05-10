@@ -16,12 +16,17 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user as { email: string } | null;
       setUser(currentUser);
       
       if (currentUser?.email && typeof window !== 'undefined' && window.crypto?.subtle) {
-        // Auto-detect admin on load (Browser only)
         window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(currentUser.email.toLowerCase().trim()))
           .then(hashBuffer => {
             const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -30,7 +35,6 @@ export default function Navbar() {
               setIsAdmin(true);
             }
           }).catch(() => {
-            // Fallback to localStorage if crypto fails
             setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
           });
       }
@@ -38,25 +42,17 @@ export default function Navbar() {
     setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       <nav className={styles.nav}>
-        {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className={styles.logoSvg}>
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
             <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2z" fill="#E8573A" opacity="0.15"/>
             <path d="M16 6l3.09 6.26L26 13.27l-5 4.87 1.18 6.88L16 21.77l-6.18 3.25L11 18.14l-5-4.87 6.91-1.01L16 6z" fill="#E8573A"/>
           </svg>
           <span className={styles.logoText}>kaya</span>
         </Link>
 
-        {/* Center Search - Desktop */}
         <form 
           className={`${styles.searchPill} ${scrolled ? styles.searchPillCompact : ''}`} 
           onSubmit={(e) => {
@@ -80,14 +76,11 @@ export default function Navbar() {
           </button>
         </form>
 
-        {/* Right */}
         <div className={styles.right}>
-          <Link href="/login" className={styles.hostLink}>
-            List your property
-          </Link>
+          <Link href="/login" className={styles.hostLink}>List your property</Link>
           
           <div className={styles.langWrapper}>
-            <button className={styles.langBtn} onClick={() => setLangOpen(!langOpen)} aria-label="Language">
+            <button className={styles.langBtn} onClick={() => setLangOpen(!langOpen)}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
               </svg>
@@ -102,6 +95,7 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
           <Link href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} className={styles.profileBtn}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12h18M3 6h18M3 18h18"/>
@@ -120,24 +114,14 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Mobile hamburger */}
-          <button
-            className={styles.hamburger}
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
-          >
+          <button className={styles.hamburger} onClick={() => setMobileOpen(!mobileOpen)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {mobileOpen ? (
-                <path d="M18 6L6 18M6 6l12 12"/>
-              ) : (
-                <path d="M3 12h18M3 6h18M3 18h18"/>
-              )}
+              {mobileOpen ? <path d="M18 6L6 18M6 6l12 12"/> : <path d="M3 12h18M3 6h18M3 18h18"/>}
             </svg>
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       {mobileOpen && (
         <div className={styles.mobileMenu}>
           <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Hotels & Stays</Link>
@@ -151,7 +135,6 @@ export default function Navbar() {
           <Link href="/chat" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>KLARA AI Assistant</Link>
           <div className={styles.mobileDivider}></div>
           <Link href="/login" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Log in</Link>
-          <Link href="/login" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Sign up</Link>
         </div>
       )}
     </header>
