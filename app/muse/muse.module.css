@@ -1,0 +1,88 @@
+.page { padding-top: 0; }
+
+.hero {
+  background: linear-gradient(135deg, #FFF5F3, #FFF9F7);
+  padding: 80px 0 60px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.heroTitle { font-size: var(--fs-3xl); font-weight: 700; margin-bottom: 8px; }
+.heroDesc { font-size: var(--fs-md); color: var(--text-secondary); }
+
+.section { padding: 48px 0; }
+.sectionTitle { font-size: var(--fs-2xl); font-weight: 700; margin-bottom: 8px; }
+.sectionDesc { font-size: var(--fs-base); color: var(--text-secondary); margin-bottom: 24px; }
+
+/* Regions */
+.regionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.regionCard {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition);
+  text-decoration: none;
+  color: inherit;
+}
+
+.regionCard:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.regionImg { position: relative; aspect-ratio: 16/10; }
+.regionInfo { padding: 16px; }
+.regionInfo h3 { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 4px; }
+.regionInfo p { font-size: var(--fs-sm); color: var(--text-secondary); margin-bottom: 8px; }
+.regionCount { font-size: var(--fs-xs); font-weight: 700; color: var(--accent); }
+
+/* Phrases */
+.phrasesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.phrase {
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.phraseKa { font-size: var(--fs-xl); margin-bottom: 4px; }
+.phraseEn { font-size: var(--fs-sm); font-weight: 600; margin-bottom: 2px; }
+.phraseMeaning { font-size: var(--fs-xs); color: var(--text-secondary); }
+
+/* Essentials */
+.essentialsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.essential {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+.essentialIcon { font-size: 1.5rem; flex-shrink: 0; }
+.essential strong { display: block; margin-bottom: 4px; font-size: var(--fs-sm); }
+.essential p { font-size: var(--fs-sm); color: var(--text-secondary); line-height: 1.5; }
+
+@media (max-width: 768px) {
+  .regionsGrid { grid-template-columns: repeat(2, 1fr); }
+  .phrasesGrid { grid-template-columns: repeat(2, 1fr); }
+  .essentialsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .regionsGrid, .phrasesGrid, .essentialsGrid { grid-template-columns: 1fr; }
+}

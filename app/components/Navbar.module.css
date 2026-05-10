@@ -1,0 +1,220 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
+  transition: box-shadow var(--transition);
+}
+
+.header.scrolled {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+.nav {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+}
+
+/* Search Pill */
+.searchPill {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  height: 48px;
+  transition: box-shadow var(--transition);
+  overflow: hidden;
+}
+
+.searchPill:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.searchField {
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: background var(--transition);
+  cursor: pointer;
+}
+
+.searchField:hover {
+  background: var(--bg-hover);
+}
+
+.searchFieldText {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.searchFieldMuted .searchFieldText {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.searchSep {
+  width: 1px;
+  height: 24px;
+  background: var(--border-light);
+  flex-shrink: 0;
+}
+
+.searchIconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  flex-shrink: 0;
+  transition: transform var(--transition), background var(--transition);
+}
+
+.searchIconBtn:hover {
+  background: var(--accent-dark);
+  transform: scale(1.05);
+}
+
+/* Right side */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hostLink {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  transition: background var(--transition);
+}
+
+.hostLink:hover {
+  background: var(--bg-hover);
+}
+
+.langBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition);
+}
+
+.langBtn:hover {
+  background: var(--bg-hover);
+}
+
+.profileBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  transition: box-shadow var(--transition);
+}
+
+.profileBtn:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.hamburger:hover {
+  background: var(--bg-hover);
+}
+
+/* Mobile Menu */
+.mobileMenu {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  z-index: 99;
+  overflow-y: auto;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobileLink {
+  padding: 16px 0;
+  font-size: var(--fs-md);
+  font-weight: 500;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.mobileDivider {
+  height: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .searchPill { display: none; }
+  .hostLink { display: none; }
+  .langBtn { display: none; }
+  .profileBtn { display: none; }
+  .hamburger { display: flex; }
+  .nav { height: 64px; }
+}
