@@ -102,7 +102,7 @@ export default function LoginPage() {
           </form>
 
           <div className={styles.footer}>
-            <p>Don't have an account? <Link href="/login">Sign up</Link></p>
+            <p>Don&apos;t have an account? <Link href="/login">Sign up</Link></p>
           </div>
         </div>
       </div>
