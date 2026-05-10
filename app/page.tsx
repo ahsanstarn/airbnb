@@ -56,6 +56,7 @@ export default function HomePage() {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
 
   useEffect(() => {

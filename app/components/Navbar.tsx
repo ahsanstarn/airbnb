@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
-  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
