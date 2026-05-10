@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
@@ -40,7 +40,6 @@ export default function HomePage() {
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
@@ -123,7 +122,6 @@ export default function HomePage() {
           <motion.div style={{ y: heroY, opacity: heroOpacity }} className={styles.heroBg}>
             <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
             
-            {/* The Behind-Mountain Cinematic Text */}
             <motion.div 
               initial={{ opacity: 0, y: 150 }}
               animate={{ opacity: 1, y: 0 }}
@@ -172,7 +170,6 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Liquid Hotspots */}
             <div className={styles.hotspots}>
               {[1, 2, 3].map((i) => (
                 <motion.div
