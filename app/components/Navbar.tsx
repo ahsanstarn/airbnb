@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -27,7 +29,7 @@ export default function Navbar() {
         </Link>
 
         {/* Center Search - Desktop */}
-        <div className={`${styles.searchPill} ${scrolled ? styles.searchPillCompact : ''}`}>
+        <div className={`${styles.searchPill} ${scrolled ? styles.searchPillCompact : ''}`} onClick={() => router.push('/search')} style={{ cursor: 'pointer' }}>
           <button className={styles.searchField}>
             <span className={styles.searchFieldText}>Anywhere</span>
           </button>
@@ -48,7 +50,7 @@ export default function Navbar() {
 
         {/* Right */}
         <div className={styles.right}>
-          <Link href="/register?type=business" className={styles.hostLink}>
+          <Link href="/login" className={styles.hostLink}>
             List your property
           </Link>
           <button className={styles.langBtn} aria-label="Language">
@@ -87,18 +89,18 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className={styles.mobileMenu}>
-          <Link href="/hotels" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Hotels & Stays</Link>
-          <Link href="/restaurants" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Restaurants</Link>
-          <Link href="/cars" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Car Rentals</Link>
-          <Link href="/tours" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Tours & Experiences</Link>
-          <Link href="/services" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Services</Link>
-          <Link href="/salons" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Beauty & Spa</Link>
+          <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Hotels & Stays</Link>
+          <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Restaurants</Link>
+          <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Car Rentals</Link>
+          <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Tours & Experiences</Link>
+          <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Services</Link>
+          <Link href="/search" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Beauty & Spa</Link>
           <div className={styles.mobileDivider}></div>
           <Link href="/muse" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Muse — Georgia Guide</Link>
           <Link href="/chat" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>KLARA AI Assistant</Link>
           <div className={styles.mobileDivider}></div>
           <Link href="/login" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Log in</Link>
-          <Link href="/register" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Sign up</Link>
+          <Link href="/login" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Sign up</Link>
         </div>
       )}
     </header>

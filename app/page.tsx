@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -44,6 +45,7 @@ const uniqueFeatures = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
@@ -87,7 +89,7 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-          <button className={styles.filtersBtn}>
+          <button className={styles.filtersBtn} onClick={() => router.push('/search')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/>
               <circle cx="6" cy="12" r="2" fill="currentColor"/><circle cx="10" cy="18" r="2" fill="currentColor"/>
@@ -235,7 +237,7 @@ export default function HomePage() {
             Join Georgia&apos;s fastest-growing travel marketplace.
             Flat ₾20/month — no commissions, no hidden fees.
           </p>
-          <Link href="/register?type=business" className={styles.ctaBtn}>
+          <Link href="/login" className={styles.ctaBtn}>
             Get started
           </Link>
         </div>
