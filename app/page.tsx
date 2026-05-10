@@ -46,7 +46,22 @@ export default function HomePage() {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(styles.visible);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll(`.${styles.reveal}`).forEach(el => observer.observe(el));
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   const toggleSave = (e: React.MouseEvent, id: number) => {
@@ -112,17 +127,17 @@ export default function HomePage() {
               <div className={styles.hotspots}>
                 <div className={`${styles.hotspot} ${styles.hot1}`}>
                   <div className={styles.hotspotCircle}>
-                    <Image src="https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=100&h=100&fit=crop" alt="Caucasus" fill />
+                    <Image src="/hotspot.png" alt="Caucasus" fill priority />
                   </div>
                 </div>
                 <div className={`${styles.hotspot} ${styles.hot2}`}>
                   <div className={styles.hotspotCircle}>
-                    <Image src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=100&h=100&fit=crop" alt="Kakheti" fill />
+                    <Image src="/hotspot.png" alt="Kakheti" fill priority />
                   </div>
                 </div>
                 <div className={`${styles.hotspot} ${styles.hot3}`}>
                   <div className={styles.hotspotCircle}>
-                    <Image src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=200&h=200&fit=crop" alt="Batumi" fill />
+                    <Image src="/hotspot.png" alt="Batumi" fill priority />
                   </div>
                   <div className={styles.pulse}></div>
                 </div>
@@ -191,7 +206,7 @@ export default function HomePage() {
         </div>
 
         {/* === RECOMMENDED SECTION === */}
-        <section className={`container ${styles.recommended}`}>
+        <section className={`container ${styles.recommended} ${styles.reveal}`}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.serifTitle}>Recommended Places to Stay</h2>
             <Link href="/search" className={styles.seeAllBtn}>See All</Link>
@@ -210,7 +225,7 @@ export default function HomePage() {
                 return keywords.some(kw => listing.type?.toLowerCase().includes(kw) || listing.title?.toLowerCase().includes(kw));
               })
               .map((listing) => (
-              <Link key={listing.id} href={`/listing/${listing.id}`} className={styles.card}>
+              <Link key={listing.id} href={`/listing/${listing.id}`} className={`${styles.card} ${styles.reveal}`}>
                 <div className={styles.cardImageWrap}>
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill className={styles.cardImage} />
                   <div className={styles.cardPriceTag}>
@@ -235,14 +250,14 @@ export default function HomePage() {
         </section>
 
         {/* Unique Features */}
-        <section className={`container ${styles.features}`}>
+        <section className={`container ${styles.features} ${styles.reveal}`}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.serifTitle}>Only on Kaya</h2>
             <p className={styles.sectionSubtitle}>Four features you won&apos;t find anywhere else</p>
           </div>
           <div className={styles.featuresGrid}>
             {uniqueFeatures.map((feat) => (
-              <div key={feat.title} className={styles.featureCard} onClick={() => handleFeatureClick(feat.title)}>
+              <div key={feat.title} className={`${styles.featureCard} ${styles.reveal}`} onClick={() => handleFeatureClick(feat.title)}>
                 <span className={styles.featureIcon}>{feat.icon}</span>
                 <h3 className={styles.featureTitle}>{feat.title}</h3>
                 <p className={styles.featureDesc}>{feat.desc}</p>
@@ -253,7 +268,7 @@ export default function HomePage() {
         </section>
 
         {/* AI Banner */}
-        <section className={`container ${styles.aiSection}`}>
+        <section className={`container ${styles.aiSection} ${styles.reveal}`}>
           <div className={styles.aiBanner}>
             <div className={styles.aiContent}>
               <span className={styles.aiLabel}>AI Travel Assistant</span>
@@ -271,7 +286,7 @@ export default function HomePage() {
         </section>
 
         {/* CTA */}
-        <section className={`container ${styles.cta}`}>
+        <section className={`container ${styles.cta} ${styles.reveal}`}>
           <div className={styles.ctaInner}>
             <h2 className={styles.ctaTitle}>List your property on Kaya</h2>
             <p className={styles.ctaDesc}>Join Georgia&apos;s fastest-growing travel marketplace. Flat ₾20/month — no commissions.</p>
