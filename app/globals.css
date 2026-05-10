@@ -1,81 +1,74 @@
 /* ============================================
-   KAYA.GE — Clean, Light Design System
-   1:1 Replication of Bogdan Falin Reference
+   KAYA.GE — PREMIUM TRAVEL TEMPLATE
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap');
 
-/* --- Design Tokens --- */
 :root {
-  --bg-primary: #F5EBE0; /* Exact color from reference */
-  --bg-secondary: #E8D8C4;
+  /* Modern Warm Palette */
+  --bg-main: #FDF9F6;
   --bg-card: #FFFFFF;
-  --bg-hover: #F2E3D4;
-  --bg-input: #FFFFFF;
-
-  --accent: #1A1A1A; /* Dark accents for a modern look */
-  --accent-soft: rgba(255, 255, 255, 0.2);
+  --accent: #111111;
+  --accent-soft: rgba(0, 0, 0, 0.04);
   
-  --text-primary: #1A1A1A;
-  --text-secondary: #6A6A6A;
-  --text-muted: #8A8A8A;
+  --text-main: #1A1A1A;
+  --text-dim: #666666;
+  --text-muted: #999999;
 
-  --border: rgba(0, 0, 0, 0.08);
-  --border-light: rgba(255, 255, 255, 0.15);
+  --border: rgba(0, 0, 0, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.4);
 
-  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.06);
-  --shadow-xl: 0 40px 100px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 12px 40px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.08);
 
-  --font-heading: 'Inter', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-  --font-serif: 'DM Serif Display', serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Playfair Display', serif;
 
-  /* Massive Border Radii for "Cloud" aesthetic */
-  --radius-sm: 16px;
-  --radius-md: 24px;
-  --radius-lg: 40px;
-  --radius-xl: 64px;
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
+  --radius-xl: 48px;
   --radius-full: 100px;
 
-  --nav-height: 110px;
-  --max-width: 1400px;
-  --transition: 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  --nav-h: 90px;
+  --max-w: 1400px;
+  --ease: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* --- Reset --- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+body {
   font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  line-height: 1.5;
+  background: var(--bg-main);
+  color: var(--text-main);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Cursor Placeholder */
-body { cursor: none; }
-a, button { cursor: none; }
-
 .container {
   width: 100%;
-  max-width: var(--max-width);
+  max-width: var(--max-w);
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 0 2.5rem;
 }
 
-/* Global Transitions */
-.motion-card {
-  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+/* Base Animations */
+.fade-in {
+  animation: fadeIn 1s var(--ease) forwards;
 }
 
-.motion-card:active {
-  transform: scale(0.96);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+
+/* Custom Cursor Base */
+body { cursor: none; }
+a, button { cursor: none; }

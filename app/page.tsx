@@ -33,7 +33,7 @@ const listings = [
 export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
-  const [expandedId, setExpandedId] = useState<number | string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
@@ -51,10 +51,6 @@ export default function HomePage() {
 
   const getExpandedImg = () => {
     if (expandedId === null) return null;
-    if (expandedId === 'hot1') return 'https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1200&h=800&fit=crop';
-    if (expandedId === 'hot2') return 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1200&h=800&fit=crop';
-    if (expandedId === 'hot3') return 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&h=800&fit=crop';
-    
     const listing = liveListings.find(l => l.id === expandedId);
     return listing?.images?.[0] || listing?.img || null;
   };
@@ -69,7 +65,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={styles.imgModal} 
+            className={styles.modal} 
             onClick={() => setExpandedId(null)}
           >
             <motion.div 
@@ -85,94 +81,57 @@ export default function HomePage() {
                 className={styles.expandedImg} 
                 priority
               />
-              <button className={styles.closeBtn} onClick={() => setExpandedId(null)}><X size={32}/></button>
+              <button className={styles.closeBtn} onClick={() => setExpandedId(null)}><X size={28}/></button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
       
-      <main className={styles.mainContainer}>
-        {/* === HERO SECTION === */}
+      <main className={styles.main}>
+        {/* === TEMPLATE HERO === */}
         <section className={styles.hero}>
           <div className={styles.heroBg}>
-            <Image src="/hero.png" alt="Background" fill priority className={styles.heroImgBg} />
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
-              className={styles.heroTitleWrap}
-            >
-              <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
-            </motion.div>
-
-            <Image src="/hero.png" alt="Foreground" fill priority className={styles.heroImgFg} />
-            
+            <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
             <div className={styles.heroOverlay}></div>
-            <div className={styles.cloudMask}></div>
           </div>
 
           <div className={styles.heroContent}>
-            <div className={`container ${styles.heroCenter}`}>
-              <motion.div 
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8, duration: 1 }}
-                className={styles.heroText}
-              >
-                <span className={styles.heroLabel}>Discover Sakartvelo</span>
-                <p className={styles.heroDesc}>
-                  Experience the Caucasus like never before. 
-                  Authentic, verified, and curated travel marketplace.
-                </p>
-              </motion.div>
-
-              <div className={styles.hotspots}>
-                {[1, 2, 3].map((i) => (
-                  <motion.div
-                    key={`hot${i}`}
-                    layoutId={`hot${i}`}
-                    className={`${styles.hotspot} ${styles[`hot${i}`]}`}
-                    onClick={() => setExpandedId(`hot${i}`)}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 1 + i * 0.2, type: 'spring' }}
-                  >
-                    <div className={styles.hotspotCircle}>
-                      <Image src="/hotspot.png" alt={`Location ${i}`} fill />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+            <motion.h1 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
+              className={styles.heroTitle}
+            >
+              EXPLORE<br/>GEORGIA
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1 }}
+              className={styles.heroSubtitle}
+            >
+              Find verified stays, local experiences, and hidden gems across Sakartvelo.
+            </motion.p>
 
             <motion.div 
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.4, duration: 1 }}
-              className={styles.searchContainer}
+              transition={{ delay: 0.8, duration: 1 }}
+              className={styles.searchWrapper}
             >
-              <div className={styles.searchBar}>
+              <div className={styles.searchPill}>
                 <div className={styles.searchItem}>
-                  <MapPin size={24} />
-                  <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Destination</span>
-                    <span className={styles.searchSub}>Where to?</span>
-                  </div>
+                  <span className={styles.searchLabel}>Destination</span>
+                  <span className={styles.searchVal}>Where to?</span>
                 </div>
                 <div className={styles.searchItem}>
-                  <Calendar size={24} />
-                  <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Check in</span>
-                    <span className={styles.searchSub}>Add date</span>
-                  </div>
+                  <span className={styles.searchLabel}>Date</span>
+                  <span className={styles.searchVal}>Add when</span>
                 </div>
                 <div className={styles.searchItem}>
-                  <Users size={24} />
-                  <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Guests</span>
-                    <span className={styles.searchSub}>Add visitors</span>
-                  </div>
+                  <span className={styles.searchLabel}>Guests</span>
+                  <span className={styles.searchVal}>Add who</span>
                 </div>
                 <button className={styles.searchBtn} onClick={() => router.push('/search')}>
                   <Search size={28} />
@@ -183,42 +142,47 @@ export default function HomePage() {
         </section>
 
         {/* Category Bar */}
-        <div className={styles.catBar}>
+        <section className={styles.catSection}>
           <div className="container">
-            <div className={styles.catScroll}>
+            <div className={styles.catGrid}>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
-                  className={`${styles.catItem} ${activeCat === cat.id ? styles.catItemActive : ''}`}
+                  className={`${styles.catBtn} ${activeCat === cat.id ? styles.catBtnActive : ''}`}
                   onClick={() => setActiveCat(cat.id)}
                 >
                   <span className={styles.catIcon}>{cat.icon}</span>
-                  <span className={styles.catLabel}>{cat.label}</span>
+                  <span className={styles.catText}>{cat.label}</span>
                 </button>
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* === GRID SECTION === */}
-        <section className={`container ${styles.recommended}`}>
+        {/* Listing Grid */}
+        <section className={`container ${styles.listingSection}`}>
           <div className={styles.grid}>
             {liveListings.map((listing) => (
               <div key={listing.id} className={styles.card}>
                 <motion.div 
                   layoutId={listing.id.toString()}
-                  className={styles.cardImageWrap} 
+                  className={styles.imgWrapper} 
                   onClick={() => setExpandedId(listing.id)}
                 >
-                  <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill className={styles.cardImage} />
-                  <div className={styles.cardPriceTag}>
+                  <Image 
+                    src={listing.images?.[0] || listing.img} 
+                    alt={listing.title} 
+                    fill 
+                    className={styles.img} 
+                  />
+                  <div className={styles.priceTag}>
                     ₾{listing.price}
                   </div>
                 </motion.div>
-                <div className={styles.cardContent}>
+                <div className={styles.info}>
                   <h3>{listing.title}</h3>
-                  <div className={styles.cardMeta}>
-                    <span>{listing.location}</span>
+                  <div className={styles.meta}>
+                    <span>📍 {listing.location}</span>
                     <span>★ {listing.rating}</span>
                   </div>
                 </div>

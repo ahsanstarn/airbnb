@@ -1,18 +1,19 @@
-.mainContainer {
+.main {
   min-height: 100vh;
-  background: var(--bg-primary);
 }
 
-/* === HERO SECTION - TRUE MOUNTAIN DEPTH === */
+/* === TEMPLATE HERO === */
 .hero {
   position: relative;
-  height: 100vh;
-  min-height: 850px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end; /* Move search bar to bottom */
+  height: 95vh;
+  min-height: 800px;
+  margin: 1rem;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  background: #0d0d0d;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .heroBg {
@@ -24,44 +25,9 @@
   z-index: 0;
 }
 
-.heroImgBg {
+.heroImg {
   object-fit: cover;
-  opacity: 0.95;
-  z-index: 1;
-}
-
-/* The Cinematic Text - Positioned at the mountain ridge line */
-.heroTitleWrap {
-  position: absolute;
-  top: 22%; /* Tucked slightly behind the peaks */
-  left: 0;
-  width: 100%;
-  z-index: 2;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-}
-
-.heroTitle {
-  font-family: var(--font-heading);
-  font-size: clamp(3rem, 12vw, 8.5rem); /* Reduced from 12rem to fix overlap */
-  font-weight: 900;
-  color: white;
-  text-align: center;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-  text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
-  opacity: 0.98;
-}
-
-/* The Foreground Layer - Smoothly follows the Tbilisi mountain line */
-.heroImgFg {
-  object-fit: cover;
-  z-index: 3;
-  /* Refined to follow the actual peaks of /hero.png without sharp jagged triangles */
-  clip-path: polygon(0 38%, 10% 32%, 20% 30%, 30% 38%, 40% 45%, 50% 35%, 60% 18%, 70% 30%, 80% 35%, 90% 30%, 100% 25%, 100% 100%, 0 100%);
-  pointer-events: none;
+  opacity: 0.85;
 }
 
 .heroOverlay {
@@ -70,215 +36,185 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 40%, rgba(245, 235, 224, 0.9) 100%);
-  z-index: 4;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
+  z-index: 1;
 }
 
-.cloudMask {
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 40%;
-  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245, 235, 224, 1) 25%, transparent 100%);
-  z-index: 5;
-}
-
-/* === HERO CONTENT === */
+/* Cinematic Masked Text - The "Iceland" Effect done cleanly */
 .heroContent {
   position: relative;
-  z-index: 20;
+  z-index: 10;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding-bottom: 60px;
+  padding: 0 2rem;
 }
 
-.heroCenter {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  max-width: 1200px;
-  margin-bottom: 3.5rem;
-}
-
-.heroText {
-  max-width: 480px;
-  padding-bottom: 1.5rem;
-}
-
-.heroLabel {
-  font-family: var(--font-serif);
-  font-size: 2.75rem;
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 15vw, 10rem);
+  font-weight: 900;
   color: white;
-  display: block;
-  margin-bottom: 0.75rem;
-  text-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  text-align: center;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  /* Masking trick: Text is "behind" a virtual mountain gradient */
+  mask-image: linear-gradient(to bottom, white 50%, transparent 95%);
 }
 
-.heroDesc {
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 1.2rem;
-  line-height: 1.5;
-  text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 600px;
+  text-align: center;
+  font-weight: 500;
+  margin-bottom: 4rem;
 }
 
-/* Hotspots moved down to avoid text overlap */
-.hotspots {
-  position: relative;
-  width: 350px;
-  height: 250px;
+/* Floating Search Pill */
+.searchWrapper {
+  width: 100%;
+  max-width: 900px;
+  padding: 0 1rem;
 }
 
-.hotspot {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20px);
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.hot1 { top: 0; right: 100px; width: 70px; height: 70px; }
-.hot2 { top: 100px; right: 0; width: 60px; height: 60px; }
-.hot3 { bottom: 0; right: 50px; width: 140px; height: 140px; }
-
-/* === SEARCH BAR === */
-.searchContainer {
-  width: 90%;
-  max-width: 1100px;
-}
-
-.searchBar {
-  background: white;
-  border-radius: var(--radius-lg);
+.searchPill {
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px);
+  border: 1px solid var(--glass-border);
+  padding: 0.75rem;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
-  padding: 10px;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.15);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-lg);
 }
 
 .searchItem {
   flex: 1;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
+  flex-direction: column;
+  padding: 0.5rem 1.5rem;
   cursor: pointer;
   border-radius: var(--radius-full);
+  transition: all 0.2s var(--ease);
 }
 
 .searchItem:hover { background: rgba(0,0,0,0.03); }
 
-.searchLabels { display: flex; flex-direction: column; }
-.searchTitle { font-weight: 800; font-size: 0.9rem; color: #1a1a1a; }
-.searchSub { font-size: 0.8rem; color: #6a6a6a; }
+.searchLabel { font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+.searchVal { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
 
 .searchBtn {
-  width: 64px;
-  height: 64px;
-  background: #1a1a1a;
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 10px;
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease);
 }
 
-/* === CATEGORY BAR === */
-.catBar {
-  padding: 3.5rem 0;
-  background: var(--bg-primary);
+.searchBtn:hover { transform: scale(1.05); }
+
+/* === CATEGORY SECTION === */
+.catSection {
+  padding: 3rem 0;
+  background: var(--bg-main);
+  border-bottom: 1px solid var(--border);
 }
 
-.catScroll {
+.catGrid {
   display: flex;
   justify-content: center;
-  gap: 5rem;
+  gap: 4rem;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.catItem {
+.catGrid::-webkit-scrollbar { display: none; }
+
+.catBtn {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   opacity: 0.4;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  color: #1a1a1a;
+  transition: all 0.3s var(--ease);
+  color: var(--text-main);
   flex-shrink: 0;
 }
 
-.catItemActive { opacity: 1; transform: translateY(-4px); }
-.catIcon { font-size: 2rem; }
-.catLabel { font-size: 0.85rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+.catBtnActive { opacity: 1; transform: translateY(-4px); }
+.catIcon { font-size: 1.75rem; }
+.catText { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
 
-/* === GRID SECTION === */
-.recommended { padding: 4rem 0 10rem; }
+/* === LISTING GRID === */
+.listingSection { padding: 5rem 0 10rem; }
 
-.grid { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
-  gap: 4rem; 
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2.5rem;
 }
 
-.card { 
-  display: flex; 
-  flex-direction: column; 
-  text-decoration: none; 
+.card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
 }
 
-.cardImageWrap { 
-  position: relative; 
-  aspect-ratio: 1 / 1; 
-  border-radius: var(--radius-lg); 
-  overflow: hidden; 
-  margin-bottom: 2.5rem; 
-  box-shadow: var(--shadow-md); 
+.imgWrapper {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
   background: #eee;
+  box-shadow: var(--shadow-md);
 }
 
-.cardImage { 
-  object-fit: cover; 
-  transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1); 
+.img {
+  object-fit: cover;
+  transition: transform 0.8s var(--ease);
 }
 
-.cardPriceTag { 
-  position: absolute; 
-  top: 2.5rem; 
-  left: 2.5rem; 
-  background: white; 
-  padding: 10px 24px; 
-  border-radius: var(--radius-full); 
-  font-weight: 800; 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+.card:hover .img { transform: scale(1.08); }
+
+.priceTag {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  background: white;
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
   z-index: 5;
 }
 
-.cardContent h3 { 
-  font-family: var(--font-heading); 
-  font-size: 1.85rem; 
-  margin-bottom: 0.75rem; 
-  color: #1a1a1a; 
+.info h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
 }
 
-.cardMeta { 
-  display: flex; 
-  justify-content: space-between; 
-  color: var(--text-secondary); 
-  font-size: 1.1rem;
+.meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-dim);
+  font-weight: 500;
 }
 
-/* === IMAGE MODAL === */
-.imgModal {
+/* === EXPANSION MODAL === */
+.modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -290,54 +226,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem;
+  padding: 3rem;
   cursor: zoom-out;
 }
 
 .modalContent {
   position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  max-width: 90%;
+  max-height: 90%;
 }
 
 .expandedImg {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   object-fit: contain;
-  max-width: 100%;
-  max-height: 100%;
-  box-shadow: 0 100px 200px rgba(0,0,0,0.5);
+  box-shadow: 0 60px 120px rgba(0,0,0,0.4);
 }
 
 .closeBtn {
   position: absolute;
-  top: 40px;
-  right: 40px;
-  width: 64px;
-  height: 64px;
+  top: -30px;
+  right: -30px;
+  width: 60px;
+  height: 60px;
   background: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  z-index: 10005;
+  box-shadow: var(--shadow-lg);
 }
 
 @media (max-width: 1024px) {
-  .heroCenter { flex-direction: column; align-items: flex-start; gap: 4rem; }
-  .hotspots { width: 100%; height: 350px; }
-  .heroTitle { font-size: 4rem; top: 35%; }
-  .heroImgFg { clip-path: polygon(0 50%, 20% 40%, 40% 60%, 60% 30%, 80% 50%, 100% 40%, 100% 100%, 0 100%); }
+  .heroTitle { font-size: 5rem; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-  .heroTitle { font-size: 2.5rem; }
+  .heroTitle { font-size: 3rem; }
   .grid { grid-template-columns: 1fr; }
-  .searchBar { flex-direction: column; padding: 2rem; border-radius: var(--radius-lg); }
-  .searchItem { width: 100%; border-bottom: 1px solid rgba(0,0,0,0.05); }
-  .searchBtn { width: 100%; margin-top: 1rem; }
-  .hotspots { display: none; }
+  .searchPill { flex-direction: column; padding: 1rem; border-radius: var(--radius-lg); }
+  .searchItem { width: 100%; border-bottom: 1px solid var(--border); padding: 1rem; }
+  .searchBtn { width: 100%; margin-top: 1rem; border-radius: var(--radius-md); }
 }
