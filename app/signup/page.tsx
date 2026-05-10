@@ -1,25 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
-import styles from './login.module.css';
+import styles from '../login/login.module.css'; // Reuse login styles
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.push('/');
-      }
-    });
-  }, [router]);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,40 +20,47 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Special admin check
-      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.toLowerCase().trim()));
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-      if (hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b') {
-        localStorage.setItem('kaya_admin', 'true');
-      }
-
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
       });
 
       if (authError) throw authError;
-      router.push('/');
+      setSuccess(true);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        // Map common errors to more user-friendly messages
-        const message = err.message.toLowerCase();
-        if (message.includes('invalid login credentials')) {
-          setError('Invalid email or password. Please try again.');
-        } else if (message.includes('email not confirmed')) {
-          setError('Please confirm your email address before signing in.');
-        } else {
-          setError(err.message || 'An error occurred during login');
-        }
+        setError(err.message || 'Signup failed');
       } else {
-        setError('Login failed');
+        setError('Signup failed');
       }
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <main className={styles.main}>
+        <div className={styles.background}>
+          <div className={styles.overlay}></div>
+        </div>
+        <div className={styles.content}>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h1 className={styles.title}>Check your email</h1>
+              <p className={styles.subtitle}>We&apos;ve sent a confirmation link to <strong>{email}</strong></p>
+            </div>
+            <Link href="/login" className={styles.submitBtn} style={{ textDecoration: 'none' }}>
+              Back to Login
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.main}>
@@ -81,8 +81,8 @@ export default function LoginPage() {
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <h1 className={styles.title}>Welcome Back</h1>
-            <p className={styles.subtitle}>Sign in to your account to continue</p>
+            <h1 className={styles.title}>Create Account</h1>
+            <p className={styles.subtitle}>Join Kaya.ge and start exploring Georgia</p>
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
@@ -113,10 +113,7 @@ export default function LoginPage() {
             </div>
 
             <div className={styles.inputGroup}>
-              <div className={styles.labelRow}>
-                <label htmlFor="password">Password</label>
-                <Link href="/login" className={styles.forgotPass}>Forgot?</Link>
-              </div>
+              <label htmlFor="password">Password</label>
               <div className={styles.inputWrapper}>
                 <input
                   id="password"
@@ -124,7 +121,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="••••••••"
+                  placeholder="Create a strong password"
                   className={styles.input}
                 />
               </div>
@@ -134,7 +131,7 @@ export default function LoginPage() {
               {loading ? (
                 <span className={styles.loader}></span>
               ) : (
-                'Sign In'
+                'Create Account'
               )}
             </button>
           </form>
@@ -144,7 +141,7 @@ export default function LoginPage() {
           </div>
 
           <div className={styles.footer}>
-            <p>New to Kaya.ge? <Link href="/signup" className={styles.signUpLink}>Create an account</Link></p>
+            <p>Already have an account? <Link href="/login" className={styles.signUpLink}>Sign in</Link></p>
           </div>
         </div>
       </div>
