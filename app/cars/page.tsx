@@ -13,6 +13,7 @@ const cars = [
   { id: 4, name: 'Mitsubishi Delica', type: 'Van / 4x4', price: 120, img: 'https://images.unsplash.com/photo-1565043666747-69f6646db940?w=600&h=400&fit=crop' },
 ];
 
+export default function CarsPage() {
   const [bookingCar, setBookingCar] = useState<string | null>(null);
 
   const handleBook = (name: string) => {
