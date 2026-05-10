@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Calendar, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
