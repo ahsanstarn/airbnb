@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import Navbar from '../components/Navbar';
 import Map from '../components/Map';
@@ -23,13 +24,21 @@ const regions = ['All Regions', 'Tbilisi', 'Batumi', 'Kakheti', 'Kazbegi', 'Mest
 const types = ['All Types', 'Hotel', 'Apartment', 'Villa', 'Guesthouse', 'Lodge', 'Unique'];
 const sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
 
-export default function SearchPage() {
+function SearchContent() {
+  const searchParams = useSearchParams();
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState('Recommended');
-  const [region, setRegion] = useState('All Regions');
-  const [type, setType] = useState('All Types');
+  const [region, setRegion] = useState(searchParams.get('region') || 'All Regions');
+  const [type, setType] = useState(searchParams.get('type') || 'All Types');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>(allListings);
+
+  useEffect(() => {
+    const qRegion = searchParams.get('region');
+    const qType = searchParams.get('type');
+    if (qRegion) setRegion(qRegion);
+    if (qType) setType(qType);
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchListings() {
@@ -130,5 +139,13 @@ export default function SearchPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading search...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 }

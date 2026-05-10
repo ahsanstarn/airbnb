@@ -29,24 +29,28 @@ export default function Navbar() {
         </Link>
 
         {/* Center Search - Desktop */}
-        <div className={`${styles.searchPill} ${scrolled ? styles.searchPillCompact : ''}`} onClick={() => router.push('/search')} style={{ cursor: 'pointer' }}>
-          <button className={styles.searchField}>
-            <span className={styles.searchFieldText}>Anywhere</span>
-          </button>
-          <span className={styles.searchSep}></span>
-          <button className={styles.searchField}>
-            <span className={styles.searchFieldText}>Any week</span>
-          </button>
-          <span className={styles.searchSep}></span>
-          <button className={`${styles.searchField} ${styles.searchFieldMuted}`}>
-            <span className={styles.searchFieldText}>Add guests</span>
-          </button>
-          <button className={styles.searchIconBtn} aria-label="Search">
+        <form 
+          className={`${styles.searchPill} ${scrolled ? styles.searchPillCompact : ''}`} 
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const query = formData.get('q');
+            router.push(`/search?region=${query}`);
+          }}
+        >
+          <input
+            name="q"
+            type="text"
+            placeholder="Search destination (e.g. Tbilisi, Batumi...)"
+            className={styles.searchFieldInput}
+            autoComplete="off"
+          />
+          <button type="submit" className={styles.searchIconBtn} aria-label="Search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
           </button>
-        </div>
+        </form>
 
         {/* Right */}
         <div className={styles.right}>

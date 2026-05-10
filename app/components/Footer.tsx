@@ -8,12 +8,12 @@ export default function Footer() {
         <div className={styles.cols}>
           <div className={styles.col}>
             <h4 className={styles.colTitle}>Explore</h4>
-            <Link href="/hotels">Hotels & Stays</Link>
-            <Link href="/restaurants">Restaurants</Link>
-            <Link href="/tours">Tours & Experiences</Link>
-            <Link href="/cars">Car Rentals</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/salons">Beauty & Spa</Link>
+            <Link href="/search">Hotels & Stays</Link>
+            <Link href="/search">Restaurants</Link>
+            <Link href="/search">Tours & Experiences</Link>
+            <Link href="/search">Car Rentals</Link>
+            <Link href="/search">Services</Link>
+            <Link href="/search">Beauty & Spa</Link>
           </div>
           <div className={styles.col}>
             <h4 className={styles.colTitle}>Discover</h4>
@@ -25,7 +25,7 @@ export default function Footer() {
           </div>
           <div className={styles.col}>
             <h4 className={styles.colTitle}>Hosting</h4>
-            <Link href="/register?type=business">List your property</Link>
+            <Link href="/login">List your property</Link>
             <Link href="/about#hosting">How hosting works</Link>
             <Link href="/about#pricing">Pricing</Link>
             <Link href="/about#resources">Host resources</Link>
