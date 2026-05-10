@@ -1,60 +1,47 @@
 /* ============================================
    KAYA.GE — Clean, Light Design System
-   Airbnb-inspired with warm Georgian accents
+   1:1 Replication of Bogdan Falin Reference
    ============================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
 
 /* --- Design Tokens --- */
 :root {
-  --bg-primary: #fdf6f2;
-  --bg-secondary: #fcece3;
+  --bg-primary: #F5EBE0; /* Exact color from reference */
+  --bg-secondary: #E8D8C4;
   --bg-card: #FFFFFF;
-  --bg-hover: #f9e1d5;
+  --bg-hover: #F2E3D4;
   --bg-input: #FFFFFF;
 
-  --accent: #E8573A;
-  --accent-dark: #D44828;
-  --accent-light: #FFECE8;
-  --accent-gold: #C5943A;
-  --accent-soft: #f2d1bd;
+  --accent: #1A1A1A; /* Dark accents for a modern look */
+  --accent-soft: rgba(255, 255, 255, 0.2);
+  
+  --text-primary: #1A1A1A;
+  --text-secondary: #6A6A6A;
+  --text-muted: #8A8A8A;
 
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-muted: #8c8c8c;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-light: rgba(255, 255, 255, 0.15);
 
-  --border: #e0d1c8;
-  --border-light: #f0e6df;
-  --border-dark: #b0a095;
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 40px 100px rgba(0, 0, 0, 0.08);
 
-  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.12);
-
-  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
   --font-serif: 'DM Serif Display', serif;
 
-  --fs-xs: 0.75rem;
-  --fs-sm: 0.875rem;
-  --fs-base: 1rem;
-  --fs-md: 1.125rem;
-  --fs-lg: 1.25rem;
-  --fs-xl: 1.5rem;
-  --fs-2xl: 1.75rem;
-  --fs-3xl: 2.25rem;
-  --fs-hero: 6rem;
-
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --radius-xl: 48px;
+  /* Massive Border Radii for "Cloud" aesthetic */
+  --radius-sm: 16px;
+  --radius-md: 24px;
+  --radius-lg: 40px;
+  --radius-xl: 64px;
   --radius-full: 100px;
 
-  --nav-height: 100px;
+  --nav-height: 110px;
   --max-width: 1400px;
-  --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 /* --- Reset --- */
@@ -70,73 +57,25 @@ html, body {
   background: var(--bg-primary);
   line-height: 1.5;
   overflow-x: hidden;
-  cursor: none; /* Hide default cursor to use custom one */
+  -webkit-font-smoothing: antialiased;
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-button {
-  border: none;
-  background: none;
-  cursor: none;
-  font-family: inherit;
-}
+/* Custom Cursor Placeholder */
+body { cursor: none; }
+a, button { cursor: none; }
 
 .container {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 3rem;
 }
 
-/* Typography Helpers */
-h1, h2, h3, h4 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  line-height: 1.2;
+/* Global Transitions */
+.motion-card {
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.serif {
-  font-family: var(--font-serif);
-}
-
-/* Layout Utilities */
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-2 { gap: 0.5rem; }
-.gap-4 { gap: 1rem; }
-
-/* Custom Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* Scrollbar Style */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--accent-soft);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+.motion-card:active {
+  transform: scale(0.96);
 }
