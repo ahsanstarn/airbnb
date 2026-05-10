@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Image from 'next/image';
@@ -12,7 +13,13 @@ const cars = [
   { id: 4, name: 'Mitsubishi Delica', type: 'Van / 4x4', price: 120, img: 'https://images.unsplash.com/photo-1565043666747-69f6646db940?w=600&h=400&fit=crop' },
 ];
 
-export default function CarsPage() {
+  const [bookingCar, setBookingCar] = useState<string | null>(null);
+
+  const handleBook = (name: string) => {
+    setBookingCar(name);
+    setTimeout(() => setBookingCar(null), 3000); // Reset after 3s
+  };
+
   return (
     <>
       <Navbar />
@@ -38,12 +45,24 @@ export default function CarsPage() {
                     <span className={styles.price}>₾{car.price}</span>
                     <span className={styles.unit}> / day</span>
                   </div>
-                  <button className={styles.btn}>Book Now</button>
+                  <button 
+                    className={`${styles.btn} ${bookingCar === car.name ? styles.btnSuccess : ''}`}
+                    onClick={() => handleBook(car.name)}
+                    disabled={bookingCar !== null}
+                  >
+                    {bookingCar === car.name ? '✓ Request Sent' : 'Book Now'}
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
+        
+        {bookingCar && (
+          <div className={styles.toast}>
+            <p>Booking request for <strong>{bookingCar}</strong> has been sent to the host!</p>
+          </div>
+        )}
       </main>
       <Footer />
     </>

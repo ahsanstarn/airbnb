@@ -106,6 +106,25 @@
   transition: background 0.2s;
 }
 
-.btn:hover {
-  background: #000;
+.btnSuccess {
+  background: #34C759 !important;
+}
+
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 100px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translate(-50%, 20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
 }

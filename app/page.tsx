@@ -47,6 +47,15 @@ const uniqueFeatures = [
 export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
+  const [savedListings, setSavedListings] = useState<number[]>([]);
+
+  const toggleSave = (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    setSavedListings(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
 
@@ -69,6 +78,11 @@ export default function HomePage() {
     }
     fetchListings();
   }, []);
+  const handleFeatureClick = (title: string) => {
+    if (title === 'Trip Mood Planner') router.push('/chat');
+    else if (title === 'Georgian Table') router.push('/search?cat=restaurants');
+    else alert(`Feature "${title}" is coming soon! Our team in Tbilisi is working on it.`);
+  };
 
   return (
     <>
@@ -140,8 +154,19 @@ export default function HomePage() {
                 {listing.badge && (
                   <span className={styles.cardBadge}>{listing.badge}</span>
                 )}
-                <button className={styles.cardFav} aria-label="Save" onClick={(e) => e.preventDefault()}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(0,0,0,0.5)" stroke="white" strokeWidth="2">
+                <button 
+                  className={styles.cardFav} 
+                  aria-label="Save" 
+                  onClick={(e) => toggleSave(e, listing.id)}
+                >
+                  <svg 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill={savedListings.includes(listing.id) ? "var(--accent)" : "rgba(0,0,0,0.5)"} 
+                    stroke={savedListings.includes(listing.id) ? "var(--accent)" : "white"} 
+                    strokeWidth="2"
+                  >
                     <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                   </svg>
                 </button>
@@ -173,7 +198,11 @@ export default function HomePage() {
         </div>
         <div className={styles.featuresGrid}>
           {uniqueFeatures.map((feat) => (
-            <div key={feat.title} className={styles.featureCard}>
+            <div 
+              key={feat.title} 
+              className={styles.featureCard}
+              onClick={() => handleFeatureClick(feat.title)}
+            >
               <span className={styles.featureIcon}>{feat.icon}</span>
               <h3 className={styles.featureTitle}>{feat.title}</h3>
               <p className={styles.featureDesc}>{feat.desc}</p>
