@@ -47,12 +47,12 @@ export default function Navbar() {
 
   return (
     <motion.header 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+      initial={{ y: -100, x: '-50%' }}
+      animate={{ y: 0, x: '-50%' }}
       transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
       className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}
     >
-      <nav className={`container ${styles.nav}`}>
+      <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
           Kaya.ge
         </Link>

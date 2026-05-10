@@ -5,22 +5,39 @@
 
 /* === REAL LIQUID GLASS SYSTEM === */
 .liquidGlass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.1);
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    inset 0 0 32px rgba(255, 255, 255, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
 }
 
-/* Shine effect that follows cursor (simulated in CSS for performance) */
+/* Enhanced shine effect that follows cursor */
 .liquidGlass::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.3) 0%, transparent 60%);
+  background: radial-gradient(circle 400px at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.4) 0%, transparent 50%);
   pointer-events: none;
   z-index: 1;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+/* Extra shine layer for depth */
+.liquidGlass::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* === HERO SECTION === */
@@ -65,7 +82,7 @@
 /* The "Behind Peak" Title Fix */
 .heroTitleWrap {
   position: absolute;
-  top: 25%;
+  top: 15%;
   left: 0;
   width: 100%;
   display: flex;
@@ -80,11 +97,11 @@
   font-weight: 900;
   color: white;
   text-align: center;
-  line-height: 0.85;
+  line-height: 0.95;
   letter-spacing: -0.06em;
   text-transform: uppercase;
   opacity: 0.95;
-  mask-image: linear-gradient(to bottom, white 50%, transparent 98%);
+  mask-image: linear-gradient(to bottom, white 50%, transparent 100%);
 }
 
 .heroContent {
@@ -95,7 +112,8 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  padding-bottom: 8rem;
+  padding-bottom: 6vh;
+  pointer-events: none;
 }
 
 /* Search Bar - Fixed Cutoff */
@@ -106,9 +124,20 @@
 
 .searchPill {
   padding: 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.08);
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
+  gap: 1rem;
+  box-shadow: 
+    inset 0 0 24px rgba(255, 255, 255, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 20px 60px rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
+  transition: all 0.3s ease;
 }
 
 .searchItem {
@@ -137,6 +166,10 @@
 }
 
 /* === HOTSPOTS === */
+.hotspots {
+  pointer-events: none;
+}
+
 .hotspot {
   position: absolute;
   width: 48px;
@@ -148,10 +181,24 @@
   color: white;
   cursor: pointer;
   z-index: 50;
-  transition: transform 0.3s var(--ease);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    inset 0 0 16px rgba(255, 255, 255, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-.hotspot:hover { transform: scale(1.2); }
+.hotspot:hover { 
+  transform: scale(1.25);
+  box-shadow: 
+    inset 0 0 20px rgba(255, 255, 255, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 0 24px rgba(255, 255, 255, 0.1);
+}
 .pulse {
   position: absolute;
   width: 100%; height: 100%;
@@ -177,10 +224,18 @@
   display: flex;
   justify-content: center;
   gap: 4rem;
-  padding: 2rem 4rem;
+  padding: 2.5rem 4rem;
   border-radius: var(--radius-xl);
   overflow-x: auto;
   scrollbar-width: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    inset 0 0 24px rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 20px 60px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 .catBtn {
