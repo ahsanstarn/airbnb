@@ -135,19 +135,19 @@ export default function HomePage() {
               </div>
 
               <div className={styles.hotspots}>
-                <div className={`${styles.hotspot} ${styles.hot1}`}>
+                <div className={`${styles.hotspot} ${styles.hot1}`} onClick={() => setExpandedImg('https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1200&h=800&fit=crop')}>
                   <div className={styles.hotspotCircle}>
-                    <Image src="/hotspot.png" alt="Caucasus" fill priority />
+                    <Image src="https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=400&h=400&fit=crop" alt="Caucasus" fill priority />
                   </div>
                 </div>
-                <div className={`${styles.hotspot} ${styles.hot2}`}>
+                <div className={`${styles.hotspot} ${styles.hot2}`} onClick={() => setExpandedImg('https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1200&h=800&fit=crop')}>
                   <div className={styles.hotspotCircle}>
-                    <Image src="/hotspot.png" alt="Kakheti" fill priority />
+                    <Image src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400&h=400&fit=crop" alt="Kakheti" fill priority />
                   </div>
                 </div>
-                <div className={`${styles.hotspot} ${styles.hot3}`}>
+                <div className={`${styles.hotspot} ${styles.hot3}`} onClick={() => setExpandedImg('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&h=800&fit=crop')}>
                   <div className={styles.hotspotCircle}>
-                    <Image src="/hotspot.png" alt="Batumi" fill priority />
+                    <Image src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=400&fit=crop" alt="Batumi" fill priority />
                   </div>
                   <div className={styles.pulse}></div>
                 </div>
