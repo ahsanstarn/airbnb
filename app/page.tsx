@@ -56,7 +56,6 @@ export default function HomePage() {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
 
   useEffect(() => {
@@ -85,24 +84,26 @@ export default function HomePage() {
         <section className={styles.hero}>
           <div className={styles.heroBg}>
             <Image 
-              src="https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1920&h=1080&fit=crop" 
-              alt="Georgia Mountains" 
+              src="/hero.png" 
+              alt="Tbilisi Sunset" 
               fill 
               priority
               className={styles.heroImg}
             />
             <div className={styles.heroOverlay}></div>
-            <div className={styles.mist}></div>
+            <div className={styles.cloudMask}></div>
           </div>
 
           <div className={`container ${styles.heroContent}`}>
-            <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
+            <div className={styles.heroTitleWrap}>
+              <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
+            </div>
             
             <div className={styles.heroCenter}>
               <div className={styles.heroText}>
                 <span className={styles.heroLabel}>Discover Sakartvelo</span>
                 <p className={styles.heroDesc}>
-                  Explore Georgia&apos;s best places to stay and visit. 
+                  Discover Georgia&apos;s best places to stay and visit. 
                   Find suitable ones for you and your family.
                 </p>
               </div>
@@ -161,7 +162,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <button className={styles.searchBtn} onClick={() => router.push('/search')}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                   </svg>
                 </button>
@@ -250,11 +251,29 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* AI Banner */}
+        <section className={`container ${styles.aiSection}`}>
+          <div className={styles.aiBanner}>
+            <div className={styles.aiContent}>
+              <span className={styles.aiLabel}>AI Travel Assistant</span>
+              <h2 className={styles.serifTitle}>Meet KLARA</h2>
+              <p className={styles.aiDesc}>Your AI travel companion who knows Georgia inside out. Ask about hotels, hidden gems, weather, or culture.</p>
+              <Link href="/chat" className={styles.aiBtn}>Start Chatting</Link>
+            </div>
+            <div className={styles.aiVisual}>
+              <div className={styles.aiChatBox}>
+                <div className={styles.aiMsg}>&quot;Find me a wine cellar in Kakheti...&quot;</div>
+                <div className={`${styles.aiMsg} ${styles.aiReply}`}>&quot;I found 3 verified wineries with tasting rooms nearby.&quot;</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className={`container ${styles.cta}`}>
           <div className={styles.ctaInner}>
             <h2 className={styles.ctaTitle}>List your property on Kaya</h2>
-            <p className={styles.ctaDesc}>Join Georgia&apos;s fastest-growing marketplace. No commissions.</p>
+            <p className={styles.ctaDesc}>Join Georgia&apos;s fastest-growing travel marketplace. Flat ₾20/month — no commissions.</p>
             <Link href="/login" className={styles.ctaBtn}>Get started</Link>
           </div>
         </section>
