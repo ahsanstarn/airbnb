@@ -27,8 +27,8 @@ export default function Footer() {
             <h4 className={styles.colTitle}>Hosting</h4>
             <Link href="/login">List your property</Link>
             <Link href="/about#hosting">How hosting works</Link>
-            <Link href="/about#pricing">Pricing</Link>
-            <Link href="/about#resources">Host resources</Link>
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/resources">Host resources</Link>
           </div>
           <div className={styles.col}>
             <h4 className={styles.colTitle}>Support</h4>
