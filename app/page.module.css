@@ -55,23 +55,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: -50px;
+  margin-top: 50px; /* Moved down */
+  animation: heroLanding 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes heroLanding {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .heroTitleWrap {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   overflow: hidden;
 }
 
 .heroTitle {
-  font-size: clamp(3rem, 10vw, 7rem);
+  font-size: clamp(3rem, 10vw, 7.5rem);
   font-weight: 900;
   color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.8);
-  letter-spacing: 0.1em;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.08em;
   text-align: center;
   line-height: 0.9;
   text-transform: uppercase;
+  animation: titleReveal 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+@keyframes titleReveal {
+  from { opacity: 0; transform: translateY(100%) skewY(5deg); }
+  to { opacity: 1; transform: translateY(0) skewY(0); }
 }
 
 .heroCenter {
@@ -85,11 +99,19 @@
 
 .heroText {
   max-width: 450px;
+  animation: fadeIn 1s ease forwards;
+  animation-delay: 0.8s;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .heroLabel {
   font-family: var(--font-serif);
-  font-size: 3rem;
+  font-size: 3.25rem;
   color: white;
   display: block;
   margin-bottom: 1rem;
@@ -103,7 +125,7 @@
   text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-/* Hotspots */
+/* Hotspots with staggered entry */
 .hotspots {
   position: relative;
   width: 400px;
@@ -119,11 +141,18 @@
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: var(--shadow-xl);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: scale(0);
+  animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .hotspot:hover {
   transform: scale(1.15) translateY(-5px);
   background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes popIn {
+  to { opacity: 1; transform: scale(1); }
 }
 
 .hotspotCircle {
@@ -134,9 +163,9 @@
   position: relative;
 }
 
-.hot1 { width: 90px; height: 90px; top: 0; right: 100px; }
-.hot2 { width: 70px; height: 70px; top: 120px; right: 0; }
-.hot3 { width: 180px; height: 180px; bottom: 0; right: 60px; }
+.hot1 { top: 0; right: 100px; width: 90px; height: 90px; animation-delay: 1s; }
+.hot2 { top: 120px; right: 0; width: 70px; height: 70px; animation-delay: 1.2s; }
+.hot3 { bottom: 0; right: 60px; width: 180px; height: 180px; animation-delay: 1.4s; }
 
 .pulse {
   position: absolute;
@@ -158,6 +187,14 @@
 .searchContainer {
   width: 100%;
   max-width: 1100px;
+  animation: searchSlide 1s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  animation-delay: 1.6s;
+  opacity: 0;
+}
+
+@keyframes searchSlide {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .searchBar {
