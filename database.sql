@@ -81,3 +81,60 @@ CREATE POLICY "Reviews are viewable by everyone." ON public.reviews FOR SELECT U
 -- Allow authenticated users to create bookings
 CREATE POLICY "Users can create bookings" ON public.bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can view own bookings" ON public.bookings FOR SELECT USING (auth.uid() = user_id);
+
+-- Availability blocks (Double-booking prevention)
+CREATE TABLE public.availability_blocks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    listing_id UUID REFERENCES public.listings(id) ON DELETE CASCADE,
+    date_from DATE NOT NULL,
+    date_to DATE NOT NULL,
+    reason TEXT, -- 'BOOKED' or 'BLOCKED'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Revenue Stream 1: Subscriptions
+CREATE TABLE public.subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE,
+    plan TEXT DEFAULT 'BASIC', -- 'BASIC' (20 GEL) or 'PRO'
+    status TEXT DEFAULT 'ACTIVE',
+    amount NUMERIC NOT NULL,
+    currency TEXT DEFAULT 'GEL',
+    next_billing_date TIMESTAMP WITH TIME ZONE,
+    stripe_subscription_id TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Revenue Stream 2: E-commerce (Phase 2)
+CREATE TABLE public.ecommerce_products (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    price NUMERIC NOT NULL,
+    category TEXT,
+    stock INTEGER DEFAULT 0,
+    images TEXT[],
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Revenue Stream 3: Digital Agency (Phase 2)
+CREATE TABLE public.agency_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE,
+    service_type TEXT NOT NULL, -- 'WEBSITE' or 'SOCIAL_MEDIA'
+    details TEXT,
+    status TEXT DEFAULT 'PENDING',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS on new tables
+ALTER TABLE public.availability_blocks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ecommerce_products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.agency_requests ENABLE ROW LEVEL SECURITY;
+
+-- Basic Policies
+CREATE POLICY "Everyone can view availability" ON public.availability_blocks FOR SELECT USING (true);
+CREATE POLICY "Businesses can view own subscriptions" ON public.subscriptions FOR SELECT USING (EXISTS (SELECT 1 FROM public.businesses b WHERE b.id = business_id AND b.user_id = auth.uid()));
+CREATE POLICY "Everyone can view products" ON public.ecommerce_products FOR SELECT USING (true);
+

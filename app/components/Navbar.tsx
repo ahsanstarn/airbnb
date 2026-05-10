@@ -9,6 +9,8 @@ export default function Navbar() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState('EN');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -57,11 +59,23 @@ export default function Navbar() {
           <Link href="/login" className={styles.hostLink}>
             List your property
           </Link>
-          <button className={styles.langBtn} aria-label="Language">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-            </svg>
-          </button>
+          
+          <div className={styles.langWrapper}>
+            <button className={styles.langBtn} onClick={() => setLangOpen(!langOpen)} aria-label="Language">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+              </svg>
+              <span className={styles.langText}>{currentLang}</span>
+            </button>
+            
+            {langOpen && (
+              <div className={styles.langMenu}>
+                <button onClick={() => { setCurrentLang('GE'); setLangOpen(false); }}>🇬🇪 Georgian</button>
+                <button onClick={() => { setCurrentLang('EN'); setLangOpen(false); }}>🇬🇧 English</button>
+                <button onClick={() => { setCurrentLang('RU'); setLangOpen(false); }}>🇷🇺 Russian</button>
+              </div>
+            )}
+          </div>
           <Link href="/login" className={styles.profileBtn}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12h18M3 6h18M3 18h18"/>

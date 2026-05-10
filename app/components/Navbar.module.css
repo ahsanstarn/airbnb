@@ -142,17 +142,57 @@
   background: var(--bg-hover);
 }
 
+.langWrapper {
+  position: relative;
+}
+
 .langBtn {
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
   transition: background var(--transition);
 }
 
 .langBtn:hover {
+  background: var(--bg-hover);
+}
+
+.langText {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.langMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  z-index: 1000;
+}
+
+.langMenu button {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.langMenu button:hover {
   background: var(--bg-hover);
 }
 
