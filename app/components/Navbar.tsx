@@ -17,7 +17,20 @@ export default function Navbar() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser?.email) {
+        // Auto-detect admin on load
+        crypto.subtle.digest('SHA-256', new TextEncoder().encode(currentUser.email.toLowerCase().trim()))
+          .then(hashBuffer => {
+            const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+            if (hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b') {
+              localStorage.setItem('kaya_admin', 'true');
+              setIsAdmin(true);
+            }
+          });
+      }
     });
     setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
   }, []);
@@ -90,7 +103,10 @@ export default function Navbar() {
             </svg>
             <div className={styles.avatar}>
               {user ? (
-                <span className={styles.avatarInitial}>{user.email[0].toUpperCase()}</span>
+                <div className={styles.avatarLogged}>
+                  <span className={styles.avatarInitial}>{user.email[0].toUpperCase()}</span>
+                  {isAdmin && <span className={styles.adminBadge}>Admin</span>}
+                </div>
               ) : (
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#717171">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
