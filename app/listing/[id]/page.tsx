@@ -124,10 +124,17 @@ export default function ListingPage({ params }: { params: { id: string } }) {
         {/* Photo Grid */}
         <div className={styles.photos}>
           <div className={styles.photoMain}>
-            <Image src={listing.images[0]} alt={listing.title} fill sizes="50vw" style={{ objectFit: 'cover' }} priority />
+            <Image 
+              src={listing.images?.[0] || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop'} 
+              alt={listing.title} 
+              fill 
+              sizes="50vw" 
+              style={{ objectFit: 'cover' }} 
+              priority 
+            />
           </div>
           <div className={styles.photoGrid}>
-            {listing.images?.slice(1, 5).map((img: string, i: number) => (
+            {(listing.images?.slice(1, 5) || []).map((img: string, i: number) => (
               <div key={i} className={styles.photoSmall}>
                 <Image src={img} alt={`Photo ${i + 2}`} fill sizes="25vw" style={{ objectFit: 'cover' }} />
               </div>
