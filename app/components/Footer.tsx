@@ -11,7 +11,7 @@ export default function Footer() {
             <Link href="/search">Hotels & Stays</Link>
             <Link href="/search">Restaurants</Link>
             <Link href="/search">Tours & Experiences</Link>
-            <Link href="/search">Car Rentals</Link>
+            <Link href="/cars">Car Rentals</Link>
             <Link href="/search">Services</Link>
             <Link href="/search">Beauty & Spa</Link>
           </div>

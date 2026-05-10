@@ -132,17 +132,19 @@ export default function Navbar() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12h18M3 6h18M3 18h18"/>
             </svg>
-            <div className={styles.avatar}>
-              {user ? (
-                <div className={styles.avatarLogged}>
-                  <span className={styles.avatarInitial}>{user.email[0].toUpperCase()}</span>
-                  {isAdmin && <span className={styles.adminBadge}>Admin</span>}
-                </div>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#717171">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
-              )}
+            <div className={styles.profileInfo}>
+              {isAdmin && <span className={styles.adminBadge}>Admin</span>}
+              <div className={styles.avatar}>
+                {user ? (
+                  <div className={styles.avatarLogged}>
+                    <span className={styles.avatarInitial}>{user.email[0].toUpperCase()}</span>
+                  </div>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#717171">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                )}
+              </div>
             </div>
           </Link>
 

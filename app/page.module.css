@@ -13,7 +13,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 0 4px;
+  padding: 4px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .catScroll::-webkit-scrollbar { display: none; }
@@ -89,7 +90,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
 }
 
