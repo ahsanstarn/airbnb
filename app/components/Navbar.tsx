@@ -12,23 +12,26 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('EN');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ email: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
+      const currentUser = session?.user as { email: string } | null;
       setUser(currentUser);
       
-      if (currentUser?.email) {
-        // Auto-detect admin on load
-        crypto.subtle.digest('SHA-256', new TextEncoder().encode(currentUser.email.toLowerCase().trim()))
+      if (currentUser?.email && typeof window !== 'undefined' && window.crypto?.subtle) {
+        // Auto-detect admin on load (Browser only)
+        window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(currentUser.email.toLowerCase().trim()))
           .then(hashBuffer => {
             const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
             if (hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b') {
               localStorage.setItem('kaya_admin', 'true');
               setIsAdmin(true);
             }
+          }).catch(() => {
+            // Fallback to localStorage if crypto fails
+            setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
           });
       }
     });
