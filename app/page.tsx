@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import CustomCursor from './components/CustomCursor';
 import styles from './page.module.css';
 
 const categories = [
@@ -42,17 +43,15 @@ export default function HomePage() {
   const [activeCat, setActiveCat] = useState('all');
   const [savedListings, setSavedListings] = useState<number[]>([]);
   const [scrolled, setScrolled] = useState(false);
+  const [expandedImg, setExpandedImg] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     
-    // Intersection Observer for scroll animations
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add(styles.visible);
-        }
+        if (entry.isIntersecting) entry.target.classList.add(styles.visible);
       });
     }, { threshold: 0.1 });
 
@@ -93,7 +92,18 @@ export default function HomePage() {
 
   return (
     <>
+      <CustomCursor />
       <Navbar />
+
+      {/* Expanded Image Modal */}
+      {expandedImg && (
+        <div className={styles.imgModal} onClick={() => setExpandedImg(null)}>
+          <div className={styles.modalContent}>
+            <Image src={expandedImg} alt="Expanded" width={1200} height={800} className={styles.expandedImg} />
+            <button className={styles.closeBtn}>×</button>
+          </div>
+        </div>
+      )}
       
       <main className={styles.mainContainer}>
         {/* === HERO SECTION === */}
@@ -225,8 +235,8 @@ export default function HomePage() {
                 return keywords.some(kw => listing.type?.toLowerCase().includes(kw) || listing.title?.toLowerCase().includes(kw));
               })
               .map((listing) => (
-              <Link key={listing.id} href={`/listing/${listing.id}`} className={`${styles.card} ${styles.reveal}`}>
-                <div className={styles.cardImageWrap}>
+              <div key={listing.id} className={`${styles.card} ${styles.reveal}`}>
+                <div className={styles.cardImageWrap} onClick={() => setExpandedImg(listing.images?.[0] || listing.img)}>
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill className={styles.cardImage} />
                   <div className={styles.cardPriceTag}>
                     ₾{listing.price} <span className={styles.cardPriceUnit}>/ night</span>
@@ -237,14 +247,14 @@ export default function HomePage() {
                     </svg>
                   </button>
                 </div>
-                <div className={styles.cardContent}>
+                <Link href={`/listing/${listing.id}`} className={styles.cardContent}>
                   <h3 className={styles.cardTitle}>{listing.title}</h3>
                   <div className={styles.cardMeta}>
                     <span className={styles.cardLocation}>📍 {listing.location}</span>
                     <span className={styles.cardRating}>★ {listing.rating}</span>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         </section>
