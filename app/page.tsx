@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { Search, X, Shield, ArrowRight, Star } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
+import { Search, X, Shield, ArrowRight, Star, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -40,13 +40,27 @@ export default function HomePage() {
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
+  // Smooth Cursor
+  const cursorX = useSpring(0, { stiffness: 500, damping: 50 });
+  const cursorY = useSpring(0, { stiffness: 500, damping: 50 });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [cursorX, cursorY]);
 
   useEffect(() => {
     async function init() {
@@ -76,6 +90,12 @@ export default function HomePage() {
     <>
       <Navbar />
 
+      {/* CUSTOM LIQUID CURSOR */}
+      <motion.div 
+        className={styles.customCursor}
+        style={{ x: cursorX, y: cursorY }}
+      />
+
       <AnimatePresence>
         {expandedId !== null && (
           <motion.div 
@@ -98,59 +118,76 @@ export default function HomePage() {
       </AnimatePresence>
       
       <main className={styles.main}>
-        {/* === ENHANCED LIQUID HERO === */}
+        {/* === ULTIMATE LIQUID HERO === */}
         <section className={styles.hero}>
           <motion.div style={{ y: heroY, opacity: heroOpacity }} className={styles.heroBg}>
             <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
+            
+            {/* The Behind-Mountain Cinematic Text */}
+            <motion.div 
+              initial={{ opacity: 0, y: 150 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 2, ease: [0.19, 1, 0.22, 1] }}
+              className={styles.behindText}
+            >
+              <h1 className={styles.heroTitle}>GEORGIA</h1>
+            </motion.div>
+
             <div className={styles.heroOverlay}></div>
           </motion.div>
 
           <div className={styles.heroContent}>
             <motion.div
-              initial={{ opacity: 0, y: 100, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 1.8, ease: [0.19, 1, 0.22, 1] }}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 1.5 }}
+              className={styles.heroHeaders}
             >
-              <h1 className={styles.heroTitle}>EXPERIENCE<br/>GEORGIA</h1>
+              <span className={styles.heroTag}>Sakartvelo Unveiled</span>
+              <h2 className={styles.heroSubTitle}>Explore the soul of the Caucasus</h2>
             </motion.div>
             
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 1.2 }}
+              transition={{ delay: 1, duration: 1.2 }}
               className={styles.searchWrapper}
             >
               <div className={`${styles.searchPill} ${styles.liquidGlass}`}>
                 <div className={styles.searchItem}>
-                  <span className={styles.searchLabel}>Where</span>
-                  <span className={styles.searchVal}>Destination?</span>
+                  <span className={styles.searchLabel}>Destination</span>
+                  <span className={styles.searchVal}>Where to?</span>
                 </div>
                 <div className={styles.searchItem}>
-                  <span className={styles.searchLabel}>When</span>
-                  <span className={styles.searchVal}>Dates?</span>
+                  <span className={styles.searchLabel}>Date</span>
+                  <span className={styles.searchVal}>Add when</span>
                 </div>
                 <div className={styles.searchItem}>
-                  <span className={styles.searchLabel}>Who</span>
-                  <span className={styles.searchVal}>Guests?</span>
+                  <span className={styles.searchLabel}>Guests</span>
+                  <span className={styles.searchVal}>Add who</span>
                 </div>
                 <button className={styles.searchBtn} onClick={() => router.push('/search')}>
                   <Search size={24} />
                 </button>
               </div>
             </motion.div>
-          </div>
 
-          {isAdmin && (
-            <motion.button
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              className={`${styles.adminQuickBtn} ${styles.liquidGlass}`}
-              onClick={() => router.push('/admin')}
-            >
-              <Shield size={18} />
-              <span>Admin</span>
-            </motion.button>
-          )}
+            {/* Liquid Hotspots */}
+            <div className={styles.hotspots}>
+              {[1, 2, 3].map((i) => (
+                <motion.div
+                  key={`hot${i}`}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.5 + i * 0.2, type: 'spring' }}
+                  className={`${styles.hotspot} ${styles[`hot${i}`]} ${styles.liquidGlass}`}
+                >
+                  <MapPin size={20} />
+                  <div className={styles.pulse}></div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Trending Destinations */}
@@ -174,7 +211,7 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.8 }}
-                  className={styles.destCard}
+                  className={`${styles.destCard} ${styles.liquidGlassCard}`}
                 >
                   <div className={styles.destImg}>
                     <Image src={dest.img} alt={dest.name} fill className={styles.img} />
@@ -240,7 +277,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Experiences Banner */}
+        {/* Immersive Experience Banner */}
         <section className={styles.experienceBanner}>
           <div className={styles.expBg}>
             <Image src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1600&h=800&fit=crop" alt="Experience" fill className={styles.img} />
@@ -251,11 +288,11 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className={styles.expContent}
+              className={`${styles.expContent} ${styles.liquidGlassCard}`}
             >
               <h2>Unforgettable Moments</h2>
               <p>Discover unique experiences curated by locals, from mountain treks to ancient wine tastings.</p>
-              <button className={styles.expBtn}>Explore Experiences</button>
+              <button className={styles.expBtn}>Explore Sakartvelo</button>
             </motion.div>
           </div>
         </section>
