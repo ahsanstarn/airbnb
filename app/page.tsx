@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Calendar, Search, X, Map } from 'lucide-react';
+import { MapPin, Users, Calendar, Search, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -33,7 +33,7 @@ const listings = [
 export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
@@ -51,6 +51,10 @@ export default function HomePage() {
 
   const getExpandedImg = () => {
     if (expandedId === null) return null;
+    if (expandedId === 'hot1') return 'https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1200&h=800&fit=crop';
+    if (expandedId === 'hot2') return 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1200&h=800&fit=crop';
+    if (expandedId === 'hot3') return 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&h=800&fit=crop';
+    
     const listing = liveListings.find(l => l.id === expandedId);
     return listing?.images?.[0] || listing?.img || null;
   };
@@ -86,16 +90,6 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <motion.div 
-        className={styles.floatingMap}
-        onClick={() => router.push('/search?view=map')}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Map size={24} />
-        <span>Show Map</span>
-      </motion.div>
       
       <main className={styles.mainContainer}>
         {/* === HERO SECTION === */}
@@ -103,56 +97,88 @@ export default function HomePage() {
           <div className={styles.heroBg}>
             <Image src="/hero.png" alt="Georgia" fill priority className={styles.heroImg} />
             <div className={styles.heroOverlay}></div>
+            <div className={styles.cloudMask}></div>
           </div>
 
-          <div className={styles.heroContent}>
-            <motion.h1 
-              initial={{ opacity: 0, y: 40 }}
+          <div className={`container ${styles.heroContent}`}>
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-              className={styles.heroTitle}
+              className={styles.heroTitleWrap}
             >
-              EXPLORE<br/>GEORGIA
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 1 }}
-              className={styles.heroDesc}
-            >
-              Discover the most unique places to stay and experience across Sakartvelo.
-            </motion.p>
-          </div>
+              <h1 className={styles.heroTitle}>WELCOME TO GEORGIA</h1>
+            </motion.div>
+            
+            <div className={styles.heroCenter}>
+              <motion.div 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 1 }}
+                className={styles.heroText}
+              >
+                <span className={styles.heroLabel}>Discover Sakartvelo</span>
+                <p className={styles.heroDesc}>
+                  Find the most unique places to stay and experience across Georgia. 
+                  Authentic, verified, and curated for you.
+                </p>
+              </motion.div>
 
-          <div className={styles.searchContainer}>
-            <div className={styles.searchBar}>
-              <div className={styles.searchItem}>
-                <MapPin size={24} />
-                <div className={styles.searchLabels}>
-                  <span className={styles.searchTitle}>Destination</span>
-                  <span className={styles.searchSub}>Where are you going?</span>
-                </div>
+              <div className={styles.hotspots}>
+                {[1, 2, 3].map((i) => (
+                  <motion.div
+                    key={`hot${i}`}
+                    layoutId={`hot${i}`}
+                    className={`${styles.hotspot} ${styles[`hot${i}`]}`}
+                    onClick={() => setExpandedId(`hot${i}`)}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.8 + i * 0.2, type: 'spring' }}
+                  >
+                    <div className={styles.hotspotCircle}>
+                      <Image src="/hotspot.png" alt={`Location ${i}`} fill />
+                    </div>
+                    {i === 3 && <div className={styles.pulse}></div>}
+                  </motion.div>
+                ))}
               </div>
-              <div className={styles.searchDivider}></div>
-              <div className={styles.searchItem}>
-                <Calendar size={24} />
-                <div className={styles.searchLabels}>
-                  <span className={styles.searchTitle}>Check in</span>
-                  <span className={styles.searchSub}>Add date</span>
-                </div>
-              </div>
-              <div className={styles.searchDivider}></div>
-              <div className={styles.searchItem}>
-                <Users size={24} />
-                <div className={styles.searchLabels}>
-                  <span className={styles.searchTitle}>Guests</span>
-                  <span className={styles.searchSub}>Add visitors</span>
-                </div>
-              </div>
-              <button className={styles.searchBtn} onClick={() => router.push('/search')}>
-                <Search size={32} />
-              </button>
             </div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 1 }}
+              className={styles.searchContainer}
+            >
+              <div className={styles.searchBar}>
+                <div className={styles.searchItem}>
+                  <MapPin size={24} />
+                  <div className={styles.searchLabels}>
+                    <span className={styles.searchTitle}>Destination</span>
+                    <span className={styles.searchSub}>Where are you going?</span>
+                  </div>
+                </div>
+                <div className={styles.searchDivider}></div>
+                <div className={styles.searchItem}>
+                  <Calendar size={24} />
+                  <div className={styles.searchLabels}>
+                    <span className={styles.searchTitle}>Check in</span>
+                    <span className={styles.searchSub}>Add date</span>
+                  </div>
+                </div>
+                <div className={styles.searchDivider}></div>
+                <div className={styles.searchItem}>
+                  <Users size={24} />
+                  <div className={styles.searchLabels}>
+                    <span className={styles.searchTitle}>Guests</span>
+                    <span className={styles.searchSub}>Add visitors</span>
+                  </div>
+                </div>
+                <button className={styles.searchBtn} onClick={() => router.push('/search')}>
+                  <Search size={32} />
+                </button>
+              </div>
+            </motion.div>
           </div>
         </section>
 
@@ -184,12 +210,7 @@ export default function HomePage() {
                   className={styles.cardImageWrap} 
                   onClick={() => setExpandedId(listing.id)}
                 >
-                  <Image 
-                    src={listing.images?.[0] || listing.img} 
-                    alt={listing.title} 
-                    fill 
-                    className={styles.cardImage} 
-                  />
+                  <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill className={styles.cardImage} />
                   <div className={styles.cardPriceTag}>
                     ₾{listing.price}
                   </div>

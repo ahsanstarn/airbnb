@@ -3,13 +3,14 @@
   background: var(--bg-primary);
 }
 
-/* === HERO SECTION - Full Bleed Cloud === */
+/* === HERO SECTION === */
 .hero {
   position: relative;
-  height: 95vh;
+  height: 100vh;
   min-height: 850px;
-  margin: 1.5rem;
-  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   overflow: hidden;
   background: #E8D8C4;
 }
@@ -25,6 +26,7 @@
 
 .heroImg {
   object-fit: cover;
+  opacity: 0.95;
 }
 
 .heroOverlay {
@@ -33,8 +35,18 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 100%);
   z-index: 1;
+}
+
+.cloudMask {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 45%;
+  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245, 235, 224, 0.9) 30%, transparent 100%);
+  z-index: 2;
 }
 
 .heroContent {
@@ -43,50 +55,116 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding-top: 100px;
+  margin-top: 60px; /* Precise adjustment to avoid overlap with navbar */
+}
+
+.heroTitleWrap {
+  margin-bottom: 3.5rem;
+  overflow: hidden;
 }
 
 .heroTitle {
-  font-family: var(--font-heading);
-  font-size: clamp(3rem, 10vw, 6.5rem);
-  font-weight: 800;
-  color: white;
+  font-size: clamp(3rem, 12vw, 7.5rem);
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
   text-align: center;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  line-height: 0.9;
   text-transform: uppercase;
 }
 
-.heroDesc {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.25rem;
-  margin-top: 2rem;
-  max-width: 600px;
-  text-align: center;
+.heroCenter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 5rem;
 }
 
-/* === SEARCH BAR - Floating Glass === */
-.searchContainer {
+.heroText {
+  max-width: 480px;
+}
+
+.heroLabel {
+  font-family: var(--font-serif);
+  font-size: 3.25rem;
+  color: white;
+  display: block;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.heroDesc {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1.35rem;
+  line-height: 1.6;
+  text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.hotspots {
+  position: relative;
+  width: 450px;
+  height: 400px;
+}
+
+.hotspot {
   position: absolute;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 1000px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+  cursor: pointer;
+  z-index: 5;
+}
+
+.hotspotCircle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.hot1 { top: 0; right: 120px; width: 100px; height: 100px; }
+.hot2 { top: 150px; right: 0; width: 80px; height: 80px; }
+.hot3 { bottom: 0; right: 70px; width: 220px; height: 220px; }
+
+.pulse {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* === SEARCH BAR === */
+.searchContainer {
+  width: 100%;
+  max-width: 1100px;
   z-index: 20;
 }
 
 .searchBar {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(30px);
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   padding: 12px;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.15);
-  border: 1px solid rgba(255,255,255,0.4);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .searchItem {
@@ -97,7 +175,7 @@
   padding: 16px 32px;
   cursor: pointer;
   border-radius: var(--radius-full);
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .searchItem:hover { background: rgba(255,255,255,0.4); }
@@ -119,38 +197,40 @@
   padding: 3rem 0;
   background: var(--bg-primary);
   position: sticky;
-  top: 0;
+  top: 80px;
   z-index: 100;
 }
 
 .catScroll {
   display: flex;
-  gap: 4rem;
+  gap: 4.5rem;
   overflow-x: auto;
   scrollbar-width: none;
 }
+
+.catScroll::-webkit-scrollbar { display: none; }
 
 .catItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   opacity: 0.4;
-  transition: opacity 0.3s, transform 0.3s;
+  transition: all 0.3s;
   color: #1A1A1A;
   flex-shrink: 0;
 }
 
 .catItemActive { opacity: 1; transform: translateY(-4px); }
-.catLabel { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+.catLabel { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
 
-/* === RECOMMENDED - Grid Fix === */
-.recommended { padding: 4rem 0 10rem; }
+/* === GRID SECTION === */
+.recommended { padding: 6rem 0 12rem; }
 
 .grid { 
   display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
-  gap: 3rem; 
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); 
+  gap: 4rem; 
 }
 
 .card { 
@@ -161,37 +241,35 @@
 
 .cardImageWrap { 
   position: relative; 
-  aspect-ratio: 1 / 1; /* FIXED: Prevents squeezing */
+  aspect-ratio: 1 / 1; 
   border-radius: var(--radius-lg); 
   overflow: hidden; 
-  margin-bottom: 2rem; 
+  margin-bottom: 2.5rem; 
   box-shadow: var(--shadow-md); 
   background: #eee;
 }
 
 .cardImage { 
-  object-fit: cover; /* FIXED: Ensures image covers without distortion */
+  object-fit: cover; 
   transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1); 
 }
 
-.card:hover .cardImage { transform: scale(1.1); }
-
 .cardPriceTag { 
   position: absolute; 
-  top: 2rem; 
-  left: 2rem; 
+  top: 2.5rem; 
+  left: 2.5rem; 
   background: white; 
-  padding: 10px 24px; 
+  padding: 12px 28px; 
   border-radius: var(--radius-full); 
   font-weight: 800; 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
   z-index: 5;
 }
 
 .cardContent h3 { 
   font-family: var(--font-heading); 
-  font-size: 1.75rem; 
-  margin-bottom: 0.5rem; 
+  font-size: 1.85rem; 
+  margin-bottom: 0.75rem; 
   color: #1A1A1A; 
   letter-spacing: -0.02em;
 }
@@ -200,17 +278,17 @@
   display: flex; 
   justify-content: space-between; 
   color: var(--text-secondary); 
-  font-weight: 500;
+  font-size: 1.1rem;
 }
 
-/* === IMAGE MODAL - Morph Base === */
+/* === IMAGE MODAL === */
 .imgModal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.8);
   backdrop-filter: blur(40px);
   z-index: 10000;
   display: flex;
@@ -231,10 +309,10 @@
 
 .expandedImg {
   border-radius: var(--radius-lg);
-  object-fit: contain; /* Contain here to see full image */
+  object-fit: contain;
   max-width: 100%;
   max-height: 100%;
-  box-shadow: 0 100px 200px rgba(0,0,0,0.5);
+  box-shadow: 0 120px 240px rgba(0,0,0,0.6);
 }
 
 .closeBtn {
@@ -248,32 +326,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
   z-index: 10005;
 }
 
-/* Floating Map */
-.floatingMap {
-  position: fixed;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5000;
-  background: #1A1A1A;
-  color: white;
-  padding: 20px 40px;
-  border-radius: var(--radius-full);
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+@media (max-width: 1024px) {
+  .heroCenter { flex-direction: column; gap: 4rem; }
+  .hotspots { width: 100%; height: 350px; }
+  .heroTitle { font-size: 4rem; }
 }
 
 @media (max-width: 768px) {
+  .heroContent { margin-top: 100px; }
   .heroTitle { font-size: 3rem; }
   .grid { grid-template-columns: 1fr; }
-  .searchBar { flex-direction: column; height: auto; padding: 2rem; border-radius: var(--radius-lg); }
+  .searchBar { flex-direction: column; padding: 2rem; border-radius: var(--radius-lg); }
   .searchItem { width: 100%; border-bottom: 1px solid rgba(0,0,0,0.05); }
-  .searchBtn { width: 100%; margin: 1rem 0 0 0; border-radius: var(--radius-md); }
+  .searchBtn { width: 100%; margin-top: 1rem; }
+  .hotspots { display: none; }
 }
