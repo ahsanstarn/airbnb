@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import styles from './Navbar.module.css';
 
@@ -64,7 +64,7 @@ export default function Navbar() {
         <div className={styles.right}>
           {isAdmin && (
             <Link href="/admin" className={styles.adminBadge}>
-              Admin
+              Admin Panel
             </Link>
           )}
           

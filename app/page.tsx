@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
-import { Search, X, Shield, ArrowRight, Star, MapPin } from 'lucide-react';
+import { Search, X, ArrowRight, Star, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -39,7 +39,6 @@ export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
@@ -63,13 +62,6 @@ export default function HomePage() {
 
   useEffect(() => {
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email) {
-        const hashBuffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(session.user.email.toLowerCase().trim()));
-        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-        if (hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b') setIsAdmin(true);
-      }
-
       try {
         const { data, error } = await supabase.from('listings').select('*').limit(12);
         if (!error && data && data.length > 0) setLiveListings(data);
