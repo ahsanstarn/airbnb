@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,6 +32,17 @@ export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  
+  // Real Liquid Glass Tracking
+  const glassRef = useRef<HTMLDivElement>(null);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!glassRef.current) return;
+    const rect = glassRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    glassRef.current.style.setProperty('--x', `${x}%`);
+    glassRef.current.style.setProperty('--y', `${y}%`);
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
@@ -46,12 +57,6 @@ export default function HomePage() {
     }
     init();
   }, []);
-
-  const getExpandedImg = () => {
-    if (expandedId === null) return null;
-    const listing = liveListings.find(l => l.id === expandedId);
-    return listing?.images?.[0] || listing?.img || null;
-  };
 
   return (
     <>
@@ -69,9 +74,12 @@ export default function HomePage() {
             <motion.div 
               layoutId={expandedId.toString()}
               className={styles.modalContent}
-              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
-              <Image src={getExpandedImg() || ''} alt="Expanded" width={1200} height={1200} className={styles.expandedImg} priority />
+              <Image 
+                src={(liveListings.find(l => l.id === expandedId) as any)?.images?.[0] || (liveListings.find(l => l.id === expandedId) as any)?.img || ''} 
+                alt="Expanded" width={1200} height={1200} className={styles.expandedImg} priority 
+              />
               <button className={styles.closeBtn} onClick={() => setExpandedId(null)}><X size={28}/></button>
             </motion.div>
           </motion.div>
@@ -79,74 +87,75 @@ export default function HomePage() {
       </AnimatePresence>
       
       <main className={styles.main}>
-        {/* === THE PERFECT SIMPLICITY HERO === */}
-        <section className={styles.hero}>
-          <div className={styles.heroBg}>
-            <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
-            <div className={styles.heroOverlay}></div>
-          </div>
+        {/* === THE REAL LIQUID GLASS HERO === */}
+        <section className={styles.hero} onMouseMove={handleMouseMove}>
+          <div ref={glassRef} className={styles.heroCard}>
+            <div className={styles.heroBg}>
+              <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
+              <div className={styles.heroOverlay}></div>
+            </div>
 
-          <div className={styles.heroContent}>
-            <motion.div
-              initial={{ opacity: 0, y: 100, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 1.8, ease: [0.19, 1, 0.22, 1] }}
-            >
-              <h1 className={styles.heroTitle}>EXPLORE<br/>GEORGIA</h1>
-            </motion.div>
-            
+            <div className={styles.heroTitleWrap}>
+              <motion.h1 
+                initial={{ opacity: 0, y: 100 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
+                className={styles.heroTitle}
+              >
+                EXPLORE<br/>GEORGIA
+              </motion.h1>
+            </div>
+
+            <div className={styles.heroContent}>
+              <motion.div 
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 1.2 }}
+                className={styles.searchWrapper}
+              >
+                <div className={`${styles.searchPill} ${styles.liquidGlass}`}>
+                  <div className={styles.searchItem}>
+                    <span className={styles.searchLabel}>Location</span>
+                    <span className={styles.searchVal}>Where to?</span>
+                  </div>
+                  <div className={styles.searchItem}>
+                    <span className={styles.searchLabel}>Check in</span>
+                    <span className={styles.searchVal}>Add dates</span>
+                  </div>
+                  <div className={styles.searchItem}>
+                    <span className={styles.searchLabel}>Guests</span>
+                    <span className={styles.searchVal}>Add visitors</span>
+                  </div>
+                  <button className={styles.searchBtn} onClick={() => router.push('/search')}>
+                    <Search size={24} />
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Perfect Hotspots */}
             <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-              className={styles.searchWrapper}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2 }}
+              className={styles.hotspots}
             >
-              <div className={`${styles.searchPill} ${styles.liquidGlass}`}>
-                <div className={styles.searchItem}>
-                  <span className={styles.searchLabel}>Destination</span>
-                  <span className={styles.searchVal}>Where to?</span>
-                </div>
-                <div className={styles.searchItem}>
-                  <span className={styles.searchLabel}>Date</span>
-                  <span className={styles.searchVal}>Add when</span>
-                </div>
-                <div className={styles.searchItem}>
-                  <span className={styles.searchLabel}>Guests</span>
-                  <span className={styles.searchVal}>Add who</span>
-                </div>
-                <button className={styles.searchBtn} onClick={() => router.push('/search')}>
-                  <Search size={24} />
-                </button>
+              <div className={`${styles.hotspot} ${styles.liquidGlass}`} style={{ top: '35%', left: '25%' }}>
+                <MapPin size={20} />
+                <div className={styles.pulse}></div>
+              </div>
+              <div className={`${styles.hotspot} ${styles.liquidGlass}`} style={{ top: '48%', right: '18%' }}>
+                <MapPin size={20} />
+                <div className={styles.pulse}></div>
               </div>
             </motion.div>
-
-            {/* Perfect Liquid Hotspots */}
-            <div className={styles.hotspots}>
-              {[1, 2, 3].map((i) => (
-                <motion.div
-                  key={`hot${i}`}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.5 + i * 0.2, type: 'spring' }}
-                  className={`${styles.hotspot} ${styles[`hot${i}`]} ${styles.liquidGlass}`}
-                >
-                  <MapPin size={20} />
-                  <div className={styles.pulse}></div>
-                </motion.div>
-              ))}
-            </div>
           </div>
         </section>
 
-        {/* Categories Bar */}
+        {/* Categories */}
         <section className={styles.catSection}>
           <div className="container">
-            <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className={`${styles.catGrid} ${styles.liquidGlass}`}
-            >
+            <div className={`${styles.catGrid} ${styles.liquidGlass}`}>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -157,20 +166,20 @@ export default function HomePage() {
                   <span className={styles.catText}>{cat.label}</span>
                 </button>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* Listing Grid */}
+        {/* Grid */}
         <section className={`container ${styles.listingSection}`}>
           <div className={styles.grid}>
             {liveListings.map((listing, i) => (
               <motion.div 
                 key={listing.id}
-                initial={{ opacity: 0, y: 60 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: (i % 3) * 0.1, duration: 1, ease: [0.19, 1, 0.22, 1] }}
+                viewport={{ once: true }}
+                transition={{ delay: (i % 3) * 0.1, duration: 1 }}
                 className={styles.card}
               >
                 <motion.div layoutId={listing.id.toString()} className={styles.imgWrapper} onClick={() => setExpandedId(listing.id)}>
@@ -178,11 +187,11 @@ export default function HomePage() {
                   <div className={styles.priceTag}>₾{listing.price}</div>
                 </motion.div>
                 <div className={styles.info}>
-                  <div className={styles.cardHeader}>
-                    <h3>{listing.title}</h3>
-                    <div className={styles.rating}><Star size={14} fill="currentColor" /> {listing.rating}</div>
+                  <h3>{listing.title}</h3>
+                  <div className={styles.meta}>
+                    <span>📍 {listing.location}</span>
+                    <span>★ {listing.rating}</span>
                   </div>
-                  <span className={styles.loc}>📍 {listing.location}</span>
                 </div>
               </motion.div>
             ))}
