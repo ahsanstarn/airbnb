@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+import { Search, X, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -34,19 +34,29 @@ export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
 
   useEffect(() => {
-    async function fetchListings() {
+    async function init() {
+      // Check Admin
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(session.user.email.toLowerCase().trim()));
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        if (hashHex === '5a1f85ff5a73d150d8e118522ca01273c5af85ce1318a33a5f98a5846af6439b') setIsAdmin(true);
+      }
+
+      // Fetch Listings
       try {
         const { data, error } = await supabase.from('listings').select('*').limit(12);
         if (!error && data && data.length > 0) setLiveListings(data);
         else setLiveListings(listings);
       } catch { setLiveListings(listings); }
     }
-    fetchListings();
+    init();
   }, []);
 
   const getExpandedImg = () => {
@@ -88,7 +98,7 @@ export default function HomePage() {
       </AnimatePresence>
       
       <main className={styles.main}>
-        {/* === TEMPLATE HERO === */}
+        {/* === LIQUID GLASS HERO === */}
         <section className={styles.hero}>
           <div className={styles.heroBg}>
             <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
@@ -96,14 +106,13 @@ export default function HomePage() {
           </div>
 
           <div className={styles.heroContent}>
-            <motion.h1 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
-              className={styles.heroTitle}
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
             >
-              EXPLORE<br/>GEORGIA
-            </motion.h1>
+              <h1 className={styles.heroTitle}>EXPLORE<br/>GEORGIA</h1>
+            </motion.div>
             
             <motion.p 
               initial={{ opacity: 0 }}
@@ -117,10 +126,10 @@ export default function HomePage() {
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 1 }}
+              transition={{ delay: 0.8, duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
               className={styles.searchWrapper}
             >
-              <div className={styles.searchPill}>
+              <div className={`${styles.searchPill} ${styles.liquidGlass}`}>
                 <div className={styles.searchItem}>
                   <span className={styles.searchLabel}>Destination</span>
                   <span className={styles.searchVal}>Where to?</span>
@@ -139,12 +148,26 @@ export default function HomePage() {
               </div>
             </motion.div>
           </div>
+
+          {/* Admin Quick Access Button - Fixed */}
+          {isAdmin && (
+            <motion.button
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ scale: 1.1 }}
+              className={styles.adminQuickBtn}
+              onClick={() => router.push('/admin')}
+            >
+              <Shield size={20} />
+              <span>Admin Panel</span>
+            </motion.button>
+          )}
         </section>
 
-        {/* Category Bar */}
+        {/* Category Bar with Liquid Glass */}
         <section className={styles.catSection}>
           <div className="container">
-            <div className={styles.catGrid}>
+            <div className={`${styles.catGrid} ${styles.liquidGlass}`}>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -159,11 +182,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Listing Grid */}
+        {/* Listing Grid with Super Smooth Stagger */}
         <section className={`container ${styles.listingSection}`}>
           <div className={styles.grid}>
-            {liveListings.map((listing) => (
-              <div key={listing.id} className={styles.card}>
+            {liveListings.map((listing, i) => (
+              <motion.div 
+                key={listing.id}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+                className={styles.card}
+              >
                 <motion.div 
                   layoutId={listing.id.toString()}
                   className={styles.imgWrapper} 
@@ -186,7 +216,7 @@ export default function HomePage() {
                     <span>★ {listing.rating}</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
