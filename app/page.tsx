@@ -100,7 +100,26 @@ export default function HomePage() {
       {/* Listing Grid */}
       <main className={`${styles.main} container`}>
         <div className={styles.grid}>
-          {liveListings.map((listing) => (
+          {liveListings
+            .filter((listing) => {
+              if (activeCat === 'all') return true;
+              // Map categories to types/keywords loosely for demonstration
+              const categoryMap: Record<string, string[]> = {
+                hotels: ['hotel', 'lodge', 'suite'],
+                apartments: ['apartment', 'flat', 'studio', 'suite'],
+                guesthouses: ['guesthouse', 'villa', 'house'],
+                restaurants: ['restaurant', 'cafe', 'dining'],
+                wineries: ['wine', 'vineyard', 'cellar'],
+                tours: ['tour', 'guide', 'trip'],
+                experiences: ['experience', 'unique'],
+              };
+              const keywords = categoryMap[activeCat] || [activeCat];
+              return keywords.some(kw => 
+                listing.type?.toLowerCase().includes(kw) || 
+                listing.title?.toLowerCase().includes(kw)
+              );
+            })
+            .map((listing) => (
             <Link key={listing.id} href={`/listing/${listing.id}`} className={styles.card}>
               <div className={styles.cardImageWrap}>
                 <Image
