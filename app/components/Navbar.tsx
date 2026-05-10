@@ -34,8 +34,12 @@ export default function Navbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user as { email: string } | null;
       setUser(currentUser);
-      if (currentUser?.email) checkAdmin(currentUser.email).then(setIsAdmin);
-      else setIsAdmin(false);
+      if (currentUser?.email) {
+        const status = await checkAdmin(currentUser.email);
+        setIsAdmin(status);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();

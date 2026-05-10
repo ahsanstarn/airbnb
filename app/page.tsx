@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
-import { Search, X, ArrowRight, Star, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X, Star, MapPin } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -17,13 +17,6 @@ const categories = [
   { id: 'experiences', icon: '🏔️', label: 'Experiences' },
   { id: 'wineries', icon: '🍷', label: 'Wineries' },
   { id: 'cars', icon: '🚗', label: 'Cars' },
-];
-
-const trendingDestinations = [
-  { id: 1, name: 'Svaneti', properties: 124, img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=800&fit=crop' },
-  { id: 2, name: 'Kazbegi', properties: 86, img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&h=800&fit=crop' },
-  { id: 3, name: 'Kakheti', properties: 210, img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&h=800&fit=crop' },
-  { id: 4, name: 'Batumi', properties: 342, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=800&fit=crop' },
 ];
 
 const listings = [
@@ -40,25 +33,8 @@ export default function HomePage() {
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const { scrollY } = useScroll();
-  const heroY = useTransform(scrollY, [0, 500], [0, 150]);
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
-
-  // Smooth Cursor
-  const cursorX = useSpring(0, { stiffness: 500, damping: 50 });
-  const cursorY = useSpring(0, { stiffness: 500, damping: 50 });
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListings, setLiveListings] = useState<any[]>([]);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [cursorX, cursorY]);
 
   useEffect(() => {
     async function init() {
@@ -80,12 +56,6 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-
-      {/* CUSTOM LIQUID CURSOR */}
-      <motion.div 
-        className={styles.customCursor}
-        style={{ x: cursorX, y: cursorY }}
-      />
 
       <AnimatePresence>
         {expandedId !== null && (
@@ -109,38 +79,26 @@ export default function HomePage() {
       </AnimatePresence>
       
       <main className={styles.main}>
-        {/* === ULTIMATE LIQUID HERO === */}
+        {/* === THE PERFECT SIMPLICITY HERO === */}
         <section className={styles.hero}>
-          <motion.div style={{ y: heroY, opacity: heroOpacity }} className={styles.heroBg}>
+          <div className={styles.heroBg}>
             <Image src="/hero.png" alt="Background" fill priority className={styles.heroImg} />
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 150 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 2, ease: [0.19, 1, 0.22, 1] }}
-              className={styles.behindText}
-            >
-              <h1 className={styles.heroTitle}>GEORGIA</h1>
-            </motion.div>
-
             <div className={styles.heroOverlay}></div>
-          </motion.div>
+          </div>
 
           <div className={styles.heroContent}>
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 1.5 }}
-              className={styles.heroHeaders}
+              initial={{ opacity: 0, y: 100, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 1.8, ease: [0.19, 1, 0.22, 1] }}
             >
-              <span className={styles.heroTag}>Sakartvelo Unveiled</span>
-              <h2 className={styles.heroSubTitle}>Explore the soul of the Caucasus</h2>
+              <h1 className={styles.heroTitle}>EXPLORE<br/>GEORGIA</h1>
             </motion.div>
             
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 1.2 }}
+              transition={{ delay: 0.8, duration: 1.2, ease: [0.19, 1, 0.22, 1] }}
               className={styles.searchWrapper}
             >
               <div className={`${styles.searchPill} ${styles.liquidGlass}`}>
@@ -162,6 +120,7 @@ export default function HomePage() {
               </div>
             </motion.div>
 
+            {/* Perfect Liquid Hotspots */}
             <div className={styles.hotspots}>
               {[1, 2, 3].map((i) => (
                 <motion.div
@@ -173,42 +132,6 @@ export default function HomePage() {
                 >
                   <MapPin size={20} />
                   <div className={styles.pulse}></div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Trending Destinations */}
-        <section className={styles.trendingSection}>
-          <div className="container">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className={styles.sectionHeader}
-            >
-              <h2 className={styles.sectionTitle}>Trending Destinations</h2>
-              <button className={styles.viewAll}>View All <ArrowRight size={18}/></button>
-            </motion.div>
-
-            <div className={styles.trendingScroll}>
-              {trendingDestinations.map((dest, i) => (
-                <motion.div 
-                  key={dest.id}
-                  initial={{ opacity: 0, x: 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1, duration: 0.8 }}
-                  className={`${styles.destCard} ${styles.liquidGlassCard}`}
-                >
-                  <div className={styles.destImg}>
-                    <Image src={dest.img} alt={dest.name} fill className={styles.img} />
-                    <div className={styles.destOverlay}>
-                      <h3>{dest.name}</h3>
-                      <span>{dest.properties} Properties</span>
-                    </div>
-                  </div>
                 </motion.div>
               ))}
             </div>
@@ -263,26 +186,6 @@ export default function HomePage() {
                 </div>
               </motion.div>
             ))}
-          </div>
-        </section>
-
-        {/* Immersive Experience Banner */}
-        <section className={styles.experienceBanner}>
-          <div className={styles.expBg}>
-            <Image src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1600&h=800&fit=crop" alt="Experience" fill className={styles.img} />
-            <div className={styles.expOverlay}></div>
-          </div>
-          <div className="container">
-            <motion.div 
-              initial={{ opacity: 0, y: 100 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className={`${styles.expContent} ${styles.liquidGlassCard}`}
-            >
-              <h2>Unforgettable Moments</h2>
-              <p>Discover unique experiences curated by locals, from mountain treks to ancient wine tastings.</p>
-              <button className={styles.expBtn}>Explore Sakartvelo</button>
-            </motion.div>
           </div>
         </section>
       </main>
