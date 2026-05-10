@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { supabase } from '../../lib/supabase';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
@@ -11,8 +12,15 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('EN');
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    setIsAdmin(localStorage.getItem('kaya_admin') === 'true');
+  }, []);
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -76,14 +84,18 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          <Link href="/login" className={styles.profileBtn}>
+          <Link href={user ? (isAdmin ? "/admin" : "/dashboard") : "/login"} className={styles.profileBtn}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12h18M3 6h18M3 18h18"/>
             </svg>
             <div className={styles.avatar}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#717171">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
+              {user ? (
+                <span className={styles.avatarInitial}>{user.email[0].toUpperCase()}</span>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#717171">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              )}
             </div>
           </Link>
 
