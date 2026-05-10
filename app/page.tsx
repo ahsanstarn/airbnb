@@ -10,6 +10,16 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import styles from './page.module.css';
 
+interface Listing {
+  id: number;
+  title: string;
+  location: string;
+  price: number;
+  rating: number;
+  img: string;
+  images?: string[];
+}
+
 const categories = [
   { id: 'all', icon: '✦', label: 'All' },
   { id: 'hotels', icon: '🏨', label: 'Hotels' },
@@ -19,7 +29,7 @@ const categories = [
   { id: 'cars', icon: '🚗', label: 'Cars' },
 ];
 
-const listings = [
+const staticListings: Listing[] = [
   { id: 1, title: 'Panoramic Suite Vera', location: 'Tbilisi, Georgia', price: 280, rating: 4.96, img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=800&fit=crop' },
   { id: 2, title: 'Wine Country Villa', location: 'Kakheti, Georgia', price: 150, rating: 4.89, img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&h=800&fit=crop' },
   { id: 3, title: 'Modern Seaside Flat', location: 'Batumi, Georgia', price: 95, rating: 4.72, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=800&fit=crop' },
@@ -32,6 +42,7 @@ export default function HomePage() {
   const router = useRouter();
   const [activeCat, setActiveCat] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [liveListings, setLiveListings] = useState<Listing[]>([]);
   
   // Real Liquid Glass Tracking
   const glassRef = useRef<HTMLDivElement>(null);
@@ -44,26 +55,25 @@ export default function HomePage() {
     glassRef.current.style.setProperty('--y', `${y}%`);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [liveListings, setLiveListings] = useState<any[]>([]);
-
   useEffect(() => {
     async function init() {
       try {
         const { data, error } = await supabase.from('listings').select('*').limit(12);
-        if (!error && data && data.length > 0) setLiveListings(data);
-        else setLiveListings(listings);
-      } catch { setLiveListings(listings); }
+        if (!error && data && data.length > 0) setLiveListings(data as Listing[]);
+        else setLiveListings(staticListings);
+      } catch { setLiveListings(staticListings); }
     }
     init();
   }, []);
+
+  const expandedListing = liveListings.find(l => l.id === expandedId);
 
   return (
     <>
       <Navbar />
 
       <AnimatePresence>
-        {expandedId !== null && (
+        {expandedId !== null && expandedListing && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -77,7 +87,7 @@ export default function HomePage() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               <Image 
-                src={(liveListings.find(l => l.id === expandedId) as any)?.images?.[0] || (liveListings.find(l => l.id === expandedId) as any)?.img || ''} 
+                src={expandedListing.images?.[0] || expandedListing.img || ''} 
                 alt="Expanded" width={1200} height={1200} className={styles.expandedImg} priority 
               />
               <button className={styles.closeBtn} onClick={() => setExpandedId(null)}><X size={28}/></button>
@@ -190,7 +200,9 @@ export default function HomePage() {
                   <h3>{listing.title}</h3>
                   <div className={styles.meta}>
                     <span>📍 {listing.location}</span>
-                    <span>★ {listing.rating}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Star size={14} fill="currentColor" /> {listing.rating}
+                    </span>
                   </div>
                 </div>
               </motion.div>
