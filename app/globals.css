@@ -3,36 +3,38 @@
    Airbnb-inspired with warm Georgian accents
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
 
 /* --- Design Tokens --- */
 :root {
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F7F7F7;
+  --bg-primary: #fdf6f2;
+  --bg-secondary: #fcece3;
   --bg-card: #FFFFFF;
-  --bg-hover: #F5F5F5;
-  --bg-input: #F7F7F7;
+  --bg-hover: #f9e1d5;
+  --bg-input: #FFFFFF;
 
   --accent: #E8573A;
   --accent-dark: #D44828;
   --accent-light: #FFECE8;
   --accent-gold: #C5943A;
+  --accent-soft: #f2d1bd;
 
-  --text-primary: #222222;
-  --text-secondary: #717171;
-  --text-muted: #B0B0B0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #8c8c8c;
 
-  --border: #DDDDDD;
-  --border-light: #EBEBEB;
-  --border-dark: #B0B0B0;
+  --border: #e0d1c8;
+  --border-light: #f0e6df;
+  --border-dark: #b0a095;
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.10);
-  --shadow-lg: 0 6px 20px rgba(0,0,0,0.12);
-  --shadow-xl: 0 12px 28px rgba(0,0,0,0.15);
+  --shadow-sm: 0 1px 2px rgba(180, 140, 120, 0.1);
+  --shadow-md: 0 4px 12px rgba(180, 140, 120, 0.15);
+  --shadow-lg: 0 12px 32px rgba(180, 140, 120, 0.2);
+  --shadow-xl: 0 20px 48px rgba(180, 140, 120, 0.25);
 
   --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'DM Serif Display', serif;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -41,17 +43,18 @@
   --fs-lg: 1.25rem;
   --fs-xl: 1.5rem;
   --fs-2xl: 1.75rem;
-  --fs-3xl: 2rem;
+  --fs-3xl: 2.25rem;
+  --fs-hero: 6rem;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 40px;
   --radius-full: 9999px;
 
-  --nav-height: 80px;
-  --max-width: 1280px;
-  --transition: 0.2s ease;
+  --nav-height: 90px;
+  --max-width: 1400px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* --- Reset --- */
