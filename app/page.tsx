@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Calendar, Search, X, Heart } from 'lucide-react';
+import { MapPin, Users, Calendar, Search, X, Heart, Map } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -20,7 +20,13 @@ const categories = [
   { id: 'wineries', icon: '🍇', label: 'Wineries' },
   { id: 'cars', icon: '🚗', label: 'Cars' },
   { id: 'tours', icon: '🏔️', label: 'Tours' },
-  { id: 'experiences', icon: '🎭', label: 'Experiences' },
+];
+
+const trendingDestinations = [
+  { id: 'dest1', name: 'Svaneti', count: '124 places', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1200&h=800&fit=crop' },
+  { id: 'dest2', name: 'Kazbegi', count: '89 places', img: 'https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=800&h=600&fit=crop' },
+  { id: 'dest3', name: 'Batumi', count: '256 places', img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=400&fit=crop' },
+  { id: 'dest4', name: 'Tbilisi', count: '512 places', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=400&fit=crop' },
 ];
 
 const listings = [
@@ -28,15 +34,6 @@ const listings = [
   { id: 2, title: 'Wine Country Villa with vineyard', location: 'Kakheti, Sighnaghi', price: 150, rating: 4.89, img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&h=500&fit=crop' },
   { id: 3, title: 'Modern seaside apartment', location: 'Batumi, Boulevard', price: 95, rating: 4.72, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=500&fit=crop' },
   { id: 4, title: 'Mountain lodge with Kazbek views', location: 'Kazbegi, Stepantsminda', price: 120, rating: 4.93, img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&h=500&fit=crop' },
-  { id: 5, title: 'Cozy Old Town guesthouse', location: 'Tbilisi, Abanotubani', price: 65, rating: 4.85, img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=500&fit=crop' },
-  { id: 6, title: 'Boutique hotel on Rustaveli', location: 'Tbilisi, Rustaveli', price: 195, rating: 4.91, img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=500&fit=crop' },
-];
-
-const uniqueFeatures = [
-  { icon: '⚡', title: 'Georgian Moment', desc: 'Last-minute authentic micro-experiences bookable within 24 hours.', tag: 'Only on Kaya' },
-  { icon: '🤝', title: 'Kaya Connect', desc: 'Book a verified local as your city buddy who shows you real Georgia.', tag: 'Unique' },
-  { icon: '🎭', title: 'Trip Mood Planner', desc: "AI builds your perfect itinerary from real listings based on your mood.", tag: 'AI Powered' },
-  { icon: '🍽️', title: 'Georgian Table', desc: 'Join a real Georgian family supra feast at their home.', tag: 'World First' },
 ];
 
 export default function HomePage() {
@@ -64,7 +61,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchListings() {
       try {
-        const { data, error } = await supabase.from('listings').select('*').limit(8);
+        const { data, error } = await supabase.from('listings').select('*').limit(4);
         if (!error && data && data.length > 0) setLiveListings(data);
         else setLiveListings(listings);
       } catch { setLiveListings(listings); }
@@ -74,6 +71,9 @@ export default function HomePage() {
 
   const getExpandedImg = () => {
     if (!expandedId) return null;
+    const trending = trendingDestinations.find(d => d.id === expandedId);
+    if (trending) return trending.img;
+    
     if (typeof expandedId === 'string') {
       if (expandedId === 'hot1') return 'https://images.unsplash.com/photo-1527269537047-44f103001c4a?w=1200&h=800&fit=crop';
       if (expandedId === 'hot2') return 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=1200&h=800&fit=crop';
@@ -114,6 +114,16 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <motion.div 
+        className={styles.floatingMap}
+        onClick={() => router.push('/search?view=map')}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Map size={20} />
+        <span>Show Map</span>
+      </motion.div>
       
       <main className={styles.mainContainer}>
         {/* === HERO SECTION === */}
@@ -143,7 +153,7 @@ export default function HomePage() {
               >
                 <span className={styles.heroLabel}>Welcome Home</span>
                 <p className={styles.heroDesc}>
-                  Discover Georgia&apos;s hidden gems, from the high peaks of Svaneti to the vineyards of Kakheti.
+                  Discover Georgia&apos;s hidden gems, from high peaks to ancient vineyards.
                 </p>
               </motion.div>
 
@@ -177,24 +187,24 @@ export default function HomePage() {
                 <div className={styles.searchItem}>
                   <MapPin size={24} className={styles.searchIcon} />
                   <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Destination</span>
-                    <span className={styles.searchSub}>Where are you going?</span>
+                    <span className={styles.searchTitle}>Where to?</span>
+                    <span className={styles.searchSub}>Explore destinations</span>
                   </div>
                 </div>
                 <div className={styles.searchDivider}></div>
                 <div className={styles.searchItem}>
                   <Calendar size={24} className={styles.searchIcon} />
                   <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Arrival</span>
-                    <span className={styles.searchSub}>Add date</span>
+                    <span className={styles.searchTitle}>Dates</span>
+                    <span className={styles.searchSub}>Add when</span>
                   </div>
                 </div>
                 <div className={styles.searchDivider}></div>
                 <div className={styles.searchItem}>
                   <Users size={24} className={styles.searchIcon} />
                   <div className={styles.searchLabels}>
-                    <span className={styles.searchTitle}>Guests</span>
-                    <span className={styles.searchSub}>Add visitors</span>
+                    <span className={styles.searchTitle}>Who</span>
+                    <span className={styles.searchSub}>Add guests</span>
                   </div>
                 </div>
                 <button className={styles.searchBtn} onClick={() => router.push('/search')}>
@@ -202,6 +212,31 @@ export default function HomePage() {
                 </button>
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Trending Destinations */}
+        <section className={`container ${styles.trending}`}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.serifTitle}>Trending Now</h2>
+            <p className={styles.sectionSubtitle}>Most searched regions this week</p>
+          </div>
+          <div className={styles.trendingGrid}>
+            {trendingDestinations.map((dest, idx) => (
+              <motion.div 
+                key={dest.id} 
+                layoutId={dest.id}
+                className={`${styles.destCard} ${styles[`dest${idx + 1}`]}`}
+                onClick={() => setExpandedId(dest.id)}
+                whileHover={{ y: -5 }}
+              >
+                <Image src={dest.img} alt={dest.name} fill className={styles.destImage} />
+                <div className={styles.destOverlay}>
+                  <h3 className={styles.destTitle}>{dest.name}</h3>
+                  <span className={styles.destCount}>{dest.count}</span>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </section>
 
@@ -226,23 +261,13 @@ export default function HomePage() {
         {/* === RECOMMENDED SECTION === */}
         <section className={`container ${styles.recommended}`}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.serifTitle}>Recommended Places</h2>
+            <h2 className={styles.serifTitle}>Recommended Stays</h2>
             <Link href="/search" className={styles.seeAllBtn}>See All</Link>
           </div>
 
           <div className={styles.grid}>
-            {liveListings
-              .filter((listing) => {
-                if (activeCat === 'all') return true;
-                const keywords = (activeCat === 'hotels') ? ['hotel', 'stay'] : [activeCat];
-                return keywords.some(kw => listing.title?.toLowerCase().includes(kw));
-              })
-              .map((listing) => (
-              <motion.div 
-                key={listing.id} 
-                className={styles.card}
-                whileHover={{ y: -10 }}
-              >
+            {liveListings.map((listing) => (
+              <motion.div key={listing.id} className={styles.card} whileHover={{ y: -10 }}>
                 <motion.div 
                   layoutId={listing.id.toString()}
                   className={styles.cardImageWrap} 
@@ -272,15 +297,15 @@ export default function HomePage() {
         <section className={`container ${styles.aiSection}`}>
           <div className={styles.aiBanner}>
             <div className={styles.aiContent}>
-              <span className={styles.aiLabel}>AI Assistant</span>
+              <span className={styles.aiLabel}>AI Companion</span>
               <h2 className={styles.serifTitle}>Meet KLARA</h2>
-              <p className={styles.aiDesc}>Your AI travel companion who knows Georgia inside out.</p>
+              <p className={styles.aiDesc}>Your AI travel partner for Georgia.</p>
               <Link href="/chat" className={styles.aiBtn}>Chat Now</Link>
             </div>
             <div className={styles.aiVisual}>
               <div className={styles.aiChatBox}>
-                <div className={styles.aiMsg}>&quot;Find me a wine cellar in Kakheti...&quot;</div>
-                <div className={`${styles.aiMsg} ${styles.aiReply}`}>&quot;I found 3 verified wineries nearby.&quot;</div>
+                <div className={styles.aiMsg}>&quot;Find me a wine cellar...&quot;</div>
+                <div className={`${styles.aiMsg} ${styles.aiReply}`}>&quot;I found 3 verified cellars.&quot;</div>
               </div>
             </div>
           </div>
@@ -289,8 +314,8 @@ export default function HomePage() {
         {/* CTA */}
         <section className={`container ${styles.cta}`}>
           <div className={styles.ctaInner}>
-            <h2 className={styles.ctaTitle}>List your property on Kaya</h2>
-            <p className={styles.ctaDesc}>Join Georgia&apos;s fastest-growing marketplace.</p>
+            <h2 className={styles.ctaTitle}>List on Kaya</h2>
+            <p className={styles.ctaDesc}>Flat ₾20/month — no commissions.</p>
             <Link href="/login" className={styles.ctaBtn}>Get started</Link>
           </div>
         </section>
