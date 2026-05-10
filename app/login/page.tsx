@@ -75,22 +75,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleOAuth = async (provider: 'google' | 'facebook') => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-      if (error) throw error;
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'OAuth error');
-      } else {
-        setError('OAuth error');
-      }
-    }
   };
 
   return (
