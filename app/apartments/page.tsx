@@ -46,8 +46,7 @@ export default function ApartmentsPage() {
     init();
   }, []);
 
-  const expandedListing = liveListings.find((l) => l.id === expandedId);
-
+  
   return (
     <>
       <Navbar />
