@@ -135,7 +135,7 @@
 }
 
 .searchPill {
-  padding: 0.6rem 0.8rem;
+  padding: 0.45rem 0.6rem;
   background: linear-gradient(
     145deg,
     rgba(255, 255, 255, 0.12) 0%,
@@ -169,7 +169,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 1.5rem;
+  padding: 0.3rem 1rem;
   border-radius: var(--radius-full);
   cursor: pointer;
   pointer-events: auto;
@@ -180,12 +180,63 @@
 
 .searchItem:hover { background: rgba(255,255,255,0.1); }
 .searchItem:active { transform: scale(0.98); }
-.searchLabel { font-size: 0.75rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 4px; }
-.searchVal { font-size: 0.8rem; font-weight: 700; color: white; }
+.searchLabel { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 2px; }
+.searchVal { font-size: 0.7rem; font-weight: 700; color: white; }
+
+/* Location Circle Previews */
+.locationCircles {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+.locationCircle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.locationCircle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+}
+
+.locationCircle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.locationCircleLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  padding: 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
 
 .searchBtn {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   background: white;
   color: black;
   border-radius: 50%;

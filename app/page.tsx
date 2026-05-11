@@ -155,6 +155,16 @@ export default function HomePage() {
             </div>
 
             <div className={styles.heroContent}>
+              <div className={styles.locationCircles}>
+                <div className={styles.locationCircle}>
+                  <Image src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=200&h=200&fit=crop" alt="Kakheti" fill className={styles.img} />
+                  <div className={styles.locationCircleLabel}>Kakheti</div>
+                </div>
+                <div className={styles.locationCircle}>
+                  <Image src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=200&h=200&fit=crop" alt="Batumi" fill className={styles.img} />
+                  <div className={styles.locationCircleLabel}>Batumi</div>
+                </div>
+              </div>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
