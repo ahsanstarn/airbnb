@@ -189,7 +189,6 @@ function SearchContent() {
 
   const focus = searchParams.get('focus');
 
-  
   return (
     <>
       <Navbar />
