@@ -189,6 +189,11 @@ function SearchContent() {
 
   const focus = searchParams.get('focus');
 
+  const handleTypeChange = (v: string) => {
+    setType(v);
+    setExperienceMode(false);
+  };
+
   return (
     <>
       <Navbar />
