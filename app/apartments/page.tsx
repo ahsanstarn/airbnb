@@ -28,8 +28,7 @@ const staticListings: Listing[] = [
 ];
 
 export default function ApartmentsPage() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [liveListings, setLiveListings] = useState<Listing[]>(staticListings);
+    const [liveListings, setLiveListings] = useState<Listing[]>(staticListings);
   const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
@@ -126,7 +125,7 @@ export default function ApartmentsPage() {
                 transition={{ delay: (i % 3) * 0.1, duration: 1 }}
                 className={styles.card}
               >
-                <div className={styles.imgWrapper} onClick={() => setExpandedId(listing.id)}>
+                <div className={styles.imgWrapper}>
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill className={styles.img} />
                   <div className={styles.priceTag}>₾{listing.price}</div>
                 </div>
