@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Search, Star } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+// import { supabase } from '../../lib/supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import styles from './styles.module.css';
@@ -35,9 +35,10 @@ export default function HotelsPage() {
   useEffect(() => {
     async function init() {
       try {
-        const { data, error } = await supabase.from('listings').select('*').eq('type', 'Hotel').limit(12);
-        if (!error && data && data.length > 0) setLiveListings(data as Listing[]);
-        else setLiveListings(staticListings);
+        // const { data, error } = await supabase.from('listings').select('*').eq('type', 'Hotel').limit(12);
+        // if (!error && data && data.length > 0) setLiveListings(data as Listing[]);
+        // else setLiveListings(staticListings);
+        setLiveListings(staticListings);
       } catch {
         setLiveListings(staticListings);
       }
