@@ -58,10 +58,10 @@ export default function Navbar() {
         </Link>
 
         <div className={styles.menu}>
-          <Link href="/search?type=Hotel" className={styles.menuLink}>
+          <Link href="/hotels" className={styles.menuLink}>
             Hotels
           </Link>
-          <Link href="/search?type=Apartment" className={styles.menuLink}>
+          <Link href="/apartments" className={styles.menuLink}>
             Apartments
           </Link>
           <Link href="/search?experience=1" className={styles.menuLink}>

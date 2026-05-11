@@ -6,19 +6,20 @@
 /* === REAL LIQUID GLASS SYSTEM (reference: frosted pill + edge light) === */
 .liquidGlass {
   background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.14) 0%,
-    rgba(255, 255, 255, 0.04) 45%,
-    rgba(255, 255, 255, 0.02) 100%
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(255, 255, 255, 0.03) 100%
   );
-  backdrop-filter: blur(56px) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.05);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(64px) saturate(200%) brightness(1.08);
+  -webkit-backdrop-filter: blur(64px) saturate(200%) brightness(1.08);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.18),
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 -1px 0 rgba(0, 0, 0, 0.12) inset,
-    -1px -1px 0 rgba(255, 255, 255, 0.2) inset;
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 2px 0 rgba(255, 255, 255, 0.4) inset,
+    0 -2px 4px rgba(0, 0, 0, 0.08) inset,
+    -1px -1px 2px rgba(255, 255, 255, 0.25) inset,
+    0 0 80px rgba(255, 255, 255, 0.1) inset;
   position: relative;
   overflow: hidden;
   border-radius: 36px;
