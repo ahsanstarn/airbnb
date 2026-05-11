@@ -70,6 +70,9 @@ export default function Navbar() {
           <Link href="/search?region=Kakheti" className={styles.menuLink}>
             Wineries
           </Link>
+          <Link href="/klara" className={styles.menuLink}>
+            Klara Bot
+          </Link>
         </div>
 
         <div className={styles.right}>

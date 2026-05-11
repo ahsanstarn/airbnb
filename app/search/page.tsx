@@ -90,6 +90,7 @@ function normalizeListing(row: Record<string, unknown>): NormalizedListing {
 function SearchContent() {
   const searchParams = useSearchParams();
   const [priceRange, setPriceRange] = useState([0, 500]);
+  const [showMap, setShowMap] = useState(false);
   const [sortBy, setSortBy] = useState('Recommended');
   const [region, setRegion] = useState(searchParams.get('region') || 'All Regions');
   const [type, setType] = useState(searchParams.get('type') || 'All Types');
@@ -271,9 +272,26 @@ function SearchContent() {
         </div>
 
         <div className={styles.splitView}>
-          <div className={styles.listPane}>
-            <p className={styles.resultCount}>{filtered.length} stays found</p>
-            <div className={styles.grid}>
+          <div className={styles.viewToggle}>
+            <button
+              type="button"
+              onClick={() => setShowMap(!showMap)}
+              className={`${styles.toggleBtn} ${showMap ? styles.active : ''}`}
+            >
+              {showMap ? '📋 List View' : '🗺️ Map View'}
+            </button>
+          </div>
+          {showMap ? (
+            <div className={styles.mapPane}>
+              <div className={styles.mapContainer}>
+                <p>Interactive Map View</p>
+                <p>Click on any property to see details</p>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.listPane}>
+              <p className={styles.resultCount}>{filtered.length} stays found</p>
+              <div className={styles.grid}>
               {filtered.map((listing) => (
                 <Link key={String(listing.id)} href={`/listing/${listing.id}`} className={styles.card}>
                   <div className={styles.cardImg}>
@@ -313,7 +331,7 @@ function SearchContent() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
