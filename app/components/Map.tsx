@@ -39,13 +39,18 @@ export default function Map({ locations = [], center = defaultCenter, zoom = 12 
         zoomControl: true,
       }}
     >
-      {locations.map((loc, i) => (
-        <Marker
-          key={i}
-          position={{ lat: loc.lat, lng: loc.lng }}
-          label={loc.price ? { text: `₾${loc.price}`, className: 'map-price-label' } : undefined}
-        />
-      ))}
+      {locations.map((loc, i) => {
+        const lat = Number(loc.lat);
+        const lng = Number(loc.lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        return (
+          <Marker
+            key={i}
+            position={{ lat, lng }}
+            label={loc.price ? { text: `₾${loc.price}`, className: 'map-price-label' } : undefined}
+          />
+        );
+      })}
     </GoogleMap>
   );
 }

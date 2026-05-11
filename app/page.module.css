@@ -3,35 +3,51 @@
   overflow-x: hidden;
 }
 
-/* === REAL LIQUID GLASS SYSTEM === */
+/* === REAL LIQUID GLASS SYSTEM (reference: frosted pill + edge light) === */
 .liquidGlass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(48px) saturate(150%);
-  -webkit-backdrop-filter: blur(48px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(56px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.12) inset,
+    -1px -1px 0 rgba(255, 255, 255, 0.2) inset;
   position: relative;
   overflow: hidden;
+  border-radius: 36px;
 }
 
-/* Enhanced shine effect that follows cursor */
+/* Cursor-follow highlight */
 .liquidGlass::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(circle 500px at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.15) 0%, transparent 60%);
+  background: radial-gradient(circle 420px at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.22) 0%, transparent 55%);
   pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
+  opacity: 0.65;
+  transition: opacity 0.35s ease;
 }
 
-/* Extra shine layer for depth */
+/* Subtle refraction sheen */
 .liquidGlass::after {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 35%,
+    transparent 65%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
   pointer-events: none;
   z-index: 0;
 }
@@ -119,18 +135,34 @@
 }
 
 .searchPill {
-  padding: 0.75rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(48px) saturate(150%);
-  -webkit-backdrop-filter: blur(48px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-full);
+  padding: 0.6rem 0.8rem;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  backdrop-filter: blur(64px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(64px) saturate(190%) brightness(1.06);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.22),
+    0 2px 0 rgba(255, 255, 255, 0.4) inset,
+    0 -2px 12px rgba(0, 0, 0, 0.08) inset;
   pointer-events: auto;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.35s ease, transform 0.35s var(--ease);
+  position: relative;
+  z-index: 2;
+}
+
+.searchPill .searchItem,
+.searchPill .searchBtn {
+  position: relative;
+  z-index: 3;
 }
 
 .searchItem {
@@ -142,16 +174,18 @@
   cursor: pointer;
   pointer-events: auto;
   user-select: none;
+  text-decoration: none;
+  color: inherit;
 }
 
 .searchItem:hover { background: rgba(255,255,255,0.1); }
 .searchItem:active { transform: scale(0.98); }
 .searchLabel { font-size: 0.75rem; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 4px; }
-.searchVal { font-size: 0.95rem; font-weight: 700; color: white; }
+.searchVal { font-size: 0.8rem; font-weight: 700; color: white; }
 
 .searchBtn {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   background: white;
   color: black;
   border-radius: 50%;
@@ -159,51 +193,10 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-/* === HOTSPOTS === */
-.hotspots {
-  pointer-events: none;
-}
-
-.hotspot {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+  border: none;
   cursor: pointer;
-  z-index: 50;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(32px) saturate(150%);
-  -webkit-backdrop-filter: blur(32px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.hotspot:hover { 
-  transform: scale(1.25);
-  box-shadow: 
-    inset 0 0 20px rgba(255, 255, 255, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.2),
-    0 0 24px rgba(255, 255, 255, 0.1);
-}
-.pulse {
-  position: absolute;
-  width: 100%; height: 100%;
-  border: 1px solid rgba(255,255,255,0.4);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.8); opacity: 0; }
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
 }
 
 /* === CATEGORY BAR === */
@@ -222,11 +215,17 @@
   border-radius: var(--radius-xl);
   overflow-x: auto;
   scrollbar-width: none;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(48px) saturate(150%);
-  -webkit-backdrop-filter: blur(48px) saturate(150%);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.45) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.85) inset;
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
 }
 
 .catBtn {
@@ -287,6 +286,38 @@
   backdrop-filter: blur(20px);
   z-index: 10000;
   display: flex; align-items: center; justify-content: center;
+}
+
+.modalContent {
+  position: relative;
+  max-width: min(92vw, 900px);
+  max-height: 90vh;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.expandedImg {
+  width: 100%;
+  height: auto;
+  max-height: 90vh;
+  object-fit: contain;
+  display: block;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {

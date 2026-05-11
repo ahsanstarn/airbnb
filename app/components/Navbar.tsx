@@ -58,11 +58,18 @@ export default function Navbar() {
         </Link>
 
         <div className={styles.menu}>
-          {['Hotels', 'Apartments', 'Experiences', 'Wineries'].map((item) => (
-            <Link key={item} href="/search" className={styles.menuLink}>
-              {item}
-            </Link>
-          ))}
+          <Link href="/search?type=Hotel" className={styles.menuLink}>
+            Hotels
+          </Link>
+          <Link href="/search?type=Apartment" className={styles.menuLink}>
+            Apartments
+          </Link>
+          <Link href="/search?experience=1" className={styles.menuLink}>
+            Experiences
+          </Link>
+          <Link href="/search?region=Kakheti" className={styles.menuLink}>
+            Wineries
+          </Link>
         </div>
 
         <div className={styles.right}>

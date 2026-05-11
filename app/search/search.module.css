@@ -18,6 +18,91 @@
   flex-wrap: wrap;
 }
 
+.extraFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-top: 14px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border-light, var(--border));
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: var(--fs-xs, 0.75rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim, var(--text-secondary));
+}
+
+.dateInput {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  background: var(--bg-primary);
+}
+
+.guestsRow {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light, var(--border));
+}
+
+.guestsLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.guestsInput {
+  width: 72px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.focusRing {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.suspenseFallback {
+  padding: 48px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.destInput {
+  flex: 1;
+  min-width: 160px;
+  max-width: 280px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  background: var(--bg-primary);
+}
+
+.destInput::placeholder {
+  color: var(--text-muted, #999);
+  font-weight: 500;
+}
+
 .select {
   padding: 10px 16px;
   border: 1px solid var(--border);
