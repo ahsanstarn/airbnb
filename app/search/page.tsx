@@ -319,14 +319,12 @@ function SearchContent() {
                   </div>
                 </Link>
               ))}
+              </div>
             </div>
-          </div>
-          <div className={styles.mapPane}>
-            <Map locations={mapLocations} center={mapCenter} zoom={region === 'All Regions' ? 7 : 12} />
-          </div>
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
