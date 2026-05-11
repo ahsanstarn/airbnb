@@ -62,11 +62,27 @@ export default function AdminPanel() {
         </div>
 
         <div className={styles.recentSection}>
+          <h2>Property Management</h2>
+          <div className={styles.actionButtons}>
+            <button 
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={() => router.push('/admin/add-property')}
+            >
+              Add New Property
+            </button>
+            <button 
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              onClick={() => router.push('/admin/manage-properties')}
+            >
+              Manage Properties
+            </button>
+          </div>
+          
           <h2>Platform Overview</h2>
           <div className={styles.placeholderTable}>
             <p>Welcome to the Kaya.ge Admin Panel. From here you can moderate listings, view global analytics, and manage disputes.</p>
-            <button className="btn btn-primary" onClick={() => router.push('/')}>View Site</button>
-            <button className="btn btn-outline" onClick={() => {
+            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => router.push('/')}>View Site</button>
+            <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => {
               localStorage.removeItem('kaya_admin');
               supabase.auth.signOut();
               router.push('/login');
