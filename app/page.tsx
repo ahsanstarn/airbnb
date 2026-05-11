@@ -12,7 +12,7 @@ export default function HomePage() {
       
       <section className={styles.hero}>
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>FIND PLACE TO STAY</h1>
+          <h1 className={styles.heroTitle}>FIND PLACE TOSTAY</h1>
         </div>
       </section>
 
