@@ -8,7 +8,7 @@ import { Search, Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import styles from './category.module.css';
+import styles from './styles.module.css';
 import homeStyles from '../page.module.css';
 
 interface Listing {
