@@ -1,32 +1,310 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { ArrowRight, Filter, MapPin, DollarSign } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import Map from '../components/Map';
-import styles from './search.module.css';
+import Footer from '../components/Footer';
 
-const FALLBACK_IMG = 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop';
+function SearchContent() {
+  const searchParams = useSearchParams();
+  const [listings, setListings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    category: searchParams.get('category') || '',
+    city: searchParams.get('city') || '',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+    rating: searchParams.get('rating') || '',
+    sort: searchParams.get('sort') || 'recommended',
+    page: 1,
+  });
 
-const allListings = [
-  { id: 1, title: 'Panoramic Suite with city views', location: 'Tbilisi, Vera', price: 280, rating: 4.96, type: 'Hotel', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop', beds: 2, guests: 4, lat: 41.7060, lng: 44.7820 },
-  { id: 2, title: 'Wine Country Villa with vineyard', location: 'Kakheti, Sighnaghi', price: 150, rating: 4.89, type: 'Villa', img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&h=500&fit=crop', beds: 3, guests: 6, lat: 41.6200, lng: 45.9228 },
-  { id: 3, title: 'Modern seaside apartment', location: 'Batumi, Boulevard', price: 95, rating: 4.72, type: 'Apartment', img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&h=500&fit=crop', beds: 1, guests: 2, lat: 41.6168, lng: 41.6367 },
-  { id: 4, title: 'Mountain lodge with Kazbek views', location: 'Kazbegi, Stepantsminda', price: 120, rating: 4.93, type: 'Lodge', img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=600&h=500&fit=crop', beds: 2, guests: 4, lat: 42.6568, lng: 44.6433 },
-  { id: 5, title: 'Cozy Old Town guesthouse', location: 'Tbilisi, Abanotubani', price: 65, rating: 4.85, type: 'Guesthouse', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=500&fit=crop', beds: 1, guests: 2, lat: 41.6880, lng: 44.8105 },
-  { id: 6, title: 'Boutique hotel on Rustaveli', location: 'Tbilisi, Rustaveli', price: 195, rating: 4.91, type: 'Hotel', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=500&fit=crop', beds: 2, guests: 3, lat: 41.6980, lng: 44.7950 },
-  { id: 7, title: 'Traditional Svanetian tower house', location: 'Mestia, Svaneti', price: 85, rating: 4.88, type: 'Unique', img: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&h=500&fit=crop', beds: 2, guests: 4, lat: 43.0458, lng: 42.7278 },
-  { id: 8, title: 'Beachfront flat with pool', location: 'Batumi, New Boulevard', price: 110, rating: 4.77, type: 'Apartment', img: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&h=500&fit=crop', beds: 2, guests: 4, lat: 41.6368, lng: 41.6167 },
-];
+  useEffect(() => {
+    fetchListings();
+  }, [filters]);
 
-const DEFAULT_CENTER = { lat: 41.7151, lng: 44.8271 };
+  const fetchListings = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
 
-const regions = ['All Regions', 'Tbilisi', 'Batumi', 'Kakheti', 'Kazbegi', 'Mestia'];
-const types = ['All Types', 'Hotel', 'Apartment', 'Villa', 'Guesthouse', 'Lodge', 'Unique'];
-const sortOptions = ['Recommended', 'Price: Low to High', 'Price: High to Low', 'Top Rated'];
+      if (filters.category) params.append('category', filters.category);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.minPrice) params.append('minPrice', filters.minPrice);
+      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+      if (filters.rating) params.append('minRating', filters.rating);
+      params.append('sort', filters.sort);
+      params.append('page', filters.page.toString());
+
+      const response = await fetch(`/api/listings?${params.toString()}`);
+      const data = await response.json();
+      setListings(data.listings || []);
+    } catch (error) {
+      console.error('Failed to fetch listings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters({ ...filters, [field]: value, page: 1 });
+  };
+
+  const categories = [
+    'hotels',
+    'restaurants',
+    'cars',
+    'tours',
+    'services',
+    'salons',
+  ];
+
+  const cities = [
+    'Tbilisi',
+    'Batumi',
+    'Kazbegi',
+    'Kakheti',
+    'Kutaisi',
+    'Gori',
+  ];
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar />
+
+      <div className="pt-20 pb-20 px-12">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Find Your Perfect Experience</h1>
+            <p className="text-gray-600">
+              {listings.length} results found
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Filters Sidebar */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="lg:col-span-1"
+            >
+              <div className="bg-gray-50 rounded-2xl p-6 sticky top-24">
+                <div className="flex items-center gap-2 mb-6">
+                  <Filter className="w-5 h-5 text-orange-600" />
+                  <h3 className="text-lg font-bold text-gray-900">Filters</h3>
+                </div>
+
+                {/* Category Filter */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    Category
+                  </label>
+                  <select
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="">All Categories</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* City Filter */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    City
+                  </label>
+                  <select
+                    value={filters.city}
+                    onChange={(e) => handleFilterChange('city', e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="">All Cities</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Price Filter */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    Price Range (₾)
+                  </label>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.minPrice}
+                      onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                      className="flex-1 p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.maxPrice}
+                      onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                      className="flex-1 p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Rating Filter */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    Minimum Rating
+                  </label>
+                  <select
+                    value={filters.rating}
+                    onChange={(e) => handleFilterChange('rating', e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="">Any Rating</option>
+                    <option value="4">4+ Stars</option>
+                    <option value="3">3+ Stars</option>
+                  </select>
+                </div>
+
+                {/* Sort Filter */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    Sort By
+                  </label>
+                  <select
+                    value={filters.sort}
+                    onChange={(e) => handleFilterChange('sort', e.target.value)}
+                    className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="recommended">Recommended</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="newest">Newest</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Listings Grid */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="lg:col-span-3"
+            >
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="bg-gray-100 rounded-2xl h-80 animate-pulse" />
+                  ))}
+                </div>
+              ) : listings.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {listings.map((listing, index) => (
+                    <motion.div
+                      key={listing.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      whileHover={{ y: -8 }}
+                      className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
+                    >
+                      <div className="relative h-48 bg-gray-200 overflow-hidden group">
+                        <img
+                          src={
+                            listing.images?.[0] ||
+                            'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop'
+                          }
+                          alt={listing.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
+                          <span className="text-yellow-500">★</span>
+                          <span className="font-semibold text-sm text-gray-900">
+                            {listing.overall_rating?.toFixed(1) || 'New'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <p className="text-sm text-orange-600 mb-2 uppercase tracking-wide">
+                          {listing.category}
+                        </p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                          {listing.title}
+                        </h3>
+
+                        <div className="flex items-center gap-1 text-gray-600 text-sm mb-4">
+                          <MapPin className="w-4 h-4" />
+                          <span>{listing.location}</span>
+                        </div>
+
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {listing.description}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                          <div>
+                            <p className="text-2xl font-bold text-gray-900">
+                              ₾{listing.price_per_night}
+                            </p>
+                            <p className="text-sm text-gray-500">per night</p>
+                          </div>
+                          <Link
+                            href={`/listing/${listing.id}`}
+                            className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg transition-colors"
+                          >
+                            <ArrowRight className="w-5 h-5" />
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20">
+                  <p className="text-gray-600 text-lg mb-4">No listings found matching your filters</p>
+                  <Link
+                    href="/"
+                    className="text-orange-600 hover:text-orange-700 font-semibold"
+                  >
+                    Browse all categories
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchContent />
+    </Suspense>
+  );
+}
 
 const EXPERIENCE_TYPES = new Set(['lodge', 'unique', 'guesthouse']);
 
