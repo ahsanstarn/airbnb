@@ -16,7 +16,7 @@ export default function KlaraBot() {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
-    const userMessage = { text: inputValue, sender: 'user' };
+    const userMessage = { text: inputValue, sender: 'user' as const };
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
@@ -24,10 +24,10 @@ export default function KlaraBot() {
     try {
       // TODO: Replace with actual Klara API when provided
       const response = await fetchKlaraAPI(inputValue);
-      const botMessage = { text: response, sender: 'bot' };
+      const botMessage = { text: response, sender: 'bot' as const };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-      const errorMessage = { text: "Sorry, I'm having trouble connecting right now. Please try again later.", sender: 'bot' };
+      const errorMessage = { text: "Sorry, I'm having trouble connecting right now. Please try again later.", sender: 'bot' as const };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
