@@ -218,7 +218,7 @@ html {
   background: radial-gradient(circle, rgba(236, 198, 166, 0.15), rgba(236, 198, 166, 0.04) 40%, transparent 65%);
   pointer-events: none;
   z-index: 9999;
-  will-change: transform;
+  transition: transform 0.08s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .cursor-glow::after {
   content: '';
@@ -279,9 +279,9 @@ button, input, select { font: inherit; }
   display: flex;
   justify-content: center;
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%);
   pointer-events: auto;
-  will-change: transform;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .nav {
   position: relative;
@@ -308,7 +308,7 @@ button, input, select { font: inherit; }
   margin: 0;
   box-shadow: 0 22px 38px -26px rgba(32, 18, 11, 0.55);
   transform-origin: top center;
-  will-change: transform;
+  transition: transform 0.15s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 .nav-brand {
   display: flex;
