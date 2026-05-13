@@ -2,23 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { supabase } from '../../../lib/supabase';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
 import Map from '../../components/Map';
 import styles from './listing.module.css';
 
-// ... (keep listingData, defaultData, reviews exactly as they were)
 const listingData: Record<string, {
   title: string; location: string; price: number; rating: number; reviews: number;
   type: string; host: string; beds: number; baths: number; guests: number;
   desc: string; amenities: string[]; images: string[]; lat: number; lng: number;
+  category: string;
 }> = {
-  '1': { title: 'Panoramic Suite with city views', location: 'Tbilisi, Vera', price: 280, rating: 4.96, reviews: 127, type: 'Entire suite', host: 'Nino', beds: 2, baths: 1, guests: 4, desc: 'Experience Tbilisi from above in this stunning panoramic suite with floor-to-ceiling windows overlooking the historic city. Located in the charming Vera district, steps from galleries, cafes, and the cable car to Narikala fortress. Modern amenities with Georgian hospitality.', amenities: ['WiFi', 'Kitchen', 'Free parking', 'Air conditioning', 'Washing machine', 'TV', 'Balcony', 'City view', 'Elevator', 'Iron'], images: ['https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop'], lat: 41.7060, lng: 44.7820 },
-  '2': { title: 'Wine Country Villa with vineyard', location: 'Kakheti, Sighnaghi', price: 150, rating: 4.89, reviews: 89, type: 'Entire villa', host: 'Giorgi', beds: 3, baths: 2, guests: 6, desc: 'Escape to Georgia\'s wine heartland. This charming villa sits among Kakheti vineyards with stunning views of the Alazani Valley. Enjoy traditional qvevri wine-making, farm-fresh breakfasts, and the magic of the City of Love.', amenities: ['WiFi', 'Kitchen', 'Free parking', 'Garden', 'BBQ', 'Pool', 'Mountain view', 'Fireplace', 'Breakfast included', 'Wine tasting'], images: ['https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=600&fit=crop'], lat: 41.6200, lng: 45.9228 },
+  '1': { title: 'Panoramic Suite with city views', location: 'Tbilisi, Vera', price: 280, rating: 4.96, reviews: 127, type: 'Entire suite', host: 'Nino', beds: 2, baths: 1, guests: 4, desc: 'Experience Tbilisi from above in this stunning panoramic suite with floor-to-ceiling windows overlooking the historic city. Located in the charming Vera district, steps from galleries, cafes, and the cable car to Narikala fortress. Modern amenities with Georgian hospitality.', amenities: ['WiFi', 'Kitchen', 'Free parking', 'Air conditioning', 'Washing machine', 'TV', 'Balcony', 'City view', 'Elevator', 'Iron'], images: ['https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop'], lat: 41.7060, lng: 44.7820, category: 'hotels' },
+  '2': { title: 'Wine Country Villa with vineyard', location: 'Kakheti, Sighnaghi', price: 150, rating: 4.89, reviews: 89, type: 'Entire villa', host: 'Giorgi', beds: 3, baths: 2, guests: 6, desc: 'Escape to Georgia\'s wine heartland. This charming villa sits among Kakheti vineyards with stunning views of the Alazani Valley. Enjoy traditional qvevri wine-making, farm-fresh breakfasts, and the magic of the City of Love.', amenities: ['WiFi', 'Kitchen', 'Free parking', 'Garden', 'BBQ', 'Pool', 'Mountain view', 'Fireplace', 'Breakfast included', 'Wine tasting'], images: ['https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=600&fit=crop'], lat: 41.6200, lng: 45.9228, category: 'villas' },
 };
 
-const defaultData = { title: 'Mountain lodge with Kazbek views', location: 'Kazbegi, Stepantsminda', price: 120, rating: 4.93, reviews: 64, type: 'Entire lodge', host: 'Dato', beds: 2, baths: 1, guests: 4, desc: 'Wake up to the majestic Mount Kazbek every morning. This cozy mountain lodge offers the perfect balance of rustic charm and modern comfort. Ideal base for hiking, horse riding, and exploring one of the most breathtaking regions in the Caucasus.', amenities: ['WiFi', 'Kitchen', 'Free parking', 'Mountain view', 'Fireplace', 'Heating', 'Garden', 'Hiking trails', 'Breakfast available', 'Hot water'], images: ['https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop'], lat: 42.6568, lng: 44.6433 };
+const defaultData = { title: 'Mountain lodge with Kazbek views', location: 'Kazbegi, Stepantsminda', price: 120, rating: 4.93, reviews: 64, type: 'Entire lodge', host: 'Dato', beds: 2, baths: 1, guests: 4, desc: 'Wake up to the majestic Mount Kazbek every morning. This cozy mountain lodge offers the perfect balance of rustic charm and modern comfort. Ideal base for hiking, horse riding, and exploring one of the most breathtaking regions in the Caucasus.', amenities: ['WiFi', 'Kitchen', 'Free parking', 'Mountain view', 'Fireplace', 'Heating', 'Garden', 'Hiking trails', 'Breakfast available', 'Hot water'], images: ['https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop', 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop'], lat: 42.6568, lng: 44.6433, category: 'cabins' };
 
 const reviews = [
   { name: 'Sarah M.', country: '🇺🇸', rating: 5, date: 'May 2025', text: 'Absolutely stunning views! The host was incredibly welcoming and the space was spotless. Would definitely return.' },
@@ -28,9 +27,30 @@ const reviews = [
 
 export default function ListingPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [liveListing, setLiveListing] = useState<any>(null);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    const favs = JSON.parse(localStorage.getItem('kaya_favorites') || '[]');
+    setIsFavorited(favs.includes(params.id));
+  }, [params.id]);
+
+  const toggleFavorite = () => {
+    const favs: string[] = JSON.parse(localStorage.getItem('kaya_favorites') || '[]');
+    if (favs.includes(params.id)) {
+      const updated = favs.filter((id: string) => id !== params.id);
+      localStorage.setItem('kaya_favorites', JSON.stringify(updated));
+      setIsFavorited(false);
+    } else {
+      favs.push(params.id);
+      localStorage.setItem('kaya_favorites', JSON.stringify(favs));
+      setIsFavorited(true);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -108,12 +128,57 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   };
 
   return (
-    <>
-      <Navbar />
-      <main className={`${styles.page} container`}>
+    <div className="site-shell">
+      <div className="shell">
+        {/* Inline glass nav matching homepage */}
+        <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
+          <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
+            <Link href="/" className="nav-brand">
+              <span className="brandmark-dot"></span>
+              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
+            </Link>
+            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
+              <span></span><span></span><span></span>
+            </button>
+            <div className="nav-links">
+              <Link href="/klara">KLARA</Link>
+              <Link href="/search">Visitors</Link>
+              <Link href="/hotels">Stays</Link>
+              <Link href="/muse">Where to go</Link>
+              <Link href="/contact">Contact us</Link>
+            </div>
+            <div className="nav-spacer"></div>
+            <div className="nav-right">
+              <Link href="/login">Become a host</Link>
+              <Link href="/login" className="nav-icon" aria-label="Login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"></path></svg>
+              </Link>
+            </div>
+          </nav>
+        </div>
+
+        {/* Mobile Nav Overlay */}
+        <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
+          <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
+          <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
+          <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
+          <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
+          <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
+          <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
+          <Link href="/login" onClick={() => setMobileNavOpen(false)}>Become a host</Link>
+        </div>
+
+      <main className={`${styles.page} shell`} style={{ marginTop: '80px' }}>
         {/* Title */}
-        <div className={styles.titleBar}>
-          <h1 className={styles.title}>{listing.title}</h1>
+        <div className={`${styles.titleBar} animate-section`}>
+          <span className={styles.categoryBadge}>{listing.category || 'stays'}</span>
+          <div className={styles.titleRow}>
+            <h1 className={styles.title}>{listing.title}</h1>
+            <button className={`${styles.heartBtn} ${isFavorited ? styles.heartActive : ''}`} onClick={toggleFavorite} aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}>
+              <span className={styles.heartIcon}>{isFavorited ? '♥' : '♡'}</span>
+              <span>{isFavorited ? 'Saved' : 'Save'}</span>
+            </button>
+          </div>
           <div className={styles.titleMeta}>
             <span>★ {listing.rating} · {listing.reviews} reviews</span>
             <span>·</span>
@@ -121,127 +186,138 @@ export default function ListingPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Photo Grid */}
-        <div className={styles.photos}>
+        {/* Photo Gallery */}
+        <div className={`${styles.photos} animate-section`}>
           <div className={styles.photoMain}>
             <Image 
-              src={listing.images?.[0] || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop'} 
+              src={listing.images?.[activeImage] || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop'} 
               alt={listing.title} 
               fill 
-              sizes="50vw" 
+              sizes="100vw" 
               style={{ objectFit: 'cover' }} 
               priority 
             />
           </div>
-          <div className={styles.photoGrid}>
-            {(listing.images?.slice(1, 5) || []).map((img: string, i: number) => (
-              <div key={i} className={styles.photoSmall}>
-                <Image src={img} alt={`Photo ${i + 2}`} fill sizes="25vw" style={{ objectFit: 'cover' }} />
+          {listing.images?.length > 1 && (
+            <>
+              <button className={styles.galleryPrev} onClick={() => setActiveImage(prev => (prev - 1 + listing.images.length) % listing.images.length)} aria-label="Previous photo">‹</button>
+              <button className={styles.galleryNext} onClick={() => setActiveImage(prev => (prev + 1) % listing.images.length)} aria-label="Next photo">›</button>
+              <div className={styles.photoCounter}>{activeImage + 1} / {listing.images.length}</div>
+            </>
+          )}
+        </div>
+        {listing.images?.length > 1 && (
+          <div className={styles.thumbnailStrip}>
+            {listing.images.map((img: string, i: number) => (
+              <div key={i} className={`${styles.thumbnail} ${i === activeImage ? styles.thumbnailActive : ''}`} onClick={() => setActiveImage(i)}>
+                <Image src={img} alt={`Thumbnail ${i + 1}`} fill sizes="80px" style={{ objectFit: 'cover' }} />
               </div>
             ))}
           </div>
-        </div>
+        )}
 
         {/* Content */}
-        <div className={styles.content}>
+        <div className={`${styles.content} animate-section`}>
           <div className={styles.left}>
             {/* Host Info */}
-            <div className={styles.hostInfo}>
-              <div>
-                <h2 className={styles.hostTitle}>{listing.type} hosted by {listing.host}</h2>
-                <p className={styles.hostMeta}>{listing.guests} guests · {listing.beds} bedroom{listing.beds > 1 ? 's' : ''} · {listing.baths} bath{listing.baths > 1 ? 's' : ''}</p>
-              </div>
-              <div className={styles.hostAvatar}>
-                {listing.host[0]}
+            <div className={styles.glassSection}>
+              <div className={styles.hostInfo}>
+                <div>
+                  <h2 className={styles.hostTitle}>{listing.type} hosted by {listing.host}</h2>
+                  <p className={styles.hostMeta}>{listing.guests} guests · {listing.beds} bedroom{listing.beds > 1 ? 's' : ''} · {listing.baths} bath{listing.baths > 1 ? 's' : ''}</p>
+                </div>
+                <div className={styles.hostAvatar}>
+                  {listing.host[0]}
+                </div>
               </div>
             </div>
-
-            <hr className={styles.hr} />
 
             {/* Highlights */}
-            <div className={styles.highlights}>
-              <div className={styles.highlight}>
-                <span className={styles.highlightIcon}>🏠</span>
-                <div>
-                  <strong>Entire place</strong>
-                  <p>You&apos;ll have the entire space to yourself.</p>
+            <div className={`${styles.glassSection}`}>
+              <div className={styles.highlights}>
+                <div className={styles.highlight}>
+                  <span className={styles.highlightIcon}>🏠</span>
+                  <div>
+                    <strong>Entire place</strong>
+                    <p>You&apos;ll have the entire space to yourself.</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.highlight}>
-                <span className={styles.highlightIcon}>🧹</span>
-                <div>
-                  <strong>Enhanced Clean</strong>
-                  <p>This host committed to Kaya&apos;s enhanced cleaning process.</p>
+                <div className={styles.highlight}>
+                  <span className={styles.highlightIcon}>🧹</span>
+                  <div>
+                    <strong>Enhanced Clean</strong>
+                    <p>This host committed to Kaya&apos;s enhanced cleaning process.</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.highlight}>
-                <span className={styles.highlightIcon}>📍</span>
-                <div>
-                  <strong>Great location</strong>
-                  <p>95% of recent guests gave the location a 5-star rating.</p>
+                <div className={styles.highlight}>
+                  <span className={styles.highlightIcon}>📍</span>
+                  <div>
+                    <strong>Great location</strong>
+                    <p>95% of recent guests gave the location a 5-star rating.</p>
+                  </div>
                 </div>
               </div>
             </div>
-
-            <hr className={styles.hr} />
 
             {/* Description */}
-            <div className={styles.desc}>
-              <p>{listing.desc}</p>
+            <div className={`${styles.glassSection}`}>
+              <div className={styles.desc}>
+                <p>{listing.desc}</p>
+              </div>
             </div>
-
-            <hr className={styles.hr} />
 
             {/* Amenities */}
-            <div className={styles.amenities}>
-              <h3>What this place offers</h3>
-              <div className={styles.amenitiesGrid}>
-                {listing.amenities?.map((a: string) => (
-                  <div key={a} className={styles.amenity}>✓ {a}</div>
-                ))}
+            <div className={`${styles.glassSection}`}>
+              <div className={styles.amenities}>
+                <h3>What this place offers</h3>
+                <div className={styles.amenitiesGrid}>
+                  {listing.amenities?.map((a: string) => (
+                    <div key={a} className={styles.amenity}>✓ {a}</div>
+                  ))}
+                </div>
               </div>
             </div>
-
-            <hr className={styles.hr} />
 
             {/* Map Section */}
-            <div className={styles.mapSection}>
-              <h3>Where you&apos;ll be</h3>
-              <p className={styles.mapLocation}>{listing.location}</p>
-              <div className={styles.mapContainer}>
-                <Map 
-                  locations={[{ lat: listing.lat, lng: listing.lng, price: listing.price }]} 
-                  center={{ lat: listing.lat, lng: listing.lng }} 
-                  zoom={14} 
-                />
+            <div className={`${styles.glassSection}`}>
+              <div className={styles.mapSection}>
+                <h3>Where you&apos;ll be</h3>
+                <p className={styles.mapLocation}>{listing.location}</p>
+                <div className={styles.mapContainer}>
+                  <Map 
+                    locations={[{ lat: listing.lat, lng: listing.lng, price: listing.price }]} 
+                    center={{ lat: listing.lat, lng: listing.lng }} 
+                    zoom={14} 
+                  />
+                </div>
               </div>
             </div>
 
-            <hr className={styles.hr} />
-
             {/* Reviews */}
-            <div className={styles.reviewsSection}>
-              <h3>★ {listing.rating} · {listing.reviews} reviews</h3>
-              <div className={styles.reviewsList}>
-                {reviews.map((r, i) => (
-                  <div key={i} className={styles.review}>
-                    <div className={styles.reviewHeader}>
-                      <div className={styles.reviewAvatar}>{r.name[0]}</div>
-                      <div>
-                        <strong>{r.name}</strong> {r.country}
-                        <p className={styles.reviewDate}>{r.date}</p>
+            <div className={`${styles.glassSection}`}>
+              <div className={styles.reviewsSection}>
+                <h3>★ {listing.rating} · {listing.reviews} reviews</h3>
+                <div className={styles.reviewsList}>
+                  {reviews.map((r, i) => (
+                    <div key={i} className={styles.review}>
+                      <div className={styles.reviewHeader}>
+                        <div className={styles.reviewAvatar}>{r.name[0]}</div>
+                        <div>
+                          <strong>{r.name}</strong> {r.country}
+                          <p className={styles.reviewDate}>{r.date}</p>
+                        </div>
                       </div>
+                      <p className={styles.reviewText}>{r.text}</p>
                     </div>
-                    <p className={styles.reviewText}>{r.text}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Booking Widget */}
           <div className={styles.right}>
-            <div className={styles.bookingCard}>
+            <div className={`${styles.bookingCard}`}>
               <div className={styles.bookingPrice}>
                 <span className={styles.bookingAmount}>₾{listing.price}</span> / night
               </div>
@@ -291,7 +367,44 @@ export default function ListingPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </main>
-      <Footer />
-    </>
+
+      {/* Inline footer */}
+      <footer className="site-footer">
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <span className="brandmark-dot"></span>
+              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
+            </div>
+            <p className="footer-tagline">Discover Georgia, your way.</p>
+          </div>
+          <div className="footer-links">
+            <h4>Stays</h4>
+            <Link href="/hotels">Hotels</Link>
+            <Link href="/apartments">Apartments</Link>
+            <Link href="/search?type=guesthouses">Guesthouses</Link>
+            <Link href="/search?type=cabins">Cabins</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Discover</h4>
+            <Link href="/muse">Where to go</Link>
+            <Link href="/blog">Travel blog</Link>
+            <Link href="/about">About us</Link>
+            <Link href="/careers">Careers</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Support</h4>
+            <Link href="/contact">Contact us</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/resources">Resources</Link>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>&copy; {new Date().getFullYear()} Kaya.ge &mdash; crafted in Tbilisi</span>
+        </div>
+      </footer>
+      </div>
+    </div>
   );
 }
