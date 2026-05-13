@@ -281,8 +281,8 @@ button, input, select { font: inherit; }
   justify-content: center;
   opacity: 1;
   transform: translateX(-50%);
-  transition: top .14s linear, transform .14s linear;
   pointer-events: auto;
+  will-change: top, transform;
 }
 .nav {
   position: relative;
@@ -309,7 +309,7 @@ button, input, select { font: inherit; }
   margin: 0;
   box-shadow: 0 22px 38px -26px rgba(32, 18, 11, 0.55);
   transform-origin: top center;
-  transition: transform .14s linear;
+  will-change: transform;
 }
 .nav-brand {
   display: flex;

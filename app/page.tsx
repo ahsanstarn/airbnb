@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 const PLACEHOLDER_LISTINGS = [
@@ -29,9 +29,10 @@ export default function Home() {
   const router = useRouter();
   const [listings, setListings] = useState<any[]>([]);
   const [activeSlide, setActiveSlide] = useState(1);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [scrollF, setScrollF] = useState(0);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/listings?sort=recommended&limit=4')
@@ -41,11 +42,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const cursor = cursorRef.current;
+    if (!cursor) return;
     let ticking = false;
     const handleMouseMove = (e: MouseEvent) => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          setCursorPos({ x: e.clientX, y: e.clientY });
+          cursor.style.transform = `translate(${e.clientX - 60}px, ${e.clientY - 60}px)`;
           ticking = false;
         });
         ticking = true;
@@ -56,11 +59,16 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const shell = shellRef.current;
+    const nav = navRef.current;
+    if (!shell || !nav) return;
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          setScrollF(Math.min(window.scrollY / 300, 1));
+          const f = Math.min(window.scrollY / 300, 1);
+          shell.style.top = `${54 - 38 * f}px`;
+          nav.style.transform = `scale(${1.08 - 0.08 * f})`;
           ticking = false;
         });
         ticking = true;
@@ -105,11 +113,11 @@ export default function Home() {
 
   return (
     <div className="site-shell">
-      <div className="cursor-glow" style={{ transform: `translate(${cursorPos.x - 60}px, ${cursorPos.y - 60}px)` }} />
+      <div ref={cursorRef} className="cursor-glow" />
       <div className="shell">
         {/* Navbar */}
-        <div className="sticky-nav-shell visible" style={{ top: `${54 - 38 * scrollF}px`, transform: 'translateX(-50%)' }}>
-          <nav className="nav nav-sticky-bar" style={{ transform: `scale(${1.08 - 0.08 * scrollF})` }}>
+        <div ref={shellRef} className="sticky-nav-shell visible">
+          <nav ref={navRef} className="nav nav-sticky-bar">
             <Link href="/" className="nav-brand">
               <span className="brandmark-dot"></span>
               <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
