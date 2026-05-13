@@ -307,6 +307,7 @@ button, input, select { font: inherit; }
   margin: 0;
   box-shadow: 0 22px 38px -26px rgba(32, 18, 11, 0.55);
   transform-origin: top center;
+  transition: box-shadow 0.3s ease;
 }
 .nav-brand {
   display: flex;
