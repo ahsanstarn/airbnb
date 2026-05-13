@@ -67,8 +67,10 @@ export default function Home() {
       if (!ticking) {
         requestAnimationFrame(() => {
           const f = Math.min(window.scrollY / 300, 1);
-          shell.style.top = `${54 - 38 * f}px`;
-          nav.style.transform = `scale(${1.08 - 0.08 * f})`;
+          const ty = -38 * f;
+          const sc = 1.08 - 0.08 * f;
+          shell.style.transform = `translateX(-50%) translateY(${ty}px)`;
+          nav.style.transform = `scale(${sc})`;
           ticking = false;
         });
         ticking = true;

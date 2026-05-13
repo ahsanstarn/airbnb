@@ -218,7 +218,6 @@ html {
   background: radial-gradient(circle, rgba(236, 198, 166, 0.15), rgba(236, 198, 166, 0.04) 40%, transparent 65%);
   pointer-events: none;
   z-index: 9999;
-  transition: transform 0.1s var(--butter);
   will-change: transform;
 }
 .cursor-glow::after {
@@ -280,9 +279,9 @@ button, input, select { font: inherit; }
   display: flex;
   justify-content: center;
   opacity: 1;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
-  will-change: top, transform;
+  will-change: transform;
 }
 .nav {
   position: relative;
