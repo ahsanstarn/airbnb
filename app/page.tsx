@@ -42,10 +42,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (navRef.current) navRef.current.style.transform = 'scale(1.08)';
-  }, []);
-
-  useEffect(() => {
     const cursor = cursorRef.current;
     if (!cursor) return;
     const handleMouseMove = (e: MouseEvent) => {
@@ -53,19 +49,6 @@ export default function Home() {
     };
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    const shell = shellRef.current;
-    const nav = navRef.current;
-    if (!shell || !nav) return;
-    const handleScroll = () => {
-      const f = Math.min(window.scrollY / 300, 1);
-      shell.style.transform = `translateX(-50%) translateY(${-38 * f}px)`;
-      nav.style.transform = `scale(${1.08 - 0.08 * f})`;
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Visitor tracking ping

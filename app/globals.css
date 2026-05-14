@@ -166,7 +166,7 @@ body::before {
   will-change: transform, opacity;
 }
 .animate-hero-search {
-  animation: fadeUp 0.6s var(--butter) 0.9s backwards;
+  animation: fadeUp 0.6s var(--butter) 0.1s backwards;
   will-change: transform, opacity;
 }
 .animate-slide-left {
@@ -280,7 +280,6 @@ button, input, select { font: inherit; }
   opacity: 1;
   transform: translateX(-50%);
   pointer-events: auto;
-  will-change: transform;
 }
 .nav {
   position: relative;
@@ -298,7 +297,6 @@ button, input, select { font: inherit; }
   backdrop-filter: blur(18px) saturate(120%);
   border: 1px solid rgba(255, 240, 225, 0.14);
   color: #fff6ec;
-  transition: transform .14s linear, box-shadow 0.3s ease;
 }
 .nav:hover {
   box-shadow: 0 24px 48px -16px rgba(32, 18, 11, 0.5);
@@ -306,9 +304,6 @@ button, input, select { font: inherit; }
 .nav-sticky-bar {
   margin: 0;
   box-shadow: 0 22px 38px -26px rgba(32, 18, 11, 0.55);
-  transform-origin: top center;
-  transition: box-shadow 0.3s ease;
-  will-change: transform;
 }
 .nav-brand {
   display: flex;

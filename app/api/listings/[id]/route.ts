@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUser } from '@/lib/api-utils';
 
 // GET /api/listings/[id]
 export async function GET(
@@ -90,5 +91,32 @@ export async function PUT(
     return NextResponse.json(data[0]);
   } catch (error) {
     return NextResponse.json({ error: 'Update failed' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const user = await getAuthenticatedUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    );
+
+    const { data: listing } = await supabase.from('listings').select('business_id').eq('id', params.id).single();
+    if (!listing) return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+
+    const { data: business } = await supabase.from('businesses').select('id').eq('user_id', user.id).single();
+    if (!business || business.id !== listing.business_id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { error } = await supabase.from('listings').update({ is_published: false }).eq('id', params.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    return NextResponse.json({ ok: true, message: 'Listing deactivated' });
+  } catch {
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
   }
 }
