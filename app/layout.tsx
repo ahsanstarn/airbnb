@@ -1,21 +1,28 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { LangProvider } from "@/lib/lang-context";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
-import MobileBottomNav from "@/app/components/MobileBottomNav";
-import MobileTopBar from "@/app/components/MobileTopBar";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Kaya.ge — Georgia's All-in-One Travel Marketplace",
-  description: "Discover Georgia like a local. Book hotels, restaurants, tours, car rentals, and unique experiences across Sakartvelo. Powered by KLARA AI travel planning.",
-  keywords: "Georgia travel, Sakartvelo, Tbilisi hotels, Georgian tours, Batumi restaurants, car rental Georgia, Kaya.ge, travel marketplace, wine tours Georgia",
-  openGraph: {
-    title: "Kaya.ge — Discover Georgia",
-    description: "Georgia's premier travel and services marketplace",
-    type: "website",
-    locale: "en_GE",
-  },
+  title: "Kaya.ge — Discover Georgia",
+  description: "Phase 1 foundation for Kaya.ge: curated offers, travel discovery, Muse and core platform routes.",
 };
+
+const themeScript = `(function(){try{var t=localStorage.getItem('kaya-theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
 export default function RootLayout({
   children,
@@ -23,14 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${cormorant.variable} ${manrope.variable} is-guest`}>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <ThemeProvider>
-          <LangProvider>
-            <MobileTopBar />
-            {children}
-            <MobileBottomNav />
-          </LangProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>

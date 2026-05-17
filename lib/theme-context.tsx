@@ -20,18 +20,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    const stored = localStorage.getItem('kaya_theme') as Theme | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initial = stored || (prefersDark ? 'dark' : 'light');
+    const stored = localStorage.getItem('kaya-theme') as Theme | null;
+    const initial = (stored === 'dark' || stored === 'light') ? stored : 'light';
     setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
+    document.documentElement.dataset.theme = initial;
   }, []);
 
   const toggleTheme = () => {
     setTheme(prev => {
       const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('kaya_theme', next);
-      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('kaya-theme', next);
+      document.documentElement.dataset.theme = next;
       return next;
     });
   };
