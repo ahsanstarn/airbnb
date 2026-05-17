@@ -1,23 +1,15 @@
 .cursor {
   position: fixed;
-  width: 20px;
-  height: 20px;
-  background: var(--accent);
-  border-radius: 50%;
+  left: 0;
+  top: 0;
   pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s, background 0.3s;
+  z-index: 99999;
   mix-blend-mode: difference;
-}
-
-.hovering {
-  width: 60px;
-  height: 60px;
-  background: white;
-  mix-blend-mode: difference;
+  will-change: transform;
 }
 
 @media (max-width: 1024px) {
-  .cursor { display: none; }
+  .cursor {
+    display: none !important;
+  }
 }

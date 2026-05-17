@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
+import CustomCursor from "@/app/components/CustomCursor";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -34,9 +35,11 @@ export default function RootLayout({
       <body className={`${cormorant.variable} ${manrope.variable} is-guest`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <ThemeProvider>
+          <CustomCursor />
           {children}
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
