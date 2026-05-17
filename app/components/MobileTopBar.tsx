@@ -1,12 +1,12 @@
 'use client';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
-import { useLang } from '@/lib/lang-context';
+import { useLanguage } from '@/lib/lang-context';
 import { useEffect, useState } from 'react';
 
 export default function MobileTopBar() {
   const { theme, toggleTheme } = useTheme();
-  const { lang, setLang } = useLang();
+  const { lang, setLang } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {

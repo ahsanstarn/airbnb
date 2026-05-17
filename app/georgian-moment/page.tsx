@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useLang } from '@/lib/lang-context';
+import { useLanguage } from '@/lib/lang-context';
 
 const LANG_FLAGS: Record<string, string> = { EN: '🇬🇧', KA: '🇬🇪', RU: '🇷🇺' };
 const LANGS = ['EN', 'KA', 'RU'] as const;
@@ -17,7 +17,7 @@ const categories = [
 ];
 
 export default function GeorgianMoment() {
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang, t } = useLanguage();
   const [experiences, setExperiences] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

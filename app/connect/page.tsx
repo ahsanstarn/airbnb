@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useLang } from '@/lib/lang-context';
+import { useLanguage } from '@/lib/lang-context';
 
 const LANG_FLAGS: Record<string, string> = { EN: '🇬🇧', KA: '🇬🇪', RU: '🇷🇺' };
 const LANGS = ['EN', 'KA', 'RU'] as const;
@@ -24,7 +24,7 @@ const groups = [
 ];
 
 export default function ConnectPage() {
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang, t } = useLanguage();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('explore');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

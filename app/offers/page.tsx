@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
+import { useLanguage } from '@/lib/lang-context';
 
 const SAMPLE_OFFERS = [
   {
@@ -53,9 +54,10 @@ const SAMPLE_OFFERS = [
 
 export default function OffersPage() {
   const { theme, toggleTheme } = useTheme();
+  const { lang: currentLang, setLang, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('EN');
+
   
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,7 +114,7 @@ export default function OffersPage() {
                     <path d="M4 17v2"></path>
                     <path d="M5 18H3"></path>
                   </svg>
-                  Offers
+                  {t('offers')}
                 </Link>
                 <Link href="/tours" className="nav-link-button">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-map nav-link-icon" aria-hidden="true">
@@ -120,14 +122,14 @@ export default function OffersPage() {
                     <path d="M15 5.764v15"></path>
                     <path d="M9 3.236v15"></path>
                   </svg>
-                  Tours
+                  {t('tours')}
                 </Link>
                 <Link href="/guides" className="nav-link-button">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-compass nav-link-icon" aria-hidden="true">
                     <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path>
                     <circle cx="12" cy="12" r="10"></circle>
                   </svg>
-                  Guides
+                  {t('guides')}
                 </Link>
               </div>
               
@@ -149,9 +151,9 @@ export default function OffersPage() {
                 
                 {langOpen && (
                   <div className="nav-dropdown nav-dropdown-compact" style={{ position: 'absolute', top: 'calc(100% + 12px)', right: 0 }}>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('EN'); setLangOpen(false); }}>🇬🇧 English (GEL)</button>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('KA'); setLangOpen(false); }}>🇬🇪 ქართული (GEL)</button>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('RU'); setLangOpen(false); }}>🇷🇺 Русский (GEL)</button>
+                    <button className="nav-dropdown-button" onClick={() => { setLang('EN'); setLangOpen(false); }}>🇬🇧 English (GEL)</button>
+                    <button className="nav-dropdown-button" onClick={() => { setLang('KA'); setLangOpen(false); }}>🇬🇪 ქართული (GEL)</button>
+                    <button className="nav-dropdown-button" onClick={() => { setLang('RU'); setLangOpen(false); }}>🇷🇺 Русский (GEL)</button>
                   </div>
                 )}
 
@@ -180,7 +182,7 @@ export default function OffersPage() {
                     <polyline points="10 17 15 12 10 7"></polyline>
                     <line x1="15" x2="3" y1="12" y2="12"></line>
                   </svg>
-                  Sign up/Login
+                  {t('login')}
                 </Link>
               </div>
             </nav>
@@ -191,10 +193,10 @@ export default function OffersPage() {
             
             {/* Header Title Section */}
             <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <span className="hero-side-eyebrow" style={{ letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>Marketplace</span>
-              <h1 className="display" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, margin: '8px 0 16px' }}>Curated Offers</h1>
+              <span className="hero-side-eyebrow" style={{ letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>{t('visitors')}</span>
+              <h1 className="display" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, margin: '8px 0 16px' }}>{t('curatedOffers')}</h1>
               <p style={{ color: 'var(--muted)', fontSize: '15px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-                Discover verified stays, boutique lofts, premium car rentals, and authentic local experiences across the heart of Georgia.
+                {t('offersDesc')}
               </p>
             </header>
 
@@ -204,7 +206,7 @@ export default function OffersPage() {
                 
                 {/* Search query */}
                 <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Where & What?</label>
+                  <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>{t('whereWhat')}</label>
                   <div style={{ position: 'relative' }}>
                     <input 
                       type="text" 
@@ -241,17 +243,17 @@ export default function OffersPage() {
                       cursor: 'pointer'
                     }}
                   >
-                    <option value="all">All Categories</option>
-                    <option value="stay">Hotels & Stays</option>
-                    <option value="restaurant">Wine Cellars & Feast</option>
-                    <option value="car">Car Rentals & Pickups</option>
+                    <option value="all">{t('allCategories')}</option>
+                    <option value="stay">{t('hotelsStays')}</option>
+                    <option value="restaurant">{t('wineFeast')}</option>
+                    <option value="car">{t('carRentals')}</option>
                   </select>
                 </div>
 
                 {/* Price Slider */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)' }}>Max Price</label>
+                    <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)' }}>{t('maxPrice')}</label>
                     <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)' }}>{priceRange} GEL</span>
                   </div>
                   <input 
@@ -310,7 +312,7 @@ export default function OffersPage() {
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
                         <span style={{ fontSize: '12px', fontWeight: 600 }}>★ {offer.rating.toFixed(1)}</span>
-                        <Link href={`/listing/${offer.id}`} className="pill-link" style={{ fontSize: '11px', padding: '6px 12px' }}>Book stay</Link>
+                        <Link href={`/listing/${offer.id}`} className="pill-link" style={{ fontSize: '11px', padding: '6px 12px' }}>{t('bookStay')}</Link>
                       </div>
                     </div>
                   </div>
@@ -347,9 +349,9 @@ export default function OffersPage() {
                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
                   </svg>
                 </div>
-                <strong style={{ fontSize: '18px', fontWeight: 700 }}>No live offers found</strong>
+                <strong style={{ fontSize: '18px', fontWeight: 700 }}>{t('noOffersFound')}</strong>
                 <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
-                  We couldn't find any listings matching your active search filters. Try clearing your search parameters or checking other categories!
+                  {t('noOffersFoundDesc')}
                 </p>
               </div>
             )}

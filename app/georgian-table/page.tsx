@@ -1,13 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useLang } from '@/lib/lang-context';
+import { useLanguage } from '@/lib/lang-context';
 
 const LANG_FLAGS: Record<string, string> = { EN: '🇬🇧', KA: '🇬🇪', RU: '🇷🇺' };
 const LANGS = ['EN', 'KA', 'RU'] as const;
 
 export default function GeorgianTable() {
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang, t } = useLanguage();
   const [data, setData] = useState<{ restaurants: any[]; dishes: any[] }>({ restaurants: [], dishes: [] });
   const [activeTab, setActiveTab] = useState<'restaurants' | 'dishes'>('restaurants');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

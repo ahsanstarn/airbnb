@@ -10,6 +10,29 @@ function getToken() {
   return localStorage.getItem('kaya_token');
 }
 
+function getCoverImage(item: any) {
+  if (!item) return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80';
+  let img = '';
+  if (Array.isArray(item.images) && item.images.length > 0) {
+    img = item.images[0];
+  } else if (typeof item.images === 'string') {
+    try {
+      const parsed = JSON.parse(item.images);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        img = parsed[0];
+      } else {
+        img = item.images;
+      }
+    } catch {
+      img = item.images;
+    }
+  }
+  if (!img || img.startsWith('//') || (!img.startsWith('http') && !img.startsWith('/'))) {
+    return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80';
+  }
+  return img;
+}
+
 export default function AdminPanel() {
   const router = useRouter();
   const [session, setSession] = useState<any>(null);
@@ -69,12 +92,7 @@ export default function AdminPanel() {
 
       setIsAdmin(true);
 
-      const fallbackListings = [
-        { id: 1, title: 'Old Town Courtyard', location: 'Tbilisi, Old Town', category: 'guesthouses', price_per_night: 65, images: ['https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=100&q=60'] },
-        { id: 2, title: 'Panoramic Suite Vera', location: 'Tbilisi, Vera', category: 'hotels', price_per_night: 280, images: ['https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=100&q=60'] },
-        { id: 3, title: 'Modern Seaside Flat', location: 'Batumi, Coastline', category: 'apartments', price_per_night: 95, images: ['https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=100&q=60'] },
-        { id: 4, title: 'Kazbegi Mountain Lodge', location: 'Stepantsminda', category: 'cabins', price_per_night: 120, images: ['https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&w=100&q=60'] },
-      ];
+      const fallbackListings: any[] = [];
 
       // Fetch stats and listings from API
       const [listingsRes, statsRes] = await Promise.all([
@@ -484,7 +502,7 @@ export default function AdminPanel() {
                       onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,252,247,.9)'; e.currentTarget.style.borderColor = 'rgba(26,18,14,.06)'; e.currentTarget.style.transform = 'none'; }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `url(${p.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=100&q=60'}) 50%/cover`, flexShrink: 0 }} />
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `url(${getCoverImage(p)}) 50%/cover`, flexShrink: 0 }} />
                         <div style={{ minWidth: 0 }}>
                           <strong style={{ fontSize: '15px', display: 'block' }}>{p.title}</strong>
                           <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{p.location || p.city} · {p.category} · {p.price_per_night} GEL</span>
@@ -497,7 +515,51 @@ export default function AdminPanel() {
                   ))}
                 </div>
               ) : (
-                <p style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px' }}>No properties yet. Add your first one!</p>
+                <div style={{
+                  padding: '60px 40px',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '20px',
+                  background: 'rgba(255,255,255,0.4)',
+                  borderRadius: '20px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'rgba(26,18,14,0.04)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--accent)'
+                  }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28">
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </div>
+                  <strong style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)' }}>No properties added yet</strong>
+                  <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.6, maxWidth: '420px', margin: 0 }}>
+                    Your Kaya.ge marketplace dashboard is currently empty. Get started by adding hotels, cabins, or apartments to activate your real-time listings!
+                  </p>
+                  <button onClick={() => setActiveTab('add')} style={{
+                    padding: '12px 24px',
+                    borderRadius: '99px',
+                    background: '#1a120e',
+                    color: '#fff',
+                    fontWeight: 700,
+                    border: 0,
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    marginTop: '8px',
+                    boxShadow: '0 4px 12px rgba(26,18,14,0.15)'
+                  }}>
+                    Add your first property
+                  </button>
+                </div>
               )}
             </div>
           </section>
@@ -748,7 +810,7 @@ export default function AdminPanel() {
               {/* Image */}
               <div style={{
                 width: '100%', height: '220px', borderRadius: '18px',
-                background: `url(${selectedProperty.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=70'}) 50%/cover`,
+                background: `url(${getCoverImage(selectedProperty)}) 50%/cover`,
                 marginBottom: '24px',
               }} />
 
