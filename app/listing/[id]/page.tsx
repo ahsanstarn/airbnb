@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { supabase } from '../../../lib/supabase';
 import Map from '../../components/Map';
 import styles from './listing.module.css';
+
+function getToken() {
+  return localStorage.getItem('kaya_token');
+}
 
 const listingData: Record<string, {
   title: string; location: string; price: number; rating: number; reviews: number;
@@ -53,24 +56,24 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUserId(session.user.id);
-      }
-    });
+    const token = getToken();
+    if (token) {
+      fetch('/api/auth/session', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(r => r.json()).then(data => {
+        if (data.user?.id) setUserId(data.user.id);
+      }).catch(() => {});
+    }
 
     async function fetchListing() {
       try {
-        const { data, error } = await supabase
-          .from('listings')
-          .select('*')
-          .eq('id', params.id)
-          .single();
-        if (!error && data) {
+        const res = await fetch(`/api/listings/${params.id}`);
+        if (res.ok) {
+          const data = await res.json();
           setLiveListing(data);
         }
       } catch {
-        console.error('Failed to fetch listing from Supabase');
+        console.error('Failed to fetch listing');
       }
     }
     fetchListing();
@@ -99,22 +102,28 @@ export default function ListingPage({ params }: { params: { id: string } }) {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from('bookings').insert({
-        listing_id: params.id,
-        user_id: userId,
-        check_in: checkIn,
-        check_out: checkOut,
-        guests: guests,
-        total_amount: total,
-        status: 'PENDING'
+      const token = getToken();
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          listing_id: params.id,
+          check_in: checkIn,
+          check_out: checkOut,
+          guest_count: guests,
+        }),
       });
 
-      if (!error) {
+      if (res.ok) {
         alert('Reservation successfully created!');
         setCheckIn('');
         setCheckOut('');
       } else {
-        throw error;
+        const data = await res.json();
+        throw new Error(data.error || 'Booking failed');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {

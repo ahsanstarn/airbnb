@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '../../lib/supabase';
 
 const ADMIN_EMAIL = 'ahsanstarn@gmail.com';
+
+function getToken() {
+  return localStorage.getItem('kaya_token');
+}
 
 export default function AdminPanel() {
   const router = useRouter();
@@ -40,7 +43,17 @@ export default function AdminPanel() {
 
   useEffect(() => {
     async function init() {
-      const { data: { session: s } } = await supabase.auth.getSession();
+      const token = getToken();
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const sessionRes = await fetch('/api/auth/session', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const sessionData = await sessionRes.json();
+      const s = sessionData.user ? { user: sessionData.user } : null;
       setSession(s);
 
       if (!s) {
@@ -63,24 +76,21 @@ export default function AdminPanel() {
         { id: 4, title: 'Kazbegi Mountain Lodge', location: 'Stepantsminda', category: 'cabins', price_per_night: 120, images: ['https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&w=100&q=60'] },
       ];
 
-      const { count: listingCount } = await supabase.from('listings').select('*', { count: 'exact', head: true }).maybeSingle();
-      const { count: bookingCount } = await supabase.from('bookings').select('*', { count: 'exact', head: true }).maybeSingle();
-
-      const { data: listingData } = await supabase.from('listings').select('*').limit(10);
-      const { data: bookingData } = await supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(10);
-
-      // Fetch real stats from server endpoint
-      const statsRes = await fetch('/api/admin/stats').catch(() => null);
+      // Fetch stats and listings from API
+      const [listingsRes, statsRes] = await Promise.all([
+        fetch('/api/listings').catch(() => null),
+        fetch('/api/admin/stats').catch(() => null),
+      ]);
+      const listingsData = listingsRes?.ok ? await listingsRes.json() : null;
       const serverStats = statsRes?.ok ? await statsRes.json() : null;
 
       setStats({
-        listings: listingCount || fallbackListings.length,
-        bookings: bookingCount || 0,
+        listings: serverStats?.listings ?? fallbackListings.length,
+        bookings: serverStats?.bookings ?? 0,
         users: serverStats?.users ?? 1,
       });
       if (serverStats?.liveViewers !== undefined) setLiveViewers(serverStats.liveViewers);
-      setProperties(listingData && listingData.length > 0 ? listingData : fallbackListings);
-      setBookings(bookingData || []);
+      setProperties(listingsData?.listings?.length > 0 ? listingsData.listings : fallbackListings);
       setLoading(false);
     }
     init();
@@ -145,17 +155,16 @@ export default function AdminPanel() {
   // Fetch real recent activity
   useEffect(() => {
     const fetchActivity = async () => {
-      const { data: recentBookings } = await supabase
-        .from('bookings')
-        .select('id, listing_id, check_in, check_out, total_amount, status, created_at, listings(title)')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const { data: recentListings } = await supabase
-        .from('listings')
-        .select('id, title, created_at')
-        .order('created_at', { ascending: false })
-        .limit(3);
+      const token = getToken();
+      const [bookingsRes, listingsRes] = await Promise.all([
+        fetch('/api/bookings?limit=5', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }).catch(() => null),
+        fetch('/api/listings?limit=3').catch(() => null),
+      ]);
+      const recentBookings = bookingsRes?.ok ? await bookingsRes.json() : [];
+      const recentListingsData = listingsRes?.ok ? await listingsRes.json() : null;
+      const recentListings = recentListingsData?.listings || [];
 
       const activities: any[] = [];
 
@@ -163,7 +172,7 @@ export default function AdminPanel() {
         const title = b.listings?.title || `Listing #${b.listing_id}`;
         activities.push({
           action: 'New booking',
-          detail: `${title} — ${b.check_in} to ${b.check_out}`,
+          detail: `${title} — ${b.check_in || ''} to ${b.check_out || ''}`,
           time: timeAgo(b.created_at),
           icon: '📅',
         });
@@ -209,7 +218,12 @@ export default function AdminPanel() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const token = getToken();
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    localStorage.removeItem('kaya_token');
     router.push('/login');
   };
 
@@ -219,21 +233,29 @@ export default function AdminPanel() {
     setFormSuccess('');
 
     try {
-      const { error } = await supabase.from('listings').insert({
-        title: form.title,
-        description: form.description,
-        category: form.category,
-        price_per_night: parseFloat(form.price),
-        location: form.location,
-        amenities: JSON.stringify([
-          { type: 'contact_phone', value: form.contactPhone },
-          { type: 'contact_email', value: form.contactEmail },
-        ]),
-        images: form.image ? [form.image] : [],
-        is_published: true,
+      const token = getToken();
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          category: form.category,
+          price_per_night: parseFloat(form.price),
+          location: form.location,
+          contact_phone: form.contactPhone,
+          contact_email: form.contactEmail,
+          images: form.image ? [form.image] : [],
+        }),
       });
 
-      if (error) throw error;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to add property');
+      }
 
       setFormSuccess('Property added successfully!');
       setForm({ title: '', description: '', category: 'hotels', price: '', location: '', contactPhone: '', contactEmail: '', image: '' });

@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
 import Navbar from '../components/Navbar';
 import styles from './admin.module.css';
+
+function getToken() {
+  return localStorage.getItem('kaya_token');
+}
 
 interface Property {
   id?: number;
@@ -53,36 +56,42 @@ export default function AddProperty() {
     setSuccess('');
 
     try {
-      const { data, error } = await supabase
-        .from('listings')
-        .insert([{
+      const token = getToken();
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
           ...formData,
-          img: formData.images[0] || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop'
-        }])
-        .select();
-
-      if (error) {
-        throw error;
-      }
-
-      setSuccess('Property added successfully!');
-      setFormData({
-        title: '',
-        location: '',
-        price: 0,
-        rating: 0,
-        type: 'Hotel',
-        phone: '',
-        contact_email: '',
-        contact_name: '',
-        description: '',
-        amenities: [],
-        images: [],
-        beds: 1,
-        guests: 2,
-        lat: 41.7151,
-        lng: 44.8271
+          price_per_night: formData.price,
+          images: formData.images.length > 0 ? formData.images : ['https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&h=500&fit=crop'],
+        }),
       });
+
+      if (res.ok) {
+        setSuccess('Property added successfully!');
+        setFormData({
+          title: '',
+          location: '',
+          price: 0,
+          rating: 0,
+          type: 'Hotel',
+          phone: '',
+          contact_email: '',
+          contact_name: '',
+          description: '',
+          amenities: [],
+          images: [],
+          beds: 1,
+          guests: 2,
+          lat: 41.7151,
+          lng: 44.8271
+        });
+      } else {
+        throw new Error('Failed to add property');
+      }
     } catch (error) {
       setSuccess('Error adding property. Please try again.');
     } finally {

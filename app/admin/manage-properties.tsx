@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
 import Navbar from '../components/Navbar';
 import styles from './admin.module.css';
+
+function getToken() {
+  return localStorage.getItem('kaya_token');
+}
 
 interface Property {
   id: number;
@@ -48,16 +51,11 @@ export default function ManageProperties() {
 
   const fetchProperties = async () => {
     try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
+      const res = await fetch('/api/listings');
+      if (res.ok) {
+        const data = await res.json();
+        setProperties(data.listings || []);
       }
-
-      setProperties(data || []);
     } catch (error) {
       console.error('Error fetching properties:', error);
     }
@@ -67,17 +65,18 @@ export default function ManageProperties() {
     if (!confirm('Are you sure you want to delete this property?')) return;
 
     try {
-      const { error } = await supabase
-        .from('listings')
-        .delete()
-        .eq('id', id);
+      const token = getToken();
+      const res = await fetch(`/api/listings/${id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-      if (error) {
-        throw error;
+      if (res.ok) {
+        setSuccess('Property deleted successfully!');
+        setProperties(prev => prev.filter(p => p.id !== id));
+      } else {
+        throw new Error('Delete failed');
       }
-
-      setSuccess('Property deleted successfully!');
-      setProperties(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       setSuccess('Error deleting property. Please try again.');
     }

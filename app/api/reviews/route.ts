@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
 
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const searchParams = request.nextUrl.searchParams;
+    const touristId = searchParams.get('tourist_id');
+    const listingId = searchParams.get('listing_id');
+
+    let query = supabase.from('reviews').select('*, listings(id, title, images)');
+
+    if (touristId) query = query.eq('tourist_id', touristId);
+    if (listingId) query = query.eq('listing_id', listingId);
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(data);
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser(request);
