@@ -1,22 +1,66 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
 
-export default function LoginPage() {
-  const router = useRouter();
+const SAMPLE_OFFERS = [
+  {
+    id: 'tbilisi-nest',
+    title: 'Tbilisi Old Town Nest',
+    category: 'stay',
+    price: 180,
+    unit: 'night',
+    rating: 4.9,
+    location: 'Tbilisi, Old Town',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop',
+    amenities: ['WiFi', 'Air Conditioning', 'Sulphur Bath Access']
+  },
+  {
+    id: 'kazbegi-glass',
+    title: 'Kazbegi A-Frame Glass Cabin',
+    category: 'stay',
+    price: 280,
+    unit: 'night',
+    rating: 4.8,
+    location: 'Kazbegi, Gergeti',
+    image: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&h=400&fit=crop',
+    amenities: ['Mountain View', 'Fireplace', 'Outdoor Deck']
+  },
+  {
+    id: 'kakheti-chateau',
+    title: 'Chateau Wine Cellar & Resort',
+    category: 'restaurant',
+    price: 120,
+    unit: 'person',
+    rating: 4.95,
+    location: 'Kakheti, Telavi',
+    image: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&h=400&fit=crop',
+    amenities: ['Wine Tasting', 'Supra Menu', 'Vineyard Tour']
+  },
+  {
+    id: 'batumi-cruiser',
+    title: 'Tesla Model Y Long Range',
+    category: 'car',
+    price: 150,
+    unit: 'day',
+    rating: 4.7,
+    location: 'Batumi, Coastline',
+    image: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&h=400&fit=crop',
+    amenities: ['Autopilot', 'Unlimited KM', 'Airport Handoff']
+  }
+];
+
+export default function OffersPage() {
   const { theme, toggleTheme } = useTheme();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('EN');
+  
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [priceRange, setPriceRange] = useState(400);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,42 +70,13 @@ export default function LoginPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
-
-      localStorage.setItem('kaya_token', data.session?.access_token || '');
-      setSuccess('Signed in successfully!');
-      setTimeout(() => router.push('/admin'), 500);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        const message = err.message.toLowerCase();
-        if (message.includes('invalid login credentials')) {
-          setError('Invalid email or password.');
-        } else if (message.includes('email not confirmed')) {
-          setError('Please confirm your email first.');
-        } else {
-          setError(err.message);
-        }
-      } else {
-        setError('Login failed');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredOffers = SAMPLE_OFFERS.filter(offer => {
+    const matchesSearch = offer.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          offer.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || offer.category === selectedCategory;
+    const matchesPrice = offer.price <= priceRange;
+    return matchesSearch && matchesCategory && matchesPrice;
+  });
 
   return (
     <div className="site-shell">
@@ -89,7 +104,7 @@ export default function LoginPage() {
               </Link>
               
               <div className="nav-links">
-                <Link href="/offers" className="nav-link-button">
+                <Link href="/offers" className="nav-link-button active">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-sparkles nav-link-icon" aria-hidden="true">
                     <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                     <path d="M20 3v4"></path>
@@ -135,7 +150,7 @@ export default function LoginPage() {
                 {langOpen && (
                   <div className="nav-dropdown nav-dropdown-compact" style={{ position: 'absolute', top: 'calc(100% + 12px)', right: 0 }}>
                     <button className="nav-dropdown-button" onClick={() => { setCurrentLang('EN'); setLangOpen(false); }}>🇬🇧 English (GEL)</button>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('KA'); setLangOpen(false); }}>🇬ე ქართული (GEL)</button>
+                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('KA'); setLangOpen(false); }}>🇬🇪 ქართული (GEL)</button>
                     <button className="nav-dropdown-button" onClick={() => { setCurrentLang('RU'); setLangOpen(false); }}>🇷🇺 Русский (GEL)</button>
                   </div>
                 )}
@@ -159,7 +174,7 @@ export default function LoginPage() {
                   )}
                 </button>
                 
-                <Link className="nav-auth-link active" href="/login">
+                <Link className="nav-auth-link" href="/login">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-log-in nav-link-icon" aria-hidden="true">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                     <polyline points="10 17 15 12 10 7"></polyline>
@@ -172,143 +187,172 @@ export default function LoginPage() {
           </div>
 
           {/* Main Body Content */}
-          <main style={{ flexGrow: 1, padding: '120px 24px 80px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <main style={{ flexGrow: 1, padding: '120px 24px 80px', maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
             
-            <div className="glass-card" style={{ width: 'min(440px, 100%)', padding: '40px 32px', borderRadius: '28px', border: '1px solid var(--border-light)' }}>
-              
-              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                <span className="brandmark-dot" style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent)', marginRight: '6px' }}></span>
-                <span style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'var(--font-display), serif' }}>kaya<span style={{ opacity: 0.5 }}>.ge</span></span>
-              </div>
+            {/* Header Title Section */}
+            <header style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <span className="hero-side-eyebrow" style={{ letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>Marketplace</span>
+              <h1 className="display" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, margin: '8px 0 16px' }}>Curated Offers</h1>
+              <p style={{ color: 'var(--muted)', fontSize: '15px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+                Discover verified stays, boutique lofts, premium car rentals, and authentic local experiences across the heart of Georgia.
+              </p>
+            </header>
 
-              <h1 className="display" style={{ fontSize: '28px', fontWeight: 700, textAlign: 'center', margin: '0 0 8px' }}>Welcome back</h1>
-              <p style={{ color: 'var(--muted)', fontSize: '13px', textAlign: 'center', margin: '0 0 32px' }}>Sign in to plan your trip, list hosts and access the supra booking planner.</p>
-
-              {error && (
-                <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', color: '#b0314d', fontSize: '13px', marginBottom: '20px' }}>
-                  {error}
+            {/* Premium Filter Interface */}
+            <div className="glass-card" style={{ padding: '24px', borderRadius: '24px', marginBottom: '40px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', alignItems: 'center' }}>
+                
+                {/* Search query */}
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Where & What?</label>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Search Tbilisi, Batumi, Kazbegi..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '12px 16px', 
+                        borderRadius: '99px', 
+                        background: 'rgba(0,0,0,0.03)',
+                        border: '1px solid var(--border-light)',
+                        color: 'var(--text-primary)',
+                        fontSize: '13px'
+                      }}
+                    />
+                  </div>
                 </div>
-              )}
-              {success && (
-                <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', color: '#287a43', fontSize: '13px', marginBottom: '20px' }}>
-                  {success}
-                </div>
-              )}
 
-              <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '8px' }}>Email Address</label>
-                  <input 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                {/* Category Selector */}
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Category</label>
+                  <select 
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                     style={{ 
                       width: '100%', 
-                      padding: '14px 16px', 
-                      borderRadius: '12px', 
-                      background: 'rgba(0,0,0,0.02)',
+                      padding: '12px 16px', 
+                      borderRadius: '99px', 
+                      background: 'rgba(0,0,0,0.03)',
                       border: '1px solid var(--border-light)',
                       color: 'var(--text-primary)',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      cursor: 'pointer'
                     }}
-                  />
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="stay">Hotels & Stays</option>
+                    <option value="restaurant">Wine Cellars & Feast</option>
+                    <option value="car">Car Rentals & Pickups</option>
+                  </select>
                 </div>
 
-                <div style={{ marginBottom: '24px' }}>
+                {/* Price Slider */}
+                <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)' }}>Password</label>
-                    <Link href="/login" style={{ fontSize: '12px', color: 'var(--muted)' }}>Forgot?</Link>
+                    <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)' }}>Max Price</label>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)' }}>{priceRange} GEL</span>
                   </div>
                   <input 
-                    type="password" 
-                    placeholder="••••••••" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    type="range" 
+                    min="50" 
+                    max="500" 
+                    value={priceRange}
+                    onChange={(e) => setPriceRange(Number(e.target.value))}
                     style={{ 
-                      width: '100%', 
-                      padding: '14px 16px', 
-                      borderRadius: '12px', 
-                      background: 'rgba(0,0,0,0.02)',
-                      border: '1px solid var(--border-light)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px'
+                      width: '100%',
+                      cursor: 'pointer',
+                      accentColor: 'var(--accent)'
                     }}
                   />
                 </div>
 
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  style={{ 
-                    width: '100%', 
-                    padding: '14px', 
-                    borderRadius: '99px', 
-                    background: '#1a120e', 
-                    color: '#fff', 
-                    fontWeight: 700, 
-                    border: 0,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </button>
-              </form>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0' }}>
-                <span style={{ flex: 1, height: '1px', background: 'var(--border-light)' }}></span>
-                <span style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>or</span>
-                <span style={{ flex: 1, height: '1px', background: 'var(--border-light)' }}></span>
               </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  type="button"
-                  style={{ 
-                    flex: 1, 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    background: 'transparent', 
-                    border: '1px solid var(--border-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                  Google
-                </button>
-                
-                <button 
-                  type="button"
-                  style={{ 
-                    flex: 1, 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    background: 'transparent', 
-                    border: '1px solid var(--border-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  Facebook
-                </button>
-              </div>
-
             </div>
+
+            {/* Offers Grid */}
+            {filteredOffers.length > 0 ? (
+              <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+                {filteredOffers.map((offer) => (
+                  <div key={offer.id} className="glass-card hover-lift" style={{ borderRadius: '24px', overflow: 'hidden', padding: 0 }}>
+                    <div style={{ position: 'relative', height: '200px', width: '100%', background: '#ccc' }}>
+                      <img 
+                        src={offer.image} 
+                        alt={offer.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <span style={{ 
+                        position: 'absolute', 
+                        top: '16px', 
+                        right: '16px', 
+                        background: 'rgba(255,255,255,0.9)', 
+                        padding: '6px 12px', 
+                        borderRadius: '99px', 
+                        fontSize: '11px', 
+                        fontWeight: 700, 
+                        color: '#000',
+                        backdropFilter: 'blur(4px)'
+                      }}>
+                        {offer.price} GEL / {offer.unit}
+                      </span>
+                    </div>
+                    
+                    <div style={{ padding: '20px' }}>
+                      <span className="hero-side-card-kicker" style={{ fontSize: '11px', color: 'var(--muted)' }}>{offer.location}</span>
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '4px 0 12px' }}>{offer.title}</h3>
+                      
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+                        {offer.amenities.map((am) => (
+                          <span key={am} style={{ fontSize: '10px', background: 'rgba(0,0,0,0.04)', padding: '4px 8px', borderRadius: '4px' }}>{am}</span>
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600 }}>★ {offer.rating.toFixed(1)}</span>
+                        <Link href={`/listing/${offer.id}`} className="pill-link" style={{ fontSize: '11px', padding: '6px 12px' }}>Book stay</Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Perfect 1:1 Empty State card matching Screenshot 2 */
+              <div 
+                className="dashboard-stat-card empty-state-card empty-state-card-compact" 
+                style={{ 
+                  margin: '40px auto', 
+                  maxWidth: '500px', 
+                  padding: '48px 32px', 
+                  textAlign: 'center', 
+                  borderRadius: '28px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}
+              >
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  borderRadius: '50%', 
+                  background: 'rgba(0,0,0,0.03)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="24" height="24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+                <strong style={{ fontSize: '18px', fontWeight: 700 }}>No live offers found</strong>
+                <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
+                  We couldn't find any listings matching your active search filters. Try clearing your search parameters or checking other categories!
+                </p>
+              </div>
+            )}
 
           </main>
 
@@ -405,7 +449,7 @@ export default function LoginPage() {
             </Link>
           </li>
           <li>
-            <Link className="mobile-bottom-nav-item" href="/offers">
+            <Link className="mobile-bottom-nav-item active" aria-current="page" href="/offers">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-sparkles" aria-hidden="true">
                 <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                 <path d="M20 3v4"></path>
@@ -436,7 +480,7 @@ export default function LoginPage() {
             </Link>
           </li>
           <li>
-            <Link className="mobile-bottom-nav-item active" aria-current="page" href="/login">
+            <Link className="mobile-bottom-nav-item" href="/login">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-log-in" aria-hidden="true">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                 <polyline points="10 17 15 12 10 7"></polyline>

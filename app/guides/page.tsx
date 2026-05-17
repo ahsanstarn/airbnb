@@ -1,22 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
 
-export default function LoginPage() {
-  const router = useRouter();
+const REGIONS = [
+  { name: 'Tbilisi', desc: 'The vibrant capital where East meets West', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=400&h=300&fit=crop', listings: 1200 },
+  { name: 'Batumi', desc: 'Black Sea resort city with modern architecture', img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop', listings: 800 },
+  { name: 'Kakheti', desc: "The cradle of wine — Georgia's vineyard heartland", img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=400&h=300&fit=crop', listings: 450 },
+  { name: 'Kazbegi', desc: 'Dramatic mountains and the iconic Gergeti Church', img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=400&h=300&fit=crop', listings: 200 }
+];
+
+const PHRASES = [
+  { ka: 'გამარჯობა', en: 'Gamarjoba', meaning: 'Hello' },
+  { ka: 'მადლობა', en: 'Madloba', meaning: 'Thank you' },
+  { ka: 'გაუმარჯოს', en: 'Gaumarjos', meaning: 'Cheers! (toast)' },
+  { ka: 'ბოდიში', en: 'Bodishi', meaning: 'Sorry / Excuse me' }
+];
+
+export default function GuidesPage() {
   const { theme, toggleTheme } = useTheme();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('EN');
+  
+  // Tab states: 'tips' or 'muse'
+  const [activeTab, setActiveTab] = useState<'tips' | 'muse'>('tips');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,43 +34,6 @@ export default function LoginPage() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
-
-      localStorage.setItem('kaya_token', data.session?.access_token || '');
-      setSuccess('Signed in successfully!');
-      setTimeout(() => router.push('/admin'), 500);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        const message = err.message.toLowerCase();
-        if (message.includes('invalid login credentials')) {
-          setError('Invalid email or password.');
-        } else if (message.includes('email not confirmed')) {
-          setError('Please confirm your email first.');
-        } else {
-          setError(err.message);
-        }
-      } else {
-        setError('Login failed');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="site-shell">
@@ -101,13 +73,13 @@ export default function LoginPage() {
                 </Link>
                 <Link href="/tours" className="nav-link-button">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-map nav-link-icon" aria-hidden="true">
-                    <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path>
+                    <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l-4.553-2.277a2 2 0 0 1 1.788 0z"></path>
                     <path d="M15 5.764v15"></path>
                     <path d="M9 3.236v15"></path>
                   </svg>
                   Tours
                 </Link>
-                <Link href="/guides" className="nav-link-button">
+                <Link href="/guides" className="nav-link-button active">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-compass nav-link-icon" aria-hidden="true">
                     <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path>
                     <circle cx="12" cy="12" r="10"></circle>
@@ -135,7 +107,7 @@ export default function LoginPage() {
                 {langOpen && (
                   <div className="nav-dropdown nav-dropdown-compact" style={{ position: 'absolute', top: 'calc(100% + 12px)', right: 0 }}>
                     <button className="nav-dropdown-button" onClick={() => { setCurrentLang('EN'); setLangOpen(false); }}>🇬🇧 English (GEL)</button>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('KA'); setLangOpen(false); }}>🇬ე ქართული (GEL)</button>
+                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('KA'); setLangOpen(false); }}>🇬🇪 ქართული (GEL)</button>
                     <button className="nav-dropdown-button" onClick={() => { setCurrentLang('RU'); setLangOpen(false); }}>🇷🇺 Русский (GEL)</button>
                   </div>
                 )}
@@ -159,7 +131,7 @@ export default function LoginPage() {
                   )}
                 </button>
                 
-                <Link className="nav-auth-link active" href="/login">
+                <Link className="nav-auth-link" href="/login">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-log-in nav-link-icon" aria-hidden="true">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                     <polyline points="10 17 15 12 10 7"></polyline>
@@ -172,143 +144,122 @@ export default function LoginPage() {
           </div>
 
           {/* Main Body Content */}
-          <main style={{ flexGrow: 1, padding: '120px 24px 80px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <main style={{ flexGrow: 1, padding: '120px 24px 80px', maxWidth: '800px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             
-            <div className="glass-card" style={{ width: 'min(440px, 100%)', padding: '40px 32px', borderRadius: '28px', border: '1px solid var(--border-light)' }}>
-              
-              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                <span className="brandmark-dot" style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent)', marginRight: '6px' }}></span>
-                <span style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'var(--font-display), serif' }}>kaya<span style={{ opacity: 0.5 }}>.ge</span></span>
-              </div>
-
-              <h1 className="display" style={{ fontSize: '28px', fontWeight: 700, textAlign: 'center', margin: '0 0 8px' }}>Welcome back</h1>
-              <p style={{ color: 'var(--muted)', fontSize: '13px', textAlign: 'center', margin: '0 0 32px' }}>Sign in to plan your trip, list hosts and access the supra booking planner.</p>
-
-              {error && (
-                <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', color: '#b0314d', fontSize: '13px', marginBottom: '20px' }}>
-                  {error}
-                </div>
-              )}
-              {success && (
-                <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', color: '#287a43', fontSize: '13px', marginBottom: '20px' }}>
-                  {success}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '8px' }}>Email Address</label>
-                  <input 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    style={{ 
-                      width: '100%', 
-                      padding: '14px 16px', 
-                      borderRadius: '12px', 
-                      background: 'rgba(0,0,0,0.02)',
-                      border: '1px solid var(--border-light)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px'
-                    }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--muted)' }}>Password</label>
-                    <Link href="/login" style={{ fontSize: '12px', color: 'var(--muted)' }}>Forgot?</Link>
-                  </div>
-                  <input 
-                    type="password" 
-                    placeholder="••••••••" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={{ 
-                      width: '100%', 
-                      padding: '14px 16px', 
-                      borderRadius: '12px', 
-                      background: 'rgba(0,0,0,0.02)',
-                      border: '1px solid var(--border-light)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px'
-                    }}
-                  />
-                </div>
-
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  style={{ 
-                    width: '100%', 
-                    padding: '14px', 
-                    borderRadius: '99px', 
-                    background: '#1a120e', 
-                    color: '#fff', 
-                    fontWeight: 700, 
-                    border: 0,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </button>
-              </form>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0' }}>
-                <span style={{ flex: 1, height: '1px', background: 'var(--border-light)' }}></span>
-                <span style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600 }}>or</span>
-                <span style={{ flex: 1, height: '1px', background: 'var(--border-light)' }}></span>
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  type="button"
-                  style={{ 
-                    flex: 1, 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    background: 'transparent', 
-                    border: '1px solid var(--border-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                  Google
-                </button>
-                
-                <button 
-                  type="button"
-                  style={{ 
-                    flex: 1, 
-                    padding: '12px', 
-                    borderRadius: '12px', 
-                    background: 'transparent', 
-                    border: '1px solid var(--border-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  Facebook
-                </button>
-              </div>
-
+            {/* Navigation Tabs */}
+            <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.03)', borderRadius: '99px', padding: '4px', marginBottom: '32px' }}>
+              <button 
+                onClick={() => setActiveTab('tips')}
+                style={{
+                  padding: '8px 24px',
+                  borderRadius: '99px',
+                  border: 0,
+                  background: activeTab === 'tips' ? 'var(--bg-secondary)' : 'transparent',
+                  color: 'var(--text-primary)',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'tips' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Local Tips
+              </button>
+              <button 
+                onClick={() => setActiveTab('muse')}
+                style={{
+                  padding: '8px 24px',
+                  borderRadius: '99px',
+                  border: 0,
+                  background: activeTab === 'muse' ? 'var(--bg-secondary)' : 'transparent',
+                  color: 'var(--text-primary)',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'muse' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Travel Muse
+              </button>
             </div>
+
+            {activeTab === 'tips' ? (
+              /* Exact 1:1 Visual Parity matching Screenshot 2 */
+              <div 
+                className="dashboard-stat-card empty-state-card empty-state-card-compact" 
+                style={{ 
+                  margin: '40px auto', 
+                  width: '100%',
+                  maxWidth: '500px', 
+                  padding: '64px 32px', 
+                  textAlign: 'center', 
+                  borderRadius: '28px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '20px',
+                  border: '1px dashed rgba(0,0,0,0.08)'
+                }}
+              >
+                <div style={{ 
+                  width: '56px', 
+                  height: '56px', 
+                  borderRadius: '50%', 
+                  background: 'rgba(92,56,41,0.06)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: '#5c3829'
+                }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="24" height="24">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                </div>
+                <strong style={{ fontSize: '20px', fontWeight: 700, fontFamily: 'var(--font-display), serif' }}>No live guides yet.</strong>
+                <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.6, margin: 0, maxWidth: '320px' }}>
+                  Local tips are on the way. Come back soon.
+                </p>
+              </div>
+            ) : (
+              /* Curated Muse guide block */
+              <div style={{ width: '100%' }}>
+                
+                {/* Phrasebook Section */}
+                <section style={{ marginBottom: '40px', width: '100%' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display), serif', marginBottom: '16px' }}>Georgian Phrasebook</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+                    {PHRASES.map(p => (
+                      <div key={p.en} style={{ padding: '16px', borderRadius: '16px', background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border-light)' }}>
+                        <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{p.ka}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 600 }}>{p.en}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{p.meaning}</div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Region Guides */}
+                <section style={{ width: '100%' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-display), serif', marginBottom: '16px' }}>Explore Regions</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                    {REGIONS.map(r => (
+                      <div key={r.name} className="glass-card" style={{ borderRadius: '20px', overflow: 'hidden', padding: 0 }}>
+                        <div style={{ height: '140px', width: '100%', background: '#ccc' }}>
+                          <img src={r.img} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '16px' }}>
+                          <h4 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 4px' }}>{r.name}</h4>
+                          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, lineHeight: 1.4 }}>{r.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+              </div>
+            )}
 
           </main>
 
@@ -427,7 +378,7 @@ export default function LoginPage() {
             </Link>
           </li>
           <li>
-            <Link className="mobile-bottom-nav-item" href="/guides">
+            <Link className="mobile-bottom-nav-item active" aria-current="page" href="/guides">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-compass" aria-hidden="true">
                 <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path>
                 <circle cx="12" cy="12" r="10"></circle>
@@ -436,7 +387,7 @@ export default function LoginPage() {
             </Link>
           </li>
           <li>
-            <Link className="mobile-bottom-nav-item active" aria-current="page" href="/login">
+            <Link className="mobile-bottom-nav-item" href="/login">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-log-in" aria-hidden="true">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                 <polyline points="10 17 15 12 10 7"></polyline>
