@@ -79,7 +79,7 @@ export default function SharedNav() {
               {t('login') || 'SIGN UP/LOGIN'}
             </Link>
             
-            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu" style={{ display: 'none' }}>
+            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
               <span></span><span></span><span></span>
             </button>
           </div>
