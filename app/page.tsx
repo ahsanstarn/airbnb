@@ -145,71 +145,33 @@ export default function Home() {
             </nav>
           </div>
 
-          {/* Hero Stage - 3 Column Layout */}
+          {/* Hero Stage - Full Width Layout */}
           <div className="hero-stage">
-            {/* Left Side Card */}
-            <div className="hero-side-banner hero-side-banner-left">
-              <Link href="/offers" className="hero-side-card-link">
-                <div className="hero-side-card hero-side-card-listing">
-                  <div className="hero-side-card-listing-overlay" style={{ backgroundImage: `url(${HERO_SLIDES[2].image})` }}></div>
-                  <div className="hero-side-card-listing-rail">
-                    <div className="hero-side-card-listing-top">
-                      <span className="hero-side-card-kicker">{HERO_SLIDES[2].kicker}</span>
-                      <span className="hero-side-price">{HERO_SLIDES[2].price}</span>
-                    </div>
-                    <div className="hero-side-card-listing-bottom">
-                      <h3>{t('batumi_copyTitle')}</h3>
-                      <p>{t('batumi_copyText').slice(0, 80)}...</p>
-                    </div>
-                    <div className="hero-side-listing-footer">
-                      <span>{HERO_SLIDES[2].rating}</span>
-                      <span>{t('seeListing')}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            {/* Center Hero */}
             <div className="hero" ref={heroRef}>
-              <div className="hero-media" style={{ backgroundImage: `url(${slide.image})` }}></div>
+              <div className="hero-media active" style={{ backgroundImage: `url(${slide.image})` }}></div>
               <div className="hero-mist"></div>
               <div className="hero-content">
-                <div className="hero-grid">
-                  <div>
-                    <h1 className="display hero-title">
-                      {tTitle}<span>{tSpan}</span>
-                    </h1>
-                  </div>
+                <div className="hero-title-area">
+                  <h1 className="hero-title">
+                    {tTitle}<span>{tSpan}</span>
+                  </h1>
                   <div className="hero-copy">
                     <h2>{tCopyTitle}</h2>
                     <p>{tCopyText}</p>
                   </div>
                 </div>
-              </div>
-              <div className="hero-chips">
-                {HERO_SLIDES.map((s, i) => (
-                  <button key={s.id} className={`hero-chip ${i === activeSlide ? 'active' : ''}`} style={{ backgroundImage: `url(${s.image})` }} onClick={() => setActiveSlide(i)} aria-label={s.copyTitle} />
-                ))}
-              </div>
-            </div>
-
-            {/* Right Side Card - Travel Tip */}
-            <div className="hero-side-banner hero-side-banner-right">
-              <div className="hero-side-card hero-side-card-tip">
-                <div className="hero-side-card-stack">
-                  <div className="hero-side-visual">
-                    <div className="hero-side-visual-image" style={{ backgroundImage: `url(${HERO_SLIDES[2].image})` }}></div>
-                  </div>
-                  <div className="hero-side-card-copy">
-                    <span className="hero-side-eyebrow">{t('travelTip')}</span>
-                    <h3>{t('lockAirport')}</h3>
-                    <p>{t('lockAirportDesc')}</p>
-                  </div>
-                  <div className="hero-side-card-footer">
-                    <span>{t('bestBooked')}</span>
-                    <span>{t('helpfulTbilisiBatumi')}</span>
-                  </div>
+                
+                {/* Right side circular thumbnails */}
+                <div className="hero-thumbnails">
+                  {HERO_SLIDES.map((s, i) => (
+                    <div 
+                      key={s.id} 
+                      className={`hero-thumb ${i === activeSlide ? 'active' : ''}`} 
+                      style={{ backgroundImage: `url(${s.image})` }} 
+                      onClick={() => setActiveSlide(i)} 
+                      aria-label={s.copyTitle}
+                    />
+                  ))}
                 </div>
               </div>
             </div>

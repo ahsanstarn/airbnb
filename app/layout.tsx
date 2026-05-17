@@ -4,6 +4,8 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
 import { LanguageProvider } from "@/lib/lang-context";
 import CustomCursor from "@/app/components/CustomCursor";
+import SharedNav from "@/app/components/SharedNav";
+import KlaraWidget from "@/app/components/KlaraWidget";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -38,7 +40,9 @@ export default function RootLayout({
         <LanguageProvider>
           <ThemeProvider>
             <CustomCursor />
+            <SharedNav />
             {children}
+            <KlaraWidget />
           </ThemeProvider>
         </LanguageProvider>
       </body>
