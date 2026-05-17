@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-context';
 import { useLanguage } from '@/lib/lang-context';
-import { createClient } from '@supabase/supabase-js';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,18 +26,12 @@ export default function LoginPage() {
     setSuccess(null);
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-      );
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
+      const res = await fetch(`/api/auth/oauth?provider=${provider}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'OAuth failed');
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (err: unknown) {
       setSocialLoading(null);
       if (err instanceof Error) {
