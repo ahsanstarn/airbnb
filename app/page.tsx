@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/lang-context';
 
@@ -13,7 +13,7 @@ const HERO_SLIDES = [
     titleSpan: 'TBILISI',
     copyTitle: 'Discover Tbilisi',
     copyText: 'Ancient history, winding brick streets, cozy sulphur baths, and a vibrant modern culinary scene at the heart of Georgia.',
-    image: 'https://kaya-rent.vercel.app/_next/static/media/tbilis.be5749ab.jpeg',
+    image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=1200&q=80',
     price: '180 GEL / night',
     location: 'Tbilisi, Old Town',
     rating: '4.9 rating',
@@ -27,7 +27,7 @@ const HERO_SLIDES = [
     titleSpan: 'KAZBEGI',
     copyTitle: 'Discover Kazbegi',
     copyText: 'Snowline views, dramatic ridges, ancient church silhouettes and crisp alpine air make this the ultimate contrast to the capital.',
-    image: 'https://kaya-rent.vercel.app/_next/static/media/kazbegi.721f4951.jpeg',
+    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
     price: '280 GEL / night',
     location: 'Kazbegi, Gergeti',
     rating: '4.8 rating',
@@ -41,7 +41,7 @@ const HERO_SLIDES = [
     titleSpan: 'BATUMI',
     copyTitle: 'Discover Batumi',
     copyText: 'A light-filled stay framed around the promenade, sea-facing mornings, magnetic sunsets, and easy evening walks along the coast.',
-    image: 'https://kaya-rent.vercel.app/_next/static/media/batumi.d3932802.jpeg',
+    image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80',
     price: '210 GEL / night',
     location: 'Batumi, Coastline',
     rating: '4.7 rating',
@@ -53,6 +53,23 @@ export default function Home() {
   const { t } = useLanguage();
   const [activeSlide, setActiveSlide] = useState(1);
   const heroRef = useRef<HTMLDivElement>(null);
+  const revealRefs = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+    );
+    revealRefs.current.forEach((el) => { if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, []);
 
   const slide = HERO_SLIDES[activeSlide];
   const tTitle = t(slide.id + '_title');
@@ -65,33 +82,35 @@ export default function Home() {
     return { title: t(s.id + '_title'), span: t(s.id + '_span'), copyTitle: t(s.id + '_copyTitle'), copyText: t(s.id + '_copyText'), image: s.image };
   };
 
+  const setRevealRef = (i: number) => (el: HTMLElement | null) => { revealRefs.current[i] = el; };
+
   return (
     <div className="site-shell">
       <div className="shell">
         <div className="homepage-shell">
 
-          {/* Hero Stage - Full Width Layout */}
-          <div className="hero-stage">
-            <div className="hero" ref={heroRef}>
+          {/* Hero Stage */}
+          <div className="hero-stage depth-scene">
+            <div className="hero mouse-tilt-hero" ref={heroRef}>
               <div className="hero-media active" style={{ backgroundImage: `url(${slide.image})` }}></div>
-              <div className="hero-mist"></div>
-              <div className="hero-content">
+              <div className="hero-mist depth-mid"></div>
+              <div className="hero-content depth-fg">
                 <div className="hero-title-area">
-                  <h1 className="hero-title">
-                    {tTitle}<span>{tSpan}</span>
+                  <h1 className="hero-title animate-blur-in" style={{ perspective: '800px' }}>
+                    {tTitle}<span className="animate-slide-up animate-delay-2">{tSpan}</span>
                   </h1>
-                  <div className="hero-copy">
+                  <div className="hero-copy animate-slide-up animate-delay-3">
                     <h2>{tCopyTitle}</h2>
                     <p>{tCopyText}</p>
                   </div>
                 </div>
                 
                 {/* Right side circular thumbnails */}
-                <div className="hero-thumbnails">
+                <div className="hero-thumbnails float-3d-slow">
                   {HERO_SLIDES.map((s, i) => (
                     <div 
                       key={s.id} 
-                      className={`hero-thumb ${i === activeSlide ? 'active' : ''}`} 
+                      className={`hero-thumb tilt-3d-light ${i === activeSlide ? 'active' : ''}`} 
                       style={{ backgroundImage: `url(${s.image})` }} 
                       onClick={() => setActiveSlide(i)} 
                       aria-label={s.copyTitle}
@@ -108,9 +127,9 @@ export default function Home() {
               {HERO_SLIDES.map((s, i) => {
                 const sd = slideData(i);
                 return (
-                  <div key={s.id} className="hero-side-card hero-side-card-listing" style={{ minWidth: '280px', scrollSnapAlign: 'start' }} onClick={() => setActiveSlide(i)}>
-                    <div className="hero-side-card-listing-overlay" style={{ backgroundImage: `url(${sd.image})` }}></div>
-                    <div className="hero-side-card-listing-rail">
+                  <div key={s.id} className="hero-side-card hero-side-card-listing card-3d-glow" style={{ minWidth: '280px', scrollSnapAlign: 'start' }} onClick={() => setActiveSlide(i)}>
+                    <div className="hero-side-card-listing-overlay depth-bg" style={{ backgroundImage: `url(${sd.image})` }}></div>
+                    <div className="hero-side-card-listing-rail depth-fg">
                       <div className="hero-side-card-listing-top">
                         <span className="hero-side-card-kicker">{s.kicker}</span>
                         <span className="hero-side-price">{s.price}</span>
@@ -136,21 +155,21 @@ export default function Home() {
           </div>
 
           {/* Featured Offers Section */}
-          <section className="homepage-featured-section">
+          <section className="homepage-featured-section fade-up" ref={setRevealRef(0)}>
             <div className="section-head">
               <div>
                 <h2 className="section-title">{t('popularOffers')}</h2>
                 <p className="section-copy">{t('offersDesc')}</p>
               </div>
             </div>
-            <div className="homepage-empty-card">
+            <div className="homepage-empty-card card-3d">
               <strong>{t('noOffersYet')}</strong>
               <p>{t('noOffersDesc')}</p>
             </div>
           </section>
 
           {/* Footer */}
-          <footer className="footer">
+          <footer className="footer fade-up" ref={setRevealRef(1)}>
             <div className="footer-grid">
               <div className="footer-brand">
                 <div className="brandmark">

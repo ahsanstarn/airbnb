@@ -277,7 +277,7 @@ export default function OffersPage() {
             {filteredOffers.length > 0 ? (
               <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
                 {filteredOffers.map((offer) => (
-                  <div key={offer.id} className="glass-card hover-lift" style={{ borderRadius: '24px', overflow: 'hidden', padding: 0 }}>
+                  <div key={offer.id} className="glass-card hover-lift card-3d-glow" style={{ borderRadius: '24px', overflow: 'hidden', padding: 0 }}>
                     <div style={{ position: 'relative', height: '200px', width: '100%', background: '#ccc' }}>
                       <img 
                         src={offer.image} 

@@ -125,18 +125,15 @@ export default function HotelsPage() {
             {liveListings.map((listing, i) => (
               <div
                 key={listing.id}
+                className="card-3d-glow"
                 style={{
                   borderRadius: '20px',
                   background: 'rgba(255, 251, 246, 0.84)',
                   border: '1px solid hsla(0,0%,100%,.35)',
                   backdropFilter: 'blur(24px) saturate(120%)',
                   overflow: 'hidden',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  transform: 'translateY(0)',
                   cursor: 'pointer',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.08)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 <div style={{ position: 'relative', width: '100%', height: '240px' }}>
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill style={{ objectFit: 'cover' }} />

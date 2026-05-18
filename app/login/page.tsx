@@ -86,11 +86,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-shell">
+    <div className="login-shell perspective-3d depth-scene">
       {/* Left Visual Panel */}
-      <div className="login-visual" style={{ backgroundImage: 'url(https://kaya-rent.vercel.app/_next/static/media/kazbegi.721f4951.jpeg)' }}>
+      <div className="login-visual tilt-3d mouse-tilt-strong depth-mid" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80)' }}>
         <div className="login-visual-overlay"></div>
-        <div className="login-visual-content">
+        <div className="login-visual-content animate-blur-in">
           <h2>{t('welcomeBack')}</h2>
           <p>{t('loginDesc')}</p>
         </div>
@@ -98,29 +98,29 @@ export default function LoginPage() {
 
       {/* Right Form Panel */}
       <div className="login-form-wrap">
-        <div className="login-form">
+        <div className="login-form animate-zoom-in">
           <h1>{t('welcomeBack')}</h1>
           <p>{t('loginDesc')}</p>
 
           {error && (
-            <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', color: '#b0314d', fontSize: '13px', marginBottom: '20px' }}>
+            <div className="animate-slide-up" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', color: '#b0314d', fontSize: '13px', marginBottom: '20px' }}>
               {error}
             </div>
           )}
           {success && (
-            <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', color: '#287a43', fontSize: '13px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="animate-slide-up" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', color: '#287a43', fontSize: '13px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }}></span>
               {success}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="login-field">
+            <div className="login-field animate-slide-up animate-delay-1">
               <label>{t('emailLabel')}</label>
               <input type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
-            <div className="login-field">
+            <div className="login-field animate-slide-up animate-delay-2">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <label style={{ marginBottom: 0 }}>{t('passwordLabel')}</label>
                 <button type="button" className="login-forgot">{t('forgotPassword')}</button>
@@ -128,14 +128,14 @@ export default function LoginPage() {
               <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
 
-            <button type="submit" className="login-submit" disabled={loading || !!socialLoading}>
+            <button type="submit" className="login-submit animate-slide-up animate-delay-3" disabled={loading || !!socialLoading}>
               {loading ? t('signingIn') : t('signInBtn')}
             </button>
           </form>
 
-          <div className="login-divider">{t('orContinue')}</div>
+          <div className="login-divider animate-fade-in animate-delay-4">{t('orContinue')}</div>
 
-          <div className="login-socials">
+          <div className="login-socials animate-slide-up animate-delay-4">
             <button type="button" className="login-social-btn" onClick={() => handleSocialLogin('google')} disabled={loading || !!socialLoading}>
               {socialLoading === 'google' ? (
                 <span style={{ fontSize: '11px' }}>Connecting...</span>
@@ -159,7 +159,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <p className="login-signup">
+          <p className="login-signup animate-fade-in animate-delay-5">
             {t('newToKaya')} <Link href="/signup">{t('createAccount')}</Link>
           </p>
         </div>

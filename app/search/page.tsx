@@ -332,7 +332,7 @@ function SearchContent() {
           ) : listings.length > 0 ? (
             <div className="card-grid">
               {listings.map((listing: any) => (
-                <Link key={listing.id} href={`/listing/${listing.id}`} className="listing-card animate-card">
+                  <Link key={listing.id} href={`/listing/${listing.id}`} className="listing-card animate-card card-3d-glow">
                   <div className="listing-card-media" style={{ backgroundImage: `url(${listing.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=70'})` }} />
                   <div className="listing-card-top">
                     <span className="price-tag">{listing.price_per_night} GEL / night</span>

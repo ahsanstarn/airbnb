@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/lib/lang-context";
 import CustomCursor from "@/app/components/CustomCursor";
 import SharedNav from "@/app/components/SharedNav";
 import KlaraWidget from "@/app/components/KlaraWidget";
+import MouseTilt from "@/app/components/MouseTilt";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>
           <ThemeProvider>
+            <MouseTilt />
             <CustomCursor />
             <SharedNav />
             {children}
