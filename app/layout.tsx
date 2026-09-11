@@ -42,8 +42,6 @@ export default function RootLayout({
         <LanguageProvider>
           <ThemeProvider>
             <MouseTilt />
-            <ClickSound />
-            <CustomCursor />
             <SharedNav />
             {children}
             <KlaraWidget />

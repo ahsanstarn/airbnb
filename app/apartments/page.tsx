@@ -23,11 +23,30 @@ const staticListings: Listing[] = [
 export default function ApartmentsPage() {
   const [liveListings, setLiveListings] = useState<Listing[]>(staticListings);
   const [showMap, setShowMap] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     async function init() {
       try {
+        const res = await fetch('/api/listings');
+        if (res.ok) {
+          const data = await res.json();
+          const apts = (data.listings || []).filter(
+            (l: any) => l.category === 'apartments' || l.category === 'apartment' || l.type === 'apartments' || l.type === 'apartment'
+          );
+          if (apts.length > 0) {
+            setLiveListings(apts.map((l: any) => ({
+              id: l._id || l.id,
+              title: l.title,
+              location: l.location || l.city,
+              price: l.price_per_night || l.price || 95,
+              rating: l.overall_rating || l.rating || 4.8,
+              img: (l.images && l.images[0]) || staticListings[0].img,
+              images: l.images,
+              type: l.type || l.category,
+            })));
+            return;
+          }
+        }
         setLiveListings(staticListings);
       } catch {
         setLiveListings(staticListings);
@@ -38,60 +57,23 @@ export default function ApartmentsPage() {
 
   return (
     <>
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand">
-            <span className="brandmark-dot"></span>
-            <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-          </Link>
-            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
-              <span></span><span></span><span></span>
-            </button>
-          <div className="nav-links">
-             <Link href="/klara">KLARA</Link>
-             <Link href="/search">Visitors</Link>
-            <Link href="/hotels">Stays</Link>
-            <Link href="/muse">Where to go</Link>
-            <Link href="/contact">Contact us</Link>
-          </div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right">
-            <Link href="/login">Become a host</Link>
-            <Link href="/login" className="nav-icon" aria-label="Login">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"></path></svg>
-            </Link>
-          </div>
-        </nav>
-      </div>
-
-        {/* Mobile Nav Overlay */}
-        <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-          <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-          <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-          <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-          <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-          <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-          <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-          <Link href="/login" onClick={() => setMobileNavOpen(false)}>Become a host</Link>
-        </div>
-
-      <main style={{ background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)', minHeight: '100vh' }}>
-        <section style={{ position: 'relative', padding: '120px 24px 80px', background: 'linear-gradient(135deg, #7a9b76 0%, #6b8b67 30%, #5a7a56 60%, #4a6a46 100%)', overflow: 'hidden' }}>
+      <main style={{ background: 'var(--bg)', minHeight: '100vh', paddingTop: '80px' }}>
+        <section style={{ position: 'relative', padding: '80px 24px 60px', background: 'linear-gradient(135deg, #7a9b76 0%, #6b8b67 30%, #5a7a56 60%, #4a6a46 100%)', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 40%, rgba(200,230,190,0.25) 0%, transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(80,120,70,0.15) 0%, transparent 50%)' }} />
           <div style={{ position: 'relative', maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ borderRadius: '20px', background: 'rgba(255, 251, 246, 0.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', padding: '48px 40px', textAlign: 'center' }}>
-              <h1 style={{ fontFamily: "'var(--font-display), serif'", fontSize: 'clamp(2.5rem,6vw,4.5rem)', fontWeight: 400, letterSpacing: '0.06em', margin: '0 0 8px', color: '#1a120e' }}>APARTMENTS</h1>
-              <p style={{ fontFamily: "'var(--font-body), system-ui, sans-serif'", color: '#5a4538', fontSize: '1.15rem', margin: '0 0 28px' }}>Homes and flats across Georgia</p>
+            <div style={{ borderRadius: '20px', background: 'rgba(255, 251, 246, 0.88)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', padding: '48px 40px', textAlign: 'center' }}>
+              <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(2.5rem,6vw,4.5rem)', fontWeight: 400, letterSpacing: '0.06em', margin: '0 0 8px', color: '#1a120e' }}>APARTMENTS</h1>
+              <p style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: '#5a4538', fontSize: '1.15rem', margin: '0 0 28px' }}>Homes and flats across Georgia</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', background: 'rgba(255, 251, 246, 0.6)', borderRadius: '999px', padding: '6px', maxWidth: '680px', margin: '0 auto' }}>
-                <Link href="/search?focus=region" style={{ flex: '1 1 auto', minWidth: '120px', padding: '12px 20px', borderRadius: '999px', textDecoration: 'none', color: '#1a120e', fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.9rem' }}>
+                <Link href="/search?focus=region" style={{ flex: '1 1 auto', minWidth: '120px', padding: '12px 20px', borderRadius: '999px', textDecoration: 'none', color: '#1a120e', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.9rem' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6 }}>Location</span>
                   <span style={{ display: 'block', fontWeight: 500 }}>Where to?</span>
                 </Link>
-                <Link href="/search?focus=dates" style={{ flex: '1 1 auto', minWidth: '120px', padding: '12px 20px', borderRadius: '999px', textDecoration: 'none', color: '#1a120e', fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.9rem' }}>
+                <Link href="/search?focus=dates" style={{ flex: '1 1 auto', minWidth: '120px', padding: '12px 20px', borderRadius: '999px', textDecoration: 'none', color: '#1a120e', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.9rem' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6 }}>Check in</span>
                   <span style={{ display: 'block', fontWeight: 500 }}>Add dates</span>
                 </Link>
-                <Link href="/search?focus=guests" style={{ flex: '1 1 auto', minWidth: '120px', padding: '12px 20px', borderRadius: '999px', textDecoration: 'none', color: '#1a120e', fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.9rem' }}>
+                <Link href="/search?focus=guests" style={{ flex: '1 1 auto', minWidth: '120px', padding: '12px 20px', borderRadius: '999px', textDecoration: 'none', color: '#1a120e', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.9rem' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.6 }}>Guests</span>
                   <span style={{ display: 'block', fontWeight: 500 }}>Add visitors</span>
                 </Link>
@@ -105,11 +87,11 @@ export default function ApartmentsPage() {
 
         <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-            <h2 style={{ fontFamily: "'var(--font-display), serif'", fontSize: '1.8rem', fontWeight: 400, color: '#1a120e', margin: 0 }}>Featured Apartments</h2>
+            <h2 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.8rem', fontWeight: 400, color: 'var(--ink)', margin: 0 }}>Featured Apartments</h2>
             <button
               type="button"
               onClick={() => setShowMap(!showMap)}
-              style={{ padding: '10px 20px', borderRadius: '999px', border: '1px solid rgba(26,18,14,0.2)', background: 'rgba(255,251,246,0.7)', cursor: 'pointer', fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.85rem', transition: 'all 0.2s' }}
+              style={{ padding: '10px 20px', borderRadius: '999px', border: '1px solid rgba(26,18,14,0.2)', background: 'rgba(255,251,246,0.7)', cursor: 'pointer', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.85rem', transition: 'all 0.2s' }}
             >
               {showMap ? 'Hide Map' : 'Show Map'}
             </button>
@@ -123,16 +105,20 @@ export default function ApartmentsPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '28px' }}>
             {liveListings.map((listing) => (
-              <div
+              <Link
                 key={listing.id}
+                href={`/listing/${listing.id}`}
                 className="card-3d-glow"
                 style={{
                   borderRadius: '20px',
-                  background: 'rgba(255, 251, 246, 0.84)',
-                  border: '1px solid hsla(0,0%,100%,.35)',
+                  background: 'var(--card-bg, rgba(255, 251, 246, 0.84))',
+                  border: '1px solid var(--glass-border, hsla(0,0%,100%,.35))',
                   backdropFilter: 'blur(24px) saturate(120%)',
                   overflow: 'hidden',
                   cursor: 'pointer',
+                  textDecoration: 'none',
+                  display: 'block',
+                  color: 'inherit',
                 }}
               >
                 <div style={{ position: 'relative', width: '100%', height: '240px' }}>
@@ -140,8 +126,8 @@ export default function ApartmentsPage() {
                   <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.9)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.95rem', fontWeight: 600, color: '#1a120e' }}>₾{listing.price}</div>
                 </div>
                 <div style={{ padding: '20px 22px 24px' }}>
-                  <h3 style={{ fontFamily: "'var(--font-display), serif'", fontSize: '1.15rem', fontWeight: 500, margin: '0 0 8px', color: '#1a120e' }}>{listing.title}</h3>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.9rem', color: '#5a4538' }}>
+                  <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.15rem', fontWeight: 500, margin: '0 0 8px', color: 'var(--ink)' }}>{listing.title}</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.9rem', color: 'var(--text-secondary, #5a4538)' }}>
                     <span>{listing.location}</span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -149,7 +135,7 @@ export default function ApartmentsPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

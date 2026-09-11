@@ -59,10 +59,23 @@ export async function getCurrentUser(req: NextRequest) {
   if (!payload) return null;
 
   const db = await getDb();
-  const user = await db.collection('users').findOne(
-    { _id: new ObjectId(payload.userId) },
-    { projection: { passwordHash: 0 } }
-  );
+  let user: any = null;
+  if (ObjectId.isValid(payload.userId)) {
+    try {
+      user = await db.collection('users').findOne(
+        { _id: new ObjectId(payload.userId) },
+        { projection: { passwordHash: 0 } }
+      );
+    } catch {
+      user = null;
+    }
+  }
+  if (!user) {
+    user = await db.collection('users').findOne(
+      { _id: payload.userId },
+      { projection: { passwordHash: 0 } }
+    );
+  }
 
   return user;
 }

@@ -13,7 +13,6 @@ const cars = [
 
 export default function CarsPage() {
   const [bookingCar, setBookingCar] = useState<string | null>(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const handleBook = (name: string) => {
     setBookingCar(name);
@@ -22,48 +21,11 @@ export default function CarsPage() {
 
   return (
     <>
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand">
-            <span className="brandmark-dot"></span>
-            <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-          </Link>
-            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
-              <span></span><span></span><span></span>
-            </button>
-          <div className="nav-links">
-             <Link href="/klara">KLARA</Link>
-             <Link href="/search">Visitors</Link>
-            <Link href="/hotels">Stays</Link>
-            <Link href="/muse">Where to go</Link>
-            <Link href="/contact">Contact us</Link>
-          </div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right">
-            <Link href="/login">Become a host</Link>
-            <Link href="/login" className="nav-icon" aria-label="Login">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"></path></svg>
-            </Link>
-          </div>
-        </nav>
-      </div>
-
-        {/* Mobile Nav Overlay */}
-        <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-          <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-          <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-          <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-          <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-          <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-          <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-          <Link href="/login" onClick={() => setMobileNavOpen(false)}>Become a host</Link>
-        </div>
-
-      <main style={{ background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)', minHeight: '100vh' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '120px 24px 60px' }}>
+      <main style={{ background: 'var(--bg)', minHeight: '100vh', paddingTop: '80px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 24px' }}>
           <header style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h1 style={{ fontFamily: "'var(--font-display), serif'", fontSize: 'clamp(2rem,5vw,3.5rem)', fontWeight: 400, letterSpacing: '0.04em', color: '#1a120e', margin: '0 0 12px' }}>Car Rentals in Georgia</h1>
-            <p style={{ fontFamily: "'var(--font-body), system-ui, sans-serif'", color: '#5a4538', fontSize: '1.1rem', margin: 0 }}>Explore Sakartvelo at your own pace. From Tbilisi to the mountains.</p>
+            <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(2rem,5vw,3.5rem)', fontWeight: 400, letterSpacing: '0.04em', color: 'var(--ink)', margin: '0 0 12px' }}>Car Rentals in Georgia</h1>
+            <p style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: 'var(--text-secondary, #5a4538)', fontSize: '1.1rem', margin: 0 }}>Explore Sakartvelo at your own pace. From Tbilisi to the mountains.</p>
           </header>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
@@ -73,8 +35,8 @@ export default function CarsPage() {
                 className="card-3d-glow"
                 style={{
                   borderRadius: '20px',
-                  background: 'rgba(255, 251, 246, 0.84)',
-                  border: '1px solid hsla(0,0%,100%,.35)',
+                  background: 'var(--card-bg, rgba(255, 251, 246, 0.84))',
+                  border: '1px solid var(--glass-border, hsla(0,0%,100%,.35))',
                   backdropFilter: 'blur(24px) saturate(120%)',
                   overflow: 'hidden',
                 }}
@@ -84,12 +46,12 @@ export default function CarsPage() {
                 </div>
                 <div style={{ padding: '18px 20px 22px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h3 style={{ fontFamily: "'var(--font-display), serif'", fontSize: '1.05rem', fontWeight: 500, margin: 0, color: '#1a120e' }}>{car.name}</h3>
-                    <span style={{ fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8a7a6a', background: 'rgba(0,0,0,0.04)', borderRadius: '999px', padding: '4px 10px' }}>{car.type}</span>
+                    <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.05rem', fontWeight: 500, margin: 0, color: 'var(--ink)' }}>{car.name}</h3>
+                    <span style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8a7a6a', background: 'rgba(0,0,0,0.04)', borderRadius: '999px', padding: '4px 10px' }}>{car.type}</span>
                   </div>
                   <div style={{ marginBottom: '16px' }}>
-                    <span style={{ fontFamily: "'var(--font-display), serif'", fontSize: '1.3rem', fontWeight: 500, color: '#1a120e' }}>₾{car.price}</span>
-                    <span style={{ fontFamily: "'var(--font-body), system-ui, sans-serif'", fontSize: '0.85rem', color: '#8a7a6a' }}> / day</span>
+                    <span style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.3rem', fontWeight: 500, color: 'var(--ink)' }}>₾{car.price}</span>
+                    <span style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.85rem', color: 'var(--text-secondary, #8a7a6a)' }}> / day</span>
                   </div>
                   <button
                     onClick={() => handleBook(car.name)}
@@ -99,9 +61,9 @@ export default function CarsPage() {
                       padding: '12px',
                       borderRadius: '999px',
                       border: 'none',
-                      background: bookingCar === car.name ? '#2a6e3a' : '#1a120e',
-                      color: '#fff',
-                      fontFamily: "'var(--font-body), system-ui, sans-serif'",
+                      background: bookingCar === car.name ? '#2a6e3a' : 'var(--ink)',
+                      color: 'var(--bg, #fff)',
+                      fontFamily: 'var(--font-body), system-ui, sans-serif',
                       fontSize: '0.9rem',
                       fontWeight: 500,
                       cursor: bookingCar !== null ? 'default' : 'pointer',
@@ -125,12 +87,12 @@ export default function CarsPage() {
             left: '50%',
             transform: 'translateX(-50%)',
             borderRadius: '999px',
-            background: 'rgba(255, 251, 246, 0.92)',
-            border: '1px solid hsla(0,0%,100%,.35)',
+            background: 'var(--glass-surface, rgba(255, 251, 246, 0.92))',
+            border: '1px solid var(--glass-border, hsla(0,0%,100%,.35))',
             backdropFilter: 'blur(24px) saturate(120%)',
             padding: '14px 28px',
-            fontFamily: "'var(--font-body), system-ui, sans-serif'",
-            color: '#1a120e',
+            fontFamily: 'var(--font-body), system-ui, sans-serif',
+            color: 'var(--ink)',
             fontSize: '0.9rem',
             whiteSpace: 'nowrap',
             zIndex: 100,

@@ -1,23 +1,45 @@
 import { MongoClient, Db } from 'mongodb';
+import { getLocalDb } from './local-db';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kaya';
-const DB_NAME = 'kaya';
+const MONGODB_URI = process.env.MONGODB_URI || '';
+const DB_NAME = process.env.MONGODB_DB_NAME || 'kaya';
 
 let cachedClient: MongoClient | null = null;
 let cachedDb: Db | null = null;
+let useLocalFallback = false;
 
-export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
+export async function connectToDatabase(): Promise<{ client: MongoClient | null; db: Db }> {
+  if (useLocalFallback) {
+    return { client: null, db: getLocalDb() as unknown as Db };
+  }
+
   if (cachedClient && cachedDb) {
     return { client: cachedClient, db: cachedDb };
   }
 
-  const client = await MongoClient.connect(MONGODB_URI);
-  const db = client.db(DB_NAME);
+  // If no MongoDB URI provided or explicit local flag set
+  if (!MONGODB_URI || process.env.USE_LOCAL_DB === 'true') {
+    useLocalFallback = true;
+    return { client: null, db: getLocalDb() as unknown as Db };
+  }
 
-  cachedClient = client;
-  cachedDb = db;
+  try {
+    const client = new MongoClient(MONGODB_URI, {
+      serverSelectionTimeoutMS: 1500,
+      connectTimeoutMS: 1500,
+    });
+    await client.connect();
+    const db = client.db(DB_NAME);
 
-  return { client, db };
+    cachedClient = client;
+    cachedDb = db;
+
+    return { client, db };
+  } catch (err) {
+    console.warn('[DB] MongoDB connection timed out or unavailable. Falling back to local database engine (data/kaya-db.json).');
+    useLocalFallback = true;
+    return { client: null, db: getLocalDb() as unknown as Db };
+  }
 }
 
 export async function getDb(): Promise<Db> {

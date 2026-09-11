@@ -53,7 +53,7 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
     if (step === 'dates') { if (checkIn && checkOut) setStep('details'); return; }
     if (step === 'details') { setStep('payment'); return; }
     if (step === 'payment') {
-      const token = localStorage.getItem('kaya_token');
+      const token = localStorage.getItem('token') || localStorage.getItem('kaya_token');
       if (!token) { router.push('/login'); return; }
       setLoading(true);
       setError('');
@@ -85,15 +85,7 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
     }
   };
 
-  const nav = (
-    <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-      <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-        <Link href="/" className="nav-brand"><span className="brandmark-dot"></span><span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span></Link>
-        <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu"><span></span><span></span><span></span></button>
-        <div className="nav-links"><Link href="/klara">KLARA</Link><Link href="/search">Visitors</Link><Link href="/hotels">Stays</Link><Link href="/muse">Where to go</Link><Link href="/contact">Contact us</Link></div>
-      </nav>
-    </div>
-  );
+  const nav = null;
 
   const glass = { borderRadius: '24px', padding: '36px 32px', background: 'rgba(255,251,246,.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)' };
 
