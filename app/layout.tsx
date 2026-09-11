@@ -3,11 +3,10 @@ import "./globals.css";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
 import { LanguageProvider } from "@/lib/lang-context";
-import CustomCursor from "@/app/components/CustomCursor";
 import SharedNav from "@/app/components/SharedNav";
+import MobileBottomNav from "@/app/components/MobileBottomNav";
 import KlaraWidget from "@/app/components/KlaraWidget";
 import MouseTilt from "@/app/components/MouseTilt";
-import ClickSound from "@/app/components/ClickSound";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -45,6 +44,7 @@ export default function RootLayout({
             <SharedNav />
             {children}
             <KlaraWidget />
+            <MobileBottomNav />
           </ThemeProvider>
         </LanguageProvider>
       </body>

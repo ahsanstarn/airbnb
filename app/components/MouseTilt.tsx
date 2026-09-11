@@ -4,6 +4,10 @@ import { useEffect } from 'react';
 
 export default function MouseTilt() {
   useEffect(() => {
+    // Disable on mobile/touch screens to eliminate CPU/GPU style recalculation lag
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 780) return;
+
     let ticking = false;
     const handleMouseMove = (e: MouseEvent) => {
       if (!ticking) {

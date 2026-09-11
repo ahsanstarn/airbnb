@@ -56,6 +56,7 @@ export default function KlaraWidget() {
   return (
     <div style={{ display: isHidden ? 'none' : 'block' }}>
       <div 
+        className="klara-widget-container"
         style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
           display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
@@ -64,6 +65,7 @@ export default function KlaraWidget() {
       >
         {/* Chat window */}
         <div 
+          className="klara-chat-window"
           style={{
             width: '340px', height: '480px', maxHeight: 'calc(100vh - 100px)',
             background: 'rgba(255, 251, 246, 0.95)',

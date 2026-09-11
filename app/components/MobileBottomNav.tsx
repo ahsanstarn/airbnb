@@ -1,75 +1,139 @@
 'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const NAV_ITEMS = [
-  {
-    label: 'Homepage',
-    href: '/',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" width="22" height="22">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-    ),
-  },
-  {
-    label: 'Offers',
-    href: '/search',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" width="22" height="22">
-        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
-      </svg>
-    ),
-    special: true,
-  },
-  {
-    label: 'Tours',
-    href: '/tours',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" width="22" height="22">
-        <path d="M3 6c0 0 2-1 5-1s5 2 8 2 5-1 5-1v13c0 0-2 1-5 1s-5-2-8-2-5 1-5 1V6z"/>
-        <path d="M3 6v13M21 6v13"/>
-      </svg>
-    ),
-  },
-  {
-    label: 'Guides',
-    href: '/muse',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" width="22" height="22">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 8v4l2 2"/>
-        <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
-      </svg>
-    ),
-  },
-  {
-    label: 'Sign up/Login',
-    href: '/login',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" width="22" height="22">
-        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-        <path d="M10 17l5-5-5-5M15 12H3"/>
-      </svg>
-    ),
-  },
-];
-
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
+    if (!token) return;
+
+    fetch('/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          setCurrentUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, [pathname]);
+
+  // Hide on admin routes or checkout booking flows to maintain focused checkout
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/book/')) {
+    return null;
+  }
+
+  const profileHref = currentUser
+    ? currentUser.role === 'business'
+      ? '/business/dashboard'
+      : '/dashboard'
+    : '/login';
+
+  const profileLabel = currentUser
+    ? (currentUser.name ? currentUser.name.split(' ')[0] : 'Profile')
+    : 'Log In';
+
+  const isHomeActive = pathname === '/';
+  const isSearchActive = pathname === '/search';
+  const isStaysActive = pathname.startsWith('/hotels') || pathname.startsWith('/apartments');
+  const isKlaraActive = pathname.startsWith('/klara') || pathname.startsWith('/chat');
+  const isProfileActive = pathname.startsWith('/dashboard') || pathname.startsWith('/business/dashboard') || pathname.startsWith('/login');
 
   return (
-    <nav className="mobile-bottom-nav">
-      {NAV_ITEMS.map((item) => {
-        const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-        return (
-          <Link key={item.href} href={item.href} className={`mobile-bottom-nav-item${isActive ? ' active' : ''}${item.special ? ' special' : ''}`}>
-            <span className="mobile-bottom-nav-icon">{item.icon(isActive)}</span>
-            <span className="mobile-bottom-nav-label">{item.label}</span>
-          </Link>
-        );
-      })}
+    <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
+      {/* 1. Explore / Home */}
+      <Link
+        href="/"
+        className={`mobile-bottom-nav-item ${isHomeActive ? 'active' : ''}`}
+        aria-label="Explore homepage"
+      >
+        <span className="mobile-bottom-nav-icon">
+          <svg viewBox="0 0 24 24" fill={isHomeActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.9" width="22" height="22">
+            <path d="M3 10.25L12 3l9 7.25V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20V10.25z" />
+            <path d="M9 21v-7a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v7" />
+          </svg>
+        </span>
+        <span className="mobile-bottom-nav-label">Explore</span>
+      </Link>
+
+      {/* 2. Search */}
+      <Link
+        href="/search"
+        className={`mobile-bottom-nav-item ${isSearchActive ? 'active' : ''}`}
+        aria-label="Search listings"
+      >
+        <span className="mobile-bottom-nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" width="21" height="21">
+            <circle cx="11" cy="11" r="7.5" />
+            <path d="M16.5 16.5L21.5 21.5" strokeLinecap="round" />
+          </svg>
+        </span>
+        <span className="mobile-bottom-nav-label">Search</span>
+      </Link>
+
+      {/* 3. Stays */}
+      <Link
+        href="/hotels"
+        className={`mobile-bottom-nav-item ${isStaysActive ? 'active' : ''}`}
+        aria-label="Browse stays and hotels"
+      >
+        <span className="mobile-bottom-nav-icon">
+          <svg viewBox="0 0 24 24" fill={isStaysActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.9" width="22" height="22">
+            <path d="M3 21h18" strokeLinecap="round" />
+            <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+            <path d="M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1" strokeLinecap="round" />
+          </svg>
+        </span>
+        <span className="mobile-bottom-nav-label">Stays</span>
+      </Link>
+
+      {/* 4. KLARA AI (Special Assistant) */}
+      <Link
+        href="/klara"
+        className={`mobile-bottom-nav-item klara-ai-tab ${isKlaraActive ? 'active' : ''}`}
+        aria-label="Klara AI Georgian travel guide"
+      >
+        <span className="mobile-bottom-nav-icon klara-spark-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" width="22" height="22">
+            <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill={isKlaraActive ? 'url(#sparkle-grad)' : 'none'} stroke="currentColor" />
+            <defs>
+              <linearGradient id="sparkle-grad" x1="3" y1="2" x2="21" y2="20" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#d4a373" />
+                <stop offset="1" stopColor="#c22c57" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span className="klara-badge-pip" />
+        </span>
+        <span className="mobile-bottom-nav-label">KLARA AI</span>
+      </Link>
+
+      {/* 5. Profile / Account */}
+      <Link
+        href={profileHref}
+        className={`mobile-bottom-nav-item ${isProfileActive ? 'active' : ''}`}
+        aria-label={currentUser ? `Profile for ${currentUser.name}` : 'Log In or Sign Up'}
+      >
+        <span className="mobile-bottom-nav-icon">
+          {currentUser ? (
+            <div className="mobile-nav-avatar">
+              {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+          ) : (
+            <svg viewBox="0 0 24 24" fill={isProfileActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.9" width="22" height="22">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" strokeLinecap="round" />
+            </svg>
+          )}
+        </span>
+        <span className="mobile-bottom-nav-label">{profileLabel}</span>
+      </Link>
     </nav>
   );
 }

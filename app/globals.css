@@ -753,6 +753,11 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   gap: 12px;
 }
 
+/* MOBILE BOTTOM NAVIGATION DOCK (Web Application Experience) */
+.mobile-bottom-nav {
+  display: none !important;
+}
+
 /* RESPONSIVE */
 @media(max-width:1100px){
   .hero-stage{grid-template-columns:1fr;gap:24px;padding:100px 0 40px}
@@ -763,6 +768,17 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
 }
 @media(max-width:780px){
+  /* Anti-lag optimization: disable heavy animated 100px blur orbs on mobile viewports */
+  body::before, body::after {
+    display: none !important;
+    animation: none !important;
+  }
+
+  /* Reserve safe padding so bottom web app dock never obscures content or footer */
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
   .sticky-nav-shell{display:none}
   .global-nav-shell{top:16px !important;width:calc(100% - 32px) !important}
   .global-nav-shell .nav-sticky-bar{padding:8px 12px;gap:8px;width:100%}
@@ -771,7 +787,6 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   .mobile-nav-toggle{display:flex !important}
   .nav-spacer{width:auto;flex:1}
   .mobile-guest-topbar{display:flex}
-  .mobile-bottom-nav{display:block}
   .shell{width:min(var(--page-width),calc(100% - 32px))}
   .hero{min-height:420px;border-radius:var(--radius-xl)}
   .hero-title{font-size:clamp(2rem,8vw,3rem)}
@@ -779,6 +794,181 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   .mobile-hero-banner-carousel{display:block}
   .homepage-featured-section{padding:40px 0}
   .site-footer, .footer{padding:40px 0 100px}
+
+  /* Mobile Web-App Dock Bar */
+  .mobile-bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 252, 248, 0.94);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-top: 1px solid rgba(26, 18, 14, 0.08);
+    box-shadow: 0 -4px 20px rgba(36, 24, 19, 0.08);
+    z-index: 9998;
+    align-items: center;
+    justify-content: space-around;
+    padding-left: 6px;
+    padding-right: 6px;
+    transform: translateZ(0);
+  }
+
+  html[data-theme=dark] .mobile-bottom-nav {
+    background: rgba(20, 14, 11, 0.94);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .mobile-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    height: 100%;
+    color: var(--muted, rgba(36, 23, 18, 0.55));
+    text-decoration: none;
+    transition: color 0.15s ease, transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    position: relative;
+  }
+
+  html[data-theme=dark] .mobile-bottom-nav-item {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .mobile-bottom-nav-item.active {
+    color: var(--accent, #c22c57) !important;
+  }
+
+  .mobile-bottom-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-bottom-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-bottom-nav-item.active .mobile-bottom-nav-icon {
+    transform: translateY(-1px) scale(1.08);
+  }
+
+  .mobile-bottom-nav-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+
+  .mobile-bottom-nav-item.active .mobile-bottom-nav-label {
+    font-weight: 700;
+  }
+
+  .klara-spark-wrap {
+    position: relative;
+  }
+
+  .klara-badge-pip {
+    position: absolute;
+    top: -1px;
+    right: -2px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d4a373;
+    box-shadow: 0 0 8px #d4a373;
+    animation: klaraPipPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes klaraPipPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 12px #d4a373; }
+  }
+
+  .mobile-nav-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent, #c22c57), #d4a373);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+  }
+
+  /* Responsive Hero Search Glass & Layout */
+  .hero-search-container {
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .hero-search-glass {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 20px;
+    padding: 14px 16px;
+    gap: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  .search-divider-v {
+    width: 100%;
+    height: 1px;
+    margin: 2px 0;
+    background: rgba(26, 18, 14, 0.08);
+  }
+
+  html[data-theme=dark] .search-divider-v {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .hero-search-submit {
+    width: 100%;
+    margin-top: 4px;
+    padding: 13px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    justify-content: center;
+  }
+
+  .hero-thumbnails {
+    display: none !important;
+  }
+
+  .hero-content {
+    padding: 32px 20px;
+  }
+
+  /* Floating Klara widget positioned cleanly above mobile bottom nav */
+  .klara-widget-container {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 10px) !important;
+    right: 16px !important;
+  }
+
+  .klara-chat-window {
+    max-width: calc(100vw - 32px) !important;
+    width: 340px !important;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 @media(max-width:520px){
   .hero-content{padding:24px}
