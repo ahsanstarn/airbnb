@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
   const provider = request.nextUrl.searchParams.get('provider') as 'google' | 'facebook';
@@ -7,11 +7,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid provider' }, { status: 400 });
   }
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL || '',
-    process.env.SUPABASE_ANON_KEY || ''
-  );
-
+  const supabase = getSupabase();
   const origin = request.nextUrl.origin;
 
   const { data, error } = await supabase.auth.signInWithOAuth({

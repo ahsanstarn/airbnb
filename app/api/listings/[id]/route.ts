@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/listings/[id]
 export async function GET(
@@ -7,33 +11,36 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = getSupabase();
+    const db = await getDb();
+    const listings = db.collection('listings');
 
-    const { data, error } = await supabase
-      .from('listings')
-      .select(
-        `
-        *,
-        businesses (id, name, description, phone, website),
-        reviews (overall_rating, text, photos),
-        availability_blocks (date_from, date_to, reason)
-      `
-      )
-      .eq('id', params.id)
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 404 });
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { $or: [{ _id: params.id }, { id: params.id }, { id: parseInt(params.id, 10) || 0 }] };
     }
 
-    // Increment views
-    await supabase
-      .from('listings')
-      .update({ views_count: (data.views_count || 0) + 1 })
-      .eq('id', params.id);
+    const doc = await listings.findOne(query);
 
-    return NextResponse.json(data);
+    if (!doc) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+
+    // Increment views counter
+    await listings.updateOne(
+      { _id: doc._id },
+      { $inc: { views_count: 1 } }
+    );
+
+    return NextResponse.json({
+      ...doc,
+      id: doc._id.toString(),
+      _id: doc._id.toString(),
+      price: doc.price_per_night || doc.price,
+    });
   } catch (error) {
+    console.error('Fetch single listing error:', error);
     return NextResponse.json({ error: 'Failed to fetch listing' }, { status: 500 });
   }
 }
@@ -44,60 +51,80 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = getSupabase();
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const db = await getDb();
+    const listings = db.collection('listings');
 
-    // Verify ownership
-    const { data: listing } = await supabase
-      .from('listings')
-      .select('business_id')
-      .eq('id', params.id)
-      .single();
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { _id: params.id };
+    }
 
+    const listing = await listings.findOne(query);
     if (!listing) {
       return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
     }
 
-    const { data, error } = await supabase
-      .from('listings')
-      .update(body)
-      .eq('id', params.id)
-      .select();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    // Verify ownership or admin
+    if (listing.businessId?.toString() !== user._id.toString() && user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    return NextResponse.json(data[0]);
+    const body = await request.json();
+    delete body._id;
+    delete body.id;
+    body.updatedAt = new Date();
+
+    await listings.updateOne(query, { $set: body });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Update listing error:', error);
     return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// DELETE /api/listings/[id] - Deactivate
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const supabase = getSupabase();
-    const user = await getAuthenticatedUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const { data: listing } = await supabase.from('listings').select('business_id').eq('id', params.id).single();
-    if (!listing) return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    const db = await getDb();
+    const listings = db.collection('listings');
 
-    const { data: business } = await supabase.from('businesses').select('id').eq('user_id', user.id).single();
-    if (!business || business.id !== listing.business_id) {
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { _id: params.id };
+    }
+
+    const listing = await listings.findOne(query);
+    if (!listing) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+
+    if (listing.businessId?.toString() !== user._id.toString() && user.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { error } = await supabase.from('listings').update({ is_published: false }).eq('id', params.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    await listings.updateOne(query, { $set: { is_published: false, updatedAt: new Date() } });
 
     return NextResponse.json({ ok: true, message: 'Listing deactivated' });
-  } catch {
+  } catch (error) {
+    console.error('Delete listing error:', error);
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
   }
 }

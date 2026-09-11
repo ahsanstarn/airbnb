@@ -1,31 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { hashPassword, signToken, generateAffiliateCode } from '@/lib/auth';
+import { toPublicUser } from '@/lib/models/user';
 
-// POST /api/auth/register
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { email, password, name, role } = await request.json();
+    const body = await req.json();
+    const { email, password, name, role, referralCode } = body;
 
-    const supabase = getSupabaseAdmin();
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-    });
-
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+    if (!email || !password || !name || !role) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    return NextResponse.json({
-      user: {
-        id: authData.user?.id,
-        email: authData.user?.email,
-        role: role || 'tourist',
-        name,
-      },
+    if (password.length < 6) {
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    }
+
+    if (role !== 'tourist' && role !== 'business') {
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const existingUser = await db.collection('users').findOne({ email });
+
+    if (existingUser) {
+      return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+    }
+
+    const hashedPassword = await hashPassword(password);
+    const affiliateCode = generateAffiliateCode();
+
+    const newUser: any = {
+      email,
+      password: hashedPassword,
+      name,
+      role,
+      affiliateCode,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection('users').insertOne(newUser);
+    newUser._id = result.insertedId;
+
+    if (referralCode) {
+      const referrer = await db.collection('users').findOne({ affiliateCode: referralCode });
+      if (referrer) {
+        await db.collection('affiliates').insertOne({
+          referrerId: referrer._id,
+          referredUserId: newUser._id,
+          status: 'registered',
+          createdAt: new Date(),
+        });
+      }
+    }
+
+    const publicUser = toPublicUser(newUser);
+    const token = signToken({
+      userId: newUser._id.toString(),
+      email: newUser.email,
+      role: newUser.role,
     });
+
+    const response = NextResponse.json({ success: true, user: publicUser, token }, { status: 201 });
+    response.cookies.set({
+      name: 'kaya-token',
+      value: token,
+      httpOnly: true,
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    return response;
   } catch (error) {
-    return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
+    console.error('Register error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -66,6 +66,13 @@ export default function AdminPanel() {
 
   useEffect(() => {
     async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const oauthToken = params.get('kaya_token');
+      if (oauthToken) {
+        localStorage.setItem('kaya_token', oauthToken);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
       const token = getToken();
       if (!token) {
         router.push('/login');

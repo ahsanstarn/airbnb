@@ -11,6 +11,29 @@ export default function SharedNav() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { lang, setLang, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.user) {
+          setCurrentUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      localStorage.removeItem('token');
+      setCurrentUser(null);
+      window.location.href = '/login';
+    } catch {
+      window.location.href = '/login';
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -74,10 +97,44 @@ export default function SharedNav() {
               )}
             </button>
             
-            <Link className="nav-auth-link" href="/login">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nav-link-icon"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-              {t('login') || 'SIGN UP/LOGIN'}
-            </Link>
+            {currentUser ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Link
+                  className="nav-auth-link"
+                  href={currentUser.role === 'business' ? '/business/dashboard' : '/dashboard'}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span style={{
+                    display: 'inline-block',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#2c9d6f'
+                  }}></span>
+                  <span>{currentUser.name ? currentUser.name.split(' ')[0] : 'Dashboard'}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title="Logout"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.6)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    fontSize: '12px'
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+              </div>
+            ) : (
+              <Link className="nav-auth-link" href="/login">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nav-link-icon"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                {t('login') || 'SIGN UP/LOGIN'}
+              </Link>
+            )}
             
             <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
               <span></span><span></span><span></span>
@@ -91,7 +148,32 @@ export default function SharedNav() {
         <Link href="/offers" onClick={() => setMobileNavOpen(false)}>{t('offers') || 'Offers'}</Link>
         <Link href="/tours" onClick={() => setMobileNavOpen(false)}>{t('tours') || 'Tours'}</Link>
         <Link href="/guides" onClick={() => setMobileNavOpen(false)}>{t('guides') || 'Guides'}</Link>
-        <Link href="/login" onClick={() => setMobileNavOpen(false)}>{t('login') || 'SIGN UP/LOGIN'}</Link>
+        {currentUser ? (
+          <>
+            <Link href={currentUser.role === 'business' ? '/business/dashboard' : '/dashboard'} onClick={() => setMobileNavOpen(false)}>
+              Dashboard ({currentUser.name})
+            </Link>
+            <Link href="/dashboard/affiliates" onClick={() => setMobileNavOpen(false)}>
+              Affiliate Program
+            </Link>
+            <button
+              onClick={() => { setMobileNavOpen(false); handleLogout(); }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#E8604C',
+                textAlign: 'left',
+                padding: '12px 0',
+                fontSize: '18px',
+                cursor: 'pointer'
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link href="/login" onClick={() => setMobileNavOpen(false)}>{t('login') || 'SIGN UP/LOGIN'}</Link>
+        )}
       </div>
     </>
   );

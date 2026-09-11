@@ -1,100 +1,187 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { SEED_LISTINGS } from '@/lib/seed-data';
+import { ObjectId } from 'mongodb';
 
-// GET /api/listings - Search with filters
+export const dynamic = 'force-dynamic';
+
+// GET /api/listings - Search & filter listings from MongoDB
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabase();
+    const db = await getDb();
+    const listingsCollection = db.collection('listings');
 
-    const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get('category');
-    const city = searchParams.get('city');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const minRating = searchParams.get('minRating');
-    const sort = searchParams.get('sort') || 'recommended';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = 12;
-    const offset = (page - 1) * limit;
-
-    let query = supabase
-      .from('listings')
-      .select('*', { count: 'exact' })
-      .eq('is_published', true);
-
-    if (category) query = query.eq('category', category);
-    if (city) query = query.ilike('location', `%${city}%`);
-    if (minPrice) query = query.gte('price_per_night', parseFloat(minPrice));
-    if (maxPrice) query = query.lte('price_per_night', parseFloat(maxPrice));
-    if (minRating) query = query.gte('overall_rating', parseFloat(minRating));
-
-    // Sorting
-    if (sort === 'price_asc') query = query.order('price_per_night', { ascending: true });
-    if (sort === 'price_desc') query = query.order('price_per_night', { ascending: false });
-    if (sort === 'rating') query = query.order('overall_rating', { ascending: false });
-    if (sort === 'newest') query = query.order('created_at', { ascending: false });
-
-    query = query.range(offset, offset + limit - 1);
-
-    const { data, error, count } = await query;
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    // Auto-seed if empty
+    const countTotal = await listingsCollection.countDocuments();
+    if (countTotal === 0) {
+      const now = new Date();
+      const seedData = SEED_LISTINGS.map(l => ({
+        ...l,
+        createdAt: now,
+        updatedAt: now,
+      }));
+      await listingsCollection.insertMany(seedData);
     }
 
+    const searchParams = request.nextUrl.searchParams;
+    const mine = searchParams.get('mine');
+    const category = searchParams.get('category') || searchParams.get('type');
+    const city = searchParams.get('city') || searchParams.get('location');
+    const q = searchParams.get('q');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const sort = searchParams.get('sort') || 'recommended';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    const filter: any = {};
+
+    if (mine === 'true') {
+      const user = await getCurrentUser(request);
+      if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      filter.$or = [
+        { businessId: user._id },
+        { businessId: user._id.toString() },
+      ];
+    } else {
+      filter.is_published = true;
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (city) {
+      filter.$or = [
+        { city: { $regex: city, $options: 'i' } },
+        { location: { $regex: city, $options: 'i' } }
+      ];
+    }
+
+    if (q) {
+      filter.$or = [
+        { title: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { location: { $regex: q, $options: 'i' } },
+        { city: { $regex: q, $options: 'i' } }
+      ];
+    }
+
+    if (minPrice || maxPrice) {
+      filter.price_per_night = {};
+      if (minPrice) filter.price_per_night.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.price_per_night.$lte = parseFloat(maxPrice);
+    }
+
+    // Sort definition
+    let sortQuery: any = { is_featured: -1, createdAt: -1 };
+    if (sort === 'price_asc') sortQuery = { price_per_night: 1 };
+    if (sort === 'price_desc') sortQuery = { price_per_night: -1 };
+    if (sort === 'rating') sortQuery = { overall_rating: -1 };
+    if (sort === 'newest') sortQuery = { createdAt: -1 };
+
+    const total = await listingsCollection.countDocuments(filter);
+    const docs = await listingsCollection
+      .find(filter)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    const listings = docs.map(doc => ({
+      ...doc,
+      id: doc._id.toString(),
+      _id: doc._id.toString(),
+    }));
+
     return NextResponse.json({
-      listings: data,
-      total: count,
+      listings,
+      total,
       page,
-      pages: Math.ceil((count || 0) / limit),
+      pages: Math.ceil(total / limit) || 1,
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
+    console.error('Listings search error:', error);
+    return NextResponse.json({ error: 'Failed to fetch listings' }, { status: 500 });
   }
 }
 
 // POST /api/listings - Create listing (Business only)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase();
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
+    const {
+      title,
+      description,
+      category,
+      price_per_night,
+      location,
+      city,
+      images,
+      amenities,
+      type,
+      beds,
+      baths,
+      guests,
+    } = body;
 
-    // Get business ID for this user
-    const { data: business } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!business) {
-      return NextResponse.json({ error: 'Business not found' }, { status: 404 });
+    if (!title || !price_per_night || !location) {
+      return NextResponse.json({ error: 'Missing required listing fields' }, { status: 400 });
     }
 
-    const { data, error } = await supabase.from('listings').insert({
-      business_id: business.id,
-      title: body.title,
-      description: body.description,
-      category: body.category,
-      price_per_night: body.price_per_night,
-      location: body.location,
-      latitude: body.latitude,
-      longitude: body.longitude,
-      amenities: body.amenities || [],
-      images: body.images || [],
-      is_published: false,
-    }).select();
+    const db = await getDb();
+    const now = new Date();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    const newListing = {
+      businessId: user._id,
+      businessName: user.name,
+      businessEmail: user.email,
+      title,
+      description: description || '',
+      category: category || 'apartments',
+      type: type || 'Entire place',
+      price_per_night: parseFloat(price_per_night),
+      currency: 'GEL',
+      location,
+      city: city || location.split(',')[0].trim(),
+      amenities: Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map((s: string) => s.trim()) : ['WiFi', 'Kitchen']),
+      images: Array.isArray(images) && images.length > 0 ? images : [
+        'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop'
+      ],
+      host: user.name,
+      beds: beds ? parseInt(beds, 10) : 1,
+      baths: baths ? parseInt(baths, 10) : 1,
+      guests: guests ? parseInt(guests, 10) : 2,
+      overall_rating: 5.0,
+      review_count: 0,
+      views_count: 1,
+      is_published: true,
+      is_featured: false,
+      createdAt: now,
+      updatedAt: now,
+    };
 
-    return NextResponse.json(data[0]);
+    const result = await db.collection('listings').insertOne(newListing);
+
+    return NextResponse.json({
+      success: true,
+      listing: {
+        ...newListing,
+        id: result.insertedId.toString(),
+        _id: result.insertedId.toString(),
+      },
+    }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Create listing failed' }, { status: 500 });
+    console.error('Create listing error:', error);
+    return NextResponse.json({ error: 'Failed to create listing' }, { status: 500 });
   }
 }

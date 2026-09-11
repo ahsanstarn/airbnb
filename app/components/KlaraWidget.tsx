@@ -13,11 +13,6 @@ export default function KlaraWidget() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Hide widget on admin dashboard, login, and full klara page
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login') || pathname === '/klara' || pathname === '/chat') {
-    return null;
-  }
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -36,7 +31,6 @@ export default function KlaraWidget() {
     setLoading(true);
 
     try {
-      // Small simulated delay for realistic feel
       await new Promise(r => setTimeout(r, 600));
 
       const res = await fetch('/api/chat', {
@@ -57,8 +51,10 @@ export default function KlaraWidget() {
     }
   };
 
+  const isHidden = pathname?.startsWith('/admin') || pathname?.startsWith('/login') || pathname === '/klara' || pathname === '/chat';
+
   return (
-    <>
+    <div style={{ display: isHidden ? 'none' : 'block' }}>
       <div 
         style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
@@ -191,6 +187,6 @@ export default function KlaraWidget() {
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}} />
-    </>
+    </div>
   );
 }

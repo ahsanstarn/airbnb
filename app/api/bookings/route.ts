@@ -1,99 +1,146 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
 
-// POST /api/bookings - Create booking
-export async function POST(request: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+// GET /api/bookings - Get user's bookings (or business's incoming bookings)
+export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabase();
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const db = await getDb();
+    const bookingsCollection = db.collection('bookings');
+
+    let query: any = {};
+    if (user.role === 'business') {
+      query.$or = [
+        { business_id: user._id.toString() },
+        { business_id: user._id },
+      ];
+    } else {
+      query.$or = [
+        { tourist_id: user._id.toString() },
+        { tourist_id: user._id },
+        { tourist_email: user.email },
+      ];
+    }
+
+    const bookings = await bookingsCollection
+      .find(query)
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    const formatted = bookings.map(b => ({
+      ...b,
+      id: b._id.toString(),
+      _id: b._id.toString(),
+    }));
+
+    return NextResponse.json(formatted);
+  } catch (error) {
+    console.error('Fetch bookings error:', error);
+    return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
+  }
+}
+
+// POST /api/bookings - Create booking with MongoDB double-booking prevention
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized. Please login to book.' }, { status: 401 });
     }
 
     const body = await request.json();
     const { listing_id, check_in, check_out, guest_count, payment_method } = body;
 
-    // Check for availability
-    const { data: conflicts } = await supabase
-      .from('availability_blocks')
-      .select('*')
-      .eq('listing_id', listing_id)
-      .eq('reason', 'BOOKED')
-      .gte('date_to', check_in)
-      .lte('date_from', check_out);
-
-    if (conflicts && conflicts.length > 0) {
-      return NextResponse.json({ error: 'Dates not available' }, { status: 409 });
+    if (!listing_id || !check_in || !check_out) {
+      return NextResponse.json({ error: 'Missing required dates or listing details' }, { status: 400 });
     }
 
-    // Get listing price
-    const { data: listing } = await supabase
-      .from('listings')
-      .select('price_per_night')
-      .eq('id', listing_id)
-      .single();
+    const db = await getDb();
+    const bookingsCollection = db.collection('bookings');
+    const listingsCollection = db.collection('listings');
 
-    if (!listing) {
-      return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    // 1. Double-booking check: verify no overlapping active bookings
+    const overlappingBooking = await bookingsCollection.findOne({
+      listing_id: listing_id.toString(),
+      status: { $nin: ['CANCELLED', 'DECLINED'] },
+      $and: [
+        { check_in: { $lte: check_out } },
+        { check_out: { $gte: check_in } },
+      ],
+    });
+
+    if (overlappingBooking) {
+      return NextResponse.json({
+        error: 'These dates are already booked. Please choose different dates.',
+      }, { status: 409 });
     }
 
-    // Calculate total price
-    const start = new Date(check_in);
-    const end = new Date(check_out);
-    const nights = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-    const total_price = nights * listing.price_per_night;
-
-    const { data, error } = await supabase
-      .from('bookings')
-      .insert({
-        listing_id,
-        tourist_id: user.id,
-        check_in,
-        check_out,
-        guest_count,
-        total_price,
-        payment_method,
-        status: 'PENDING',
-        payment_status: payment_method === 'cash' ? 'PENDING' : 'PENDING',
-      })
-      .select();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    // 2. Fetch listing details
+    let listingQuery: any = {};
+    if (ObjectId.isValid(listing_id)) {
+      listingQuery = { _id: new ObjectId(listing_id) };
+    } else {
+      listingQuery = { $or: [{ _id: listing_id }, { id: listing_id }] };
     }
 
-    return NextResponse.json(data[0]);
+    const listing = await listingsCollection.findOne(listingQuery);
+    const pricePerNight = listing?.price_per_night || listing?.price || 150;
+    const title = listing?.title || 'Georgian Stay';
+    const image = (listing?.images && listing.images[0]) || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop';
+    const location = listing?.location || 'Georgia';
+    const businessId = listing?.businessId?.toString() || '';
+
+    // Calculate nights & total
+    const startDate = new Date(check_in);
+    const endDate = new Date(check_out);
+    const timeDiff = endDate.getTime() - startDate.getTime();
+    const nights = Math.max(1, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
+    const totalPrice = nights * pricePerNight;
+
+    const now = new Date();
+    const newBooking = {
+      listing_id: listing_id.toString(),
+      listing_title: title,
+      listing_image: image,
+      listing_location: location,
+      tourist_id: user._id.toString(),
+      tourist_name: user.name,
+      tourist_email: user.email,
+      business_id: businessId,
+      check_in,
+      check_out,
+      nights,
+      guest_count: parseInt(guest_count, 10) || 1,
+      price_per_night: pricePerNight,
+      total_price: totalPrice,
+      currency: 'GEL',
+      status: 'CONFIRMED',
+      payment_method: payment_method || 'cash',
+      payment_status: payment_method === 'card' ? 'PAID' : 'PENDING',
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const result = await bookingsCollection.insertOne(newBooking);
+
+    return NextResponse.json({
+      success: true,
+      booking: {
+        ...newBooking,
+        id: result.insertedId.toString(),
+        _id: result.insertedId.toString(),
+      },
+    }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Booking creation failed' }, { status: 500 });
-  }
-}
-
-// GET /api/bookings - Get user's bookings
-export async function GET(request: NextRequest) {
-  try {
-    const supabase = getSupabase();
-    const user = await getAuthenticatedUser(request);
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data, error } = await supabase
-      .from('bookings')
-      .select(
-        `
-        *,
-        listings (id, title, images, location)
-      `
-      )
-      .eq('tourist_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
+    console.error('Create booking error:', error);
+    return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 });
   }
 }

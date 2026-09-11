@@ -7,6 +7,7 @@ import CustomCursor from "@/app/components/CustomCursor";
 import SharedNav from "@/app/components/SharedNav";
 import KlaraWidget from "@/app/components/KlaraWidget";
 import MouseTilt from "@/app/components/MouseTilt";
+import ClickSound from "@/app/components/ClickSound";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
         <LanguageProvider>
           <ThemeProvider>
             <MouseTilt />
+            <ClickSound />
             <CustomCursor />
             <SharedNav />
             {children}

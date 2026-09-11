@@ -1,36 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
+
+export const dynamic = 'force-dynamic';
 
 export async function PUT(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await getAuthenticatedUser(_request);
+    const user = await getCurrentUser(_request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data: booking } = await supabase.from('bookings').select('*, listings!inner(business_id)').eq('id', params.id).single();
-    if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    const db = await getDb();
+    const bookings = db.collection('bookings');
 
-    const { data: business } = await supabase.from('businesses').select('id').eq('user_id', user.id).single();
-    if (!business || business.id !== booking.listings.business_id) {
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { $or: [{ _id: params.id }, { id: params.id }] };
+    }
+
+    const booking = await bookings.findOne(query);
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    // Verify host ownership or admin
+    const isBusiness = booking.business_id === user._id.toString();
+    const isAdmin = user.role === 'admin';
+
+    if (!isBusiness && !isAdmin && user.role !== 'business') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'CONFIRMED', updated_at: new Date().toISOString() })
-      .eq('id', params.id);
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-    await supabase.from('availability_blocks').insert({
-      listing_id: booking.listing_id,
-      date_from: booking.check_in,
-      date_to: booking.check_out,
-      reason: 'BOOKED',
+    await bookings.updateOne(query, {
+      $set: {
+        status: 'CONFIRMED',
+        updatedAt: new Date(),
+      },
     });
 
-    return NextResponse.json({ ok: true, status: 'CONFIRMED' });
-  } catch {
+    return NextResponse.json({ success: true, status: 'CONFIRMED' });
+  } catch (err) {
+    console.error('Confirmation error:', err);
     return NextResponse.json({ error: 'Confirmation failed' }, { status: 500 });
   }
 }

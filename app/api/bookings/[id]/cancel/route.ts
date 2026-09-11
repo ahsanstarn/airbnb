@@ -1,40 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
+
+export const dynamic = 'force-dynamic';
 
 export async function PUT(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await getAuthenticatedUser(_request);
+    const user = await getCurrentUser(_request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data: booking } = await supabase.from('bookings').select('*, listings!inner(business_id)').eq('id', params.id).single();
-    if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    const db = await getDb();
+    const bookings = db.collection('bookings');
 
-    const { data: business } = await supabase.from('businesses').select('id').eq('user_id', user.id).maybeSingle();
-    const isOwner = business && business.id === booking.listings.business_id;
-    const isTourist = booking.tourist_id === user.id;
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { $or: [{ _id: params.id }, { id: params.id }] };
+    }
 
-    if (!isOwner && !isTourist) {
+    const booking = await bookings.findOne(query);
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    // Check if user is the tourist who booked or the business host or admin
+    const isTourist = booking.tourist_id === user._id.toString() || booking.tourist_email === user.email;
+    const isBusiness = booking.business_id === user._id.toString();
+    const isAdmin = user.role === 'admin';
+
+    if (!isTourist && !isBusiness && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'CANCELLED', updated_at: new Date().toISOString() })
-      .eq('id', params.id);
+    await bookings.updateOne(query, {
+      $set: {
+        status: 'CANCELLED',
+        updatedAt: new Date(),
+      },
+    });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-    await supabase
-      .from('availability_blocks')
-      .delete()
-      .eq('listing_id', booking.listing_id)
-      .eq('date_from', booking.check_in)
-      .eq('date_to', booking.check_out)
-      .eq('reason', 'BOOKED');
-
-    return NextResponse.json({ ok: true, status: 'CANCELLED' });
-  } catch {
+    return NextResponse.json({ success: true, status: 'CANCELLED' });
+  } catch (err) {
+    console.error('Cancellation error:', err);
     return NextResponse.json({ error: 'Cancellation failed' }, { status: 500 });
   }
 }

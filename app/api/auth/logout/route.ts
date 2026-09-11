@@ -1,13 +1,20 @@
-import { NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/api-utils';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const supabase = getSupabase();
-    const { error } = await supabase.auth.signOut();
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: 'Logout failed' }, { status: 500 });
+    const response = NextResponse.json({ success: true });
+    
+    response.cookies.set({
+      name: 'kaya-token',
+      value: '',
+      httpOnly: true,
+      path: '/',
+      maxAge: 0, 
+    });
+    
+    return response;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,0 +1,26 @@
+import { MongoClient, Db } from 'mongodb';
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kaya';
+const DB_NAME = 'kaya';
+
+let cachedClient: MongoClient | null = null;
+let cachedDb: Db | null = null;
+
+export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
+  if (cachedClient && cachedDb) {
+    return { client: cachedClient, db: cachedDb };
+  }
+
+  const client = await MongoClient.connect(MONGODB_URI);
+  const db = client.db(DB_NAME);
+
+  cachedClient = client;
+  cachedDb = db;
+
+  return { client, db };
+}
+
+export async function getDb(): Promise<Db> {
+  const { db } = await connectToDatabase();
+  return db;
+}

@@ -16,28 +16,35 @@ const ThemeContext = createContext<ThemeContextType>({
   isDark: false,
 });
 
+function getInitialTheme(): Theme {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('kaya-theme') as Theme | null;
+    if (stored === 'dark' || stored === 'light') return stored;
+  }
+  return 'light';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('kaya-theme') as Theme | null;
-    const initial = (stored === 'dark' || stored === 'light') ? stored : 'light';
-    setTheme(initial);
-    document.documentElement.dataset.theme = initial;
+    const t = getInitialTheme();
+    setTheme(t);
+    document.documentElement.dataset.theme = t;
+    setMounted(true);
   }, []);
 
   const toggleTheme = () => {
-    setTheme(prev => {
-      const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('kaya-theme', next);
-      document.documentElement.dataset.theme = next;
-      return next;
-    });
+    const next = theme === 'light' ? 'dark' : 'light';
+    setTheme(next);
+    localStorage.setItem('kaya-theme', next);
+    document.documentElement.dataset.theme = next;
   };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === 'dark' }}>
-      {children}
+      {mounted ? children : <div style={{ visibility: 'hidden' }}>{children}</div>}
     </ThemeContext.Provider>
   );
 }

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 interface Listing {
-  id: number;
+  id: number | string;
   title: string;
   location: string;
   price: number;
@@ -28,6 +28,23 @@ export default function HotelsPage() {
   useEffect(() => {
     async function init() {
       try {
+        const res = await fetch('/api/listings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.listings && data.listings.length > 0) {
+            setLiveListings(data.listings.map((l: any) => ({
+              id: l._id || l.id,
+              title: l.title,
+              location: l.location,
+              price: l.price_per_night || l.price,
+              rating: l.overall_rating || 4.9,
+              img: (l.images && l.images[0]) || staticListings[0].img,
+              images: l.images,
+              type: l.type || l.category,
+            })));
+            return;
+          }
+        }
         setLiveListings(staticListings);
       } catch {
         setLiveListings(staticListings);

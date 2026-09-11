@@ -7,7 +7,8 @@ import Map from '../../components/Map';
 import styles from './listing.module.css';
 
 function getToken() {
-  return localStorage.getItem('kaya_token');
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token') || localStorage.getItem('kaya_token');
 }
 
 const listingData: Record<string, {
@@ -56,14 +57,12 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   };
 
   useEffect(() => {
-    const token = getToken();
-    if (token) {
-      fetch('/api/auth/session', {
-        headers: { Authorization: `Bearer ${token}` },
-      }).then(r => r.json()).then(data => {
-        if (data.user?.id) setUserId(data.user.id);
-      }).catch(() => {});
-    }
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.user) setUserId(data.user._id || data.user.id);
+      })
+      .catch(() => {});
 
     async function fetchListing() {
       try {
@@ -118,9 +117,8 @@ export default function ListingPage({ params }: { params: { id: string } }) {
       });
 
       if (res.ok) {
-        alert('Reservation successfully created!');
-        setCheckIn('');
-        setCheckOut('');
+        alert('Reservation successfully confirmed! Redirecting to your dashboard...');
+        window.location.href = '/dashboard';
       } else {
         const data = await res.json();
         throw new Error(data.error || 'Booking failed');

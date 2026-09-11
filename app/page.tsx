@@ -13,7 +13,7 @@ const HERO_SLIDES = [
     titleSpan: 'TBILISI',
     copyTitle: 'Discover Tbilisi',
     copyText: 'Ancient history, winding brick streets, cozy sulphur baths, and a vibrant modern culinary scene at the heart of Georgia.',
-    image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1200&q=80',
     price: '180 GEL / night',
     location: 'Tbilisi, Old Town',
     rating: '4.9 rating',
@@ -27,7 +27,7 @@ const HERO_SLIDES = [
     titleSpan: 'KAZBEGI',
     copyTitle: 'Discover Kazbegi',
     copyText: 'Snowline views, dramatic ridges, ancient church silhouettes and crisp alpine air make this the ultimate contrast to the capital.',
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80',
     price: '280 GEL / night',
     location: 'Kazbegi, Gergeti',
     rating: '4.8 rating',
@@ -41,7 +41,7 @@ const HERO_SLIDES = [
     titleSpan: 'BATUMI',
     copyTitle: 'Discover Batumi',
     copyText: 'A light-filled stay framed around the promenade, sea-facing mornings, magnetic sunsets, and easy evening walks along the coast.',
-    image: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
     price: '210 GEL / night',
     location: 'Batumi, Coastline',
     rating: '4.7 rating',
@@ -106,11 +106,11 @@ export default function Home() {
                 </div>
                 
                 {/* Right side circular thumbnails */}
-                <div className="hero-thumbnails float-3d-slow">
+                <div className="hero-thumbnails">
                   {HERO_SLIDES.map((s, i) => (
                     <div 
                       key={s.id} 
-                      className={`hero-thumb tilt-3d-light ${i === activeSlide ? 'active' : ''}`} 
+                       className={`hero-thumb ${i === activeSlide ? 'active' : ''}`} 
                       style={{ backgroundImage: `url(${s.image})` }} 
                       onClick={() => setActiveSlide(i)} 
                       aria-label={s.copyTitle}
