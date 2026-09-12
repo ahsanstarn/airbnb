@@ -33,7 +33,7 @@ export default function ConnectPage() {
   const [conversations, setConversations] = useState<any[]>([]);
 
   useEffect(() => {
-    const t = localStorage.getItem('kaya_token');
+    const t = localStorage.getItem('token') || localStorage.getItem('kaya_token');
     if (t) setToken(t);
   }, []);
 

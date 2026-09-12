@@ -161,15 +161,15 @@ export default function BusinessDashboard() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#0e0e10', color: '#f5f5f5' }}>
-        <p>Loading Business Dashboard...</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--surface, #fff7ef)', color: 'var(--ink, #241712)' }}>
+        <p style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.2rem' }}>Loading Business Dashboard...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#0e0e10', color: '#f5f5f5' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--surface, #fff7ef)', color: 'var(--accent, #d9653b)' }}>
         <p>{error}</p>
       </div>
     );
@@ -178,36 +178,40 @@ export default function BusinessDashboard() {
   if (!user) return null;
 
   const cardStyle = {
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.06)',
-    borderRadius: '16px',
-    padding: '24px',
-    marginBottom: '24px'
+    backgroundColor: 'var(--card-bg, rgba(255, 252, 248, 0.94))',
+    border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.12))',
+    borderRadius: '24px',
+    padding: '28px',
+    marginBottom: '24px',
+    boxShadow: '0 12px 32px -8px rgba(36, 24, 19, 0.08)',
+    backdropFilter: 'blur(16px)',
   };
 
   const buttonStyle = {
-    backgroundColor: '#E8604C',
+    background: 'linear-gradient(135deg, var(--accent, #d9653b), var(--accent-deep, #be4f27))',
     color: '#fff',
     border: 'none',
-    borderRadius: '8px',
-    padding: '10px 18px',
+    borderRadius: '999px',
+    padding: '12px 22px',
     cursor: 'pointer',
     fontWeight: 'bold',
     fontSize: '14px',
-    transition: 'opacity 0.2s',
+    boxShadow: '0 6px 18px -3px rgba(217, 101, 59, 0.35)',
+    transition: 'transform 0.2s, box-shadow 0.2s',
   };
 
   const secondaryButtonStyle = {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '10px 16px',
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    color: 'var(--ink, #241712)',
+    border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))',
+    borderRadius: '999px',
+    padding: '10px 18px',
     cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '14px',
+    fontWeight: 600,
+    fontSize: '13.5px',
     textDecoration: 'none',
     display: 'inline-block',
+    transition: 'background 0.2s, transform 0.2s',
   };
 
   const totalRevenue = bookings
@@ -215,19 +219,19 @@ export default function BusinessDashboard() {
     .reduce((acc, b) => acc + (b.total_price || 0), 0);
 
   return (
-    <div style={{ backgroundColor: '#0e0e10', color: '#f5f5f5', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ background: 'radial-gradient(900px circle at 8% 8%, rgba(255, 215, 188, 0.45), transparent 60%), radial-gradient(700px circle at 92% 96%, hsla(21, 76%, 82%, 0.35), transparent 60%), linear-gradient(180deg, var(--surface, #fff7ef), var(--surface-warm, #f8e2cb) 65%, var(--surface-deep, #f3d1b3))', color: 'var(--ink, #241712)', minHeight: '100vh', padding: '100px 24px 60px', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
+      <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ margin: '0 0 8px 0', fontSize: '28px' }}>Business Host Portal</h1>
+            <h1 style={{ fontFamily: 'var(--font-display), serif', margin: '0 0 8px 0', fontSize: '32px', fontWeight: 700, color: 'var(--ink)' }}>Business Host Portal</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)' }}>Welcome, {user.name}</span>
+              <span style={{ fontSize: '15px', color: 'var(--text-secondary, rgba(36,23,18,0.72))' }}>Welcome, {user.name}</span>
               <span style={{ 
-                backgroundColor: 'rgba(232, 96, 76, 0.15)', 
-                color: '#E8604C',
-                padding: '4px 12px', 
+                backgroundColor: 'rgba(217, 101, 59, 0.12)', 
+                color: 'var(--accent, #d9653b)',
+                padding: '4px 14px', 
                 borderRadius: '20px', 
                 fontSize: '12px',
                 fontWeight: 'bold',
@@ -249,46 +253,46 @@ export default function BusinessDashboard() {
           {[
             { label: 'Active Listings', val: listings.length.toString() }, 
             { label: 'Incoming Bookings', val: bookings.length.toString() }, 
-            { label: 'Total Host Revenue', val: `${totalRevenue} GEL` },
+            { label: 'Total Host Revenue', val: `₾${totalRevenue} GEL` },
             { label: 'Subscription Plan', val: '20 GEL/mo (Active)' }
           ].map((stat, i) => (
             <div key={i} style={{ ...cardStyle, marginBottom: 0 }}>
-              <h3 style={{ margin: '0 0 8px 0', color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: 'normal' }}>{stat.label}</h3>
-              <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>{stat.val}</p>
+              <h3 style={{ margin: '0 0 8px 0', color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontSize: '13px', fontWeight: 600 }}>{stat.label}</h3>
+              <p style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '26px', fontWeight: 'bold', color: 'var(--ink)' }}>{stat.val}</p>
             </div>
           ))}
         </div>
 
         {/* Main Content: My Listings */}
         <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ margin: 0, fontSize: '18px' }}>Your Properties & Listings ({listings.length})</h2>
-            <button onClick={() => setShowCreateModal(true)} style={{ ...buttonStyle, padding: '6px 12px', fontSize: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '22px', color: 'var(--ink)' }}>Your Properties &amp; Listings ({listings.length})</h2>
+            <button onClick={() => setShowCreateModal(true)} style={{ ...buttonStyle, padding: '8px 16px', fontSize: '13px' }}>
               + Add Property
             </button>
           </div>
 
           {listings.length === 0 ? (
-            <div style={{ padding: '32px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '12px' }}>
-              <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 16px 0' }}>No listings created yet. Publish your first property on Kaya.ge!</p>
+            <div style={{ padding: '48px 24px', textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: '16px', border: '1px dashed var(--border-mid)' }}>
+              <p style={{ color: 'var(--muted)', margin: '0 0 16px 0', fontSize: '15px' }}>No listings created yet. Publish your first property on Kaya.ge!</p>
               <button onClick={() => setShowCreateModal(true)} style={buttonStyle}>Create Listing Now</button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
               {listings.map((l) => (
-                <div key={l._id} style={{ backgroundColor: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
+                <div key={l._id} style={{ backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.12))', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
                   <img 
                     src={l.images?.[0] || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop'} 
                     alt={l.title} 
-                    style={{ width: '100%', height: '140px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                   />
-                  <div style={{ padding: '14px' }}>
+                  <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '11px', textTransform: 'uppercase', color: '#E8604C', fontWeight: 'bold' }}>{l.category}</span>
-                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>{l.price_per_night} GEL / night</span>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--accent, #d9653b)', fontWeight: 'bold' }}>{l.category}</span>
+                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--ink)' }}>₾{l.price_per_night} / night</span>
                     </div>
-                    <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#fff' }}>{l.title}</h4>
-                    <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>📍 {l.location}</p>
+                    <h4 style={{ fontFamily: 'var(--font-display), serif', margin: '0 0 6px 0', fontSize: '16px', color: 'var(--ink)' }}>{l.title}</h4>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--muted)' }}>📍 {l.location}</p>
                     <Link href={`/listing/${l._id}`} style={{ ...secondaryButtonStyle, width: '100%', textAlign: 'center', boxSizing: 'border-box' }}>
                       View on Kaya.ge
                     </Link>
@@ -301,35 +305,45 @@ export default function BusinessDashboard() {
 
         {/* Incoming Guest Bookings */}
         <div style={cardStyle}>
-          <h2 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px' }}>Incoming Guest Bookings ({bookings.length})</h2>
+          <h2 style={{ fontFamily: 'var(--font-display), serif', marginTop: 0, marginBottom: '20px', fontSize: '22px', color: 'var(--ink)' }}>Incoming Guest Bookings ({bookings.length})</h2>
           {bookings.length === 0 ? (
-            <div style={{ padding: '24px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-              <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>No guest bookings yet.</p>
+            <div style={{ padding: '32px', textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: '16px', border: '1px dashed var(--border-mid)' }}>
+              <p style={{ color: 'var(--muted)', margin: 0, fontSize: '15px' }}>No guest bookings yet.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {bookings.map(b => (
-                <div key={b._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: '8px', flexWrap: 'wrap', gap: '12px' }}>
+                <div key={b._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.12))', borderRadius: '16px', flexWrap: 'wrap', gap: '14px', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
                   <div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>{b.listing_title}</h4>
-                    <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+                    <h4 style={{ fontFamily: 'var(--font-display), serif', margin: '0 0 4px 0', fontSize: '17px', color: 'var(--ink)' }}>{b.listing_title}</h4>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
                       Guest: <strong>{b.tourist_name || b.tourist_email || 'Guest'}</strong> ({b.guest_count} guests)
                     </p>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
                       Dates: {b.check_in} &rarr; {b.check_out} ({b.nights || 1} nights)
                     </p>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{b.total_price} GEL</div>
-                      <span style={{ fontSize: '11px', color: b.status === 'CONFIRMED' ? '#2c9d6f' : '#E8604C' }}>{b.status}</span>
+                      <div style={{ fontSize: '17px', fontWeight: 'bold', color: 'var(--ink)' }}>₾{b.total_price} GEL</div>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        backgroundColor: b.status === 'CONFIRMED' ? 'rgba(44, 157, 111, 0.15)' : 'rgba(217, 101, 59, 0.15)',
+                        color: b.status === 'CONFIRMED' ? '#2c9d6f' : 'var(--accent, #d9653b)'
+                      }}>
+                        {b.status}
+                      </span>
                     </div>
                     {b.status === 'PENDING' && (
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => handleConfirmBooking(b._id)} disabled={actionLoading === b._id} style={{ ...buttonStyle, padding: '6px 10px', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleConfirmBooking(b._id)} disabled={actionLoading === b._id} style={{ ...buttonStyle, padding: '8px 14px', fontSize: '12px' }}>
                           Accept
                         </button>
-                        <button onClick={() => handleDeclineBooking(b._id)} disabled={actionLoading === b._id} style={{ ...secondaryButtonStyle, padding: '6px 10px', fontSize: '12px' }}>
+                        <button onClick={() => handleDeclineBooking(b._id)} disabled={actionLoading === b._id} style={{ ...secondaryButtonStyle, padding: '8px 14px', fontSize: '12px' }}>
                           Decline
                         </button>
                       </div>
@@ -343,8 +357,8 @@ export default function BusinessDashboard() {
 
         {/* Affiliate Program Widget */}
         <div style={cardStyle}>
-          <h2 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px' }}>Host Referral & Affiliate Program</h2>
-          <p style={{ margin: '0 0 16px 0', color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+          <h2 style={{ fontFamily: 'var(--font-display), serif', marginTop: 0, marginBottom: '16px', fontSize: '20px', color: 'var(--ink)' }}>Host Referral &amp; Affiliate Program</h2>
+          <p style={{ margin: '0 0 16px 0', color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
             Earn bonuses by inviting other property owners and tourists to register on Kaya.ge!
           </p>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
@@ -354,19 +368,20 @@ export default function BusinessDashboard() {
               value={`https://kaya.ge/signup?ref=${user.affiliateCode || 'PENDING'}`}
               style={{ 
                 flex: 1, 
-                backgroundColor: 'rgba(0,0,0,0.2)', 
-                border: '1px solid rgba(255,255,255,0.1)', 
-                color: '#fff',
+                backgroundColor: '#fff', 
+                border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', 
+                color: 'var(--ink)',
                 padding: '10px 14px',
-                borderRadius: '6px'
+                borderRadius: '12px',
+                fontSize: '13px'
               }}
             />
             <button onClick={copyReferral} style={secondaryButtonStyle}>
               {copySuccess ? 'Copied!' : 'Copy'}
             </button>
           </div>
-          <button onClick={() => router.push('/dashboard/affiliates')} style={{ ...buttonStyle, backgroundColor: 'transparent', border: '1px solid #E8604C', color: '#E8604C' }}>
-            View Affiliate Referrals & Stats &rarr;
+          <button onClick={() => router.push('/dashboard/affiliates')} style={{ ...buttonStyle, background: 'none', border: '1.5px solid var(--accent, #d9653b)', color: 'var(--accent, #d9653b)', boxShadow: 'none' }}>
+            View Affiliate Referrals &amp; Stats &rarr;
           </button>
         </div>
 
@@ -380,8 +395,8 @@ export default function BusinessDashboard() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.75)',
-          backdropFilter: 'blur(5px)',
+          backgroundColor: 'rgba(26, 18, 14, 0.65)',
+          backdropFilter: 'blur(8px)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -389,40 +404,41 @@ export default function BusinessDashboard() {
           padding: '20px'
         }}>
           <div style={{
-            backgroundColor: '#16161a',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px',
-            padding: '28px',
-            maxWidth: '550px',
+            backgroundColor: 'var(--card-bg, #fffdf9)',
+            border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))',
+            borderRadius: '24px',
+            padding: '32px',
+            maxWidth: '560px',
             width: '100%',
             maxHeight: '90vh',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.2)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ margin: 0, fontSize: '20px' }}>Add New Listing</h2>
-              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+              <h2 style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '24px', color: 'var(--ink)' }}>Add New Listing</h2>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', color: 'var(--ink)', fontSize: '20px', cursor: 'pointer' }}>✕</button>
             </div>
 
             <form onSubmit={handleCreateListing} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Property Title</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Property Title</label>
                 <input 
                   type="text" 
                   required
                   placeholder="e.g. Modern Loft in Old Tbilisi" 
                   value={formData.title} 
                   onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  style={{ width: '100%', padding: '10px', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Category</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Category</label>
                   <select 
                     value={formData.category} 
                     onChange={e => setFormData({ ...formData, category: e.target.value })}
-                    style={{ width: '100%', padding: '10px', backgroundColor: '#222', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                   >
                     <option value="apartments">Apartment</option>
                     <option value="hotels">Hotel / Suite</option>
@@ -434,25 +450,25 @@ export default function BusinessDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Price per Night (GEL)</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Price per Night (GEL)</label>
                   <input 
                     type="number" 
                     required
                     placeholder="150" 
                     value={formData.price_per_night} 
                     onChange={e => setFormData({ ...formData, price_per_night: e.target.value })}
-                    style={{ width: '100%', padding: '10px', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>City / Region</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>City / Region</label>
                   <select 
                     value={formData.city} 
                     onChange={e => setFormData({ ...formData, city: e.target.value })}
-                    style={{ width: '100%', padding: '10px', backgroundColor: '#222', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                   >
                     <option value="Tbilisi">Tbilisi</option>
                     <option value="Batumi">Batumi</option>
@@ -464,46 +480,46 @@ export default function BusinessDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Location Details</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Location Details</label>
                   <input 
                     type="text" 
                     required
                     placeholder="e.g. Tbilisi, Vera" 
                     value={formData.location} 
                     onChange={e => setFormData({ ...formData, location: e.target.value })}
-                    style={{ width: '100%', padding: '10px', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Description</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Description</label>
                 <textarea 
                   rows={3}
                   placeholder="Describe your space, views, Georgian hospitality..." 
                   value={formData.description} 
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  style={{ width: '100%', padding: '10px', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Amenities (comma separated)</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Amenities (comma separated)</label>
                 <input 
                   type="text" 
                   value={formData.amenities} 
                   onChange={e => setFormData({ ...formData, amenities: e.target.value })}
-                  style={{ width: '100%', padding: '10px', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', marginBottom: '6px', color: 'rgba(255,255,255,0.8)' }}>Cover Image URL</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--ink)' }}>Cover Image URL</label>
                 <input 
                   type="url" 
                   value={formData.images} 
                   onChange={e => setFormData({ ...formData, images: e.target.value })}
-                  style={{ width: '100%', padding: '10px', backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 14px', backgroundColor: '#fff', border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))', borderRadius: '10px', color: 'var(--ink)', boxSizing: 'border-box' }}
                 />
               </div>
 

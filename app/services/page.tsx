@@ -16,8 +16,8 @@ export default function ServicesPage() {
   return (
     <>
       <main style={{ background: 'var(--bg)', minHeight: '100vh', paddingTop: '80px' }}>
-        <section style={{ position: 'relative', padding: '80px 24px 60px', background: 'linear-gradient(135deg, #4a6fa5, #5a82b8 30%, #3a5f8e 60%, #2a4f78 100%)', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 40%, rgba(200,220,255,0.25) 0%, transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(80,130,200,0.15) 0%, transparent 50%)' }} />
+        <section style={{ position: 'relative', padding: '80px 24px 60px', background: 'linear-gradient(135deg, #443026 0%, #7d492f 35%, #b55d37 70%, #d9653b 100%)', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 40%, rgba(255,225,200,0.25) 0%, transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(217,101,59,0.2) 0%, transparent 50%)' }} />
           <div style={{ position: 'relative', maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ borderRadius: '20px', background: 'rgba(255, 251, 246, 0.88)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', padding: '48px 40px', textAlign: 'center' }}>
               <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(2.5rem,6vw,4.5rem)', fontWeight: 400, letterSpacing: '0.06em', margin: '0 0 8px', color: '#1a120e' }}>SERVICES</h1>
@@ -35,14 +35,14 @@ export default function ServicesPage() {
           <h2 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.8rem', fontWeight: 400, color: 'var(--ink)', margin: '0 0 32px' }}>On-Demand Services</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '28px' }}>
             {services.map((s) => (
-              <div key={s.id} className="card-3d-glow" style={{ borderRadius: '20px', background: 'var(--card-bg, rgba(255, 251, 246, 0.84))', border: '1px solid var(--glass-border, hsla(0,0%,100%,.35))', backdropFilter: 'blur(24px) saturate(120%)', overflow: 'hidden' }}>
+              <Link key={s.id} href={`/search?type=${encodeURIComponent(s.type)}`} className="card-3d-glow" style={{ textDecoration: 'none', color: 'inherit', display: 'block', borderRadius: '20px', background: 'var(--card-bg, rgba(255, 251, 246, 0.84))', border: '1px solid var(--glass-border, hsla(0,0%,100%,.35))', backdropFilter: 'blur(24px) saturate(120%)', overflow: 'hidden', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }}>
                 <div style={{ position: 'relative', width: '100%', height: '200px' }}>
                   <Image src={s.img} alt={s.name} fill style={{ objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.9)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.85rem', fontWeight: 600, color: '#1a120e' }}>₾{s.price}/hr</div>
+                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.92)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.85rem', fontWeight: 700, color: 'var(--brand-terracotta, #D9653B)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>₾{s.price}/hr</div>
                 </div>
                 <div style={{ padding: '18px 20px 22px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.05rem', fontWeight: 500, margin: 0, color: 'var(--ink)' }}>{s.name}</h3>
+                    <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.05rem', fontWeight: 600, margin: 0, color: 'var(--ink)' }}>{s.name}</h3>
                     <span style={{ fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8a7a6a', background: 'rgba(0,0,0,0.04)', borderRadius: '999px', padding: '4px 10px' }}>{s.type}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', color: 'var(--text-secondary, #5a4538)' }}>
@@ -50,7 +50,7 @@ export default function ServicesPage() {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{s.rating}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

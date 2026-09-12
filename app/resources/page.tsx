@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 
 export default function ResourcesPage() {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const resources = [
     {
@@ -46,45 +44,7 @@ export default function ResourcesPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', padding: '160px 24px 60px', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
-      {/* Glass nav */}
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand">
-            <span className="brandmark-dot"></span>
-            <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-          </Link>
-            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
-              <span></span><span></span><span></span>
-            </button>
-          <div className="nav-links">
-             <Link href="/klara">KLARA</Link>
-             <Link href="/search">Visitors</Link>
-            <Link href="/hotels">Stays</Link>
-            <Link href="/muse">Where to go</Link>
-            <Link href="/contact">Contact us</Link>
-          </div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right">
-            <Link href="/login">Become a host</Link>
-            <Link href="/login" className="nav-icon" aria-label="Login">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"></path></svg>
-            </Link>
-          </div>
-        </nav>
-      </div>
-
-        {/* Mobile Nav Overlay */}
-        <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-          <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-          <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-          <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-          <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-          <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-          <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-          <Link href="/login" onClick={() => setMobileNavOpen(false)}>Become a host</Link>
-        </div>
-
+    <div style={{ minHeight: '100vh', padding: '110px 24px 60px', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: '3rem', fontWeight: 700, color: '#1a120e', marginBottom: '12px' }}>Host Resources</h1>

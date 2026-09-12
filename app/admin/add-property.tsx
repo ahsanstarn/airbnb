@@ -6,7 +6,8 @@ import Navbar from '../components/Navbar';
 import styles from './admin.module.css';
 
 function getToken() {
-  return localStorage.getItem('kaya_token');
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token') || localStorage.getItem('kaya_token');
 }
 
 interface Property {

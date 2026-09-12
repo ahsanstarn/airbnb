@@ -18,6 +18,10 @@ interface Listing {
 const staticListings: Listing[] = [
   { id: 3, title: 'Modern Seaside Flat', location: 'Batumi, Georgia', price: 95, rating: 4.72, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=800&fit=crop' },
   { id: 5, title: 'Old Town Guesthouse', location: 'Tbilisi, Georgia', price: 65, rating: 4.85, img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=800&fit=crop' },
+  { id: 11, title: 'Sololaki Heritage Art Loft', location: 'Tbilisi, Georgia', price: 110, rating: 4.93, img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=800&fit=crop' },
+  { id: 12, title: 'Batumi Seafront Panorama Flat', location: 'Batumi, Georgia', price: 130, rating: 4.89, img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=800&fit=crop' },
+  { id: 13, title: 'Sighnaghi Vineyard Stone Cottage', location: 'Kakheti, Georgia', price: 85, rating: 4.95, img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=800&fit=crop' },
+  { id: 14, title: 'Kutaisi Historic Balcony Residence', location: 'Kutaisi, Georgia', price: 70, rating: 4.82, img: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&h=800&fit=crop' },
 ];
 
 export default function ApartmentsPage() {
@@ -123,7 +127,7 @@ export default function ApartmentsPage() {
               >
                 <div style={{ position: 'relative', width: '100%', height: '240px' }}>
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill style={{ objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.9)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.95rem', fontWeight: 600, color: '#1a120e' }}>₾{listing.price}</div>
+                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.92)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.95rem', fontWeight: 700, color: 'var(--brand-terracotta, #D9653B)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>₾{listing.price}</div>
                 </div>
                 <div style={{ padding: '20px 22px 24px' }}>
                   <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.15rem', fontWeight: 500, margin: '0 0 8px', color: 'var(--ink)' }}>{listing.title}</h3>

@@ -16,13 +16,13 @@ export default function BusinessRegister() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('kaya_token');
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
     if (!token) { router.push('/login'); }
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('kaya_token');
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
     if (!token) { router.push('/login'); return; }
     setSubmitting(true);
     setError('');
@@ -45,35 +45,13 @@ export default function BusinessRegister() {
     }
   };
 
-  const nav = (
-    <>
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand"><span className="brandmark-dot"></span><span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span></Link>
-          <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu"><span></span><span></span><span></span></button>
-          <div className="nav-links"><Link href="/klara">KLARA</Link><Link href="/search">Visitors</Link><Link href="/hotels">Stays</Link><Link href="/muse">Where to go</Link><Link href="/contact">Contact us</Link></div>
-          <div className="nav-spacer"></div>
-        </nav>
-      </div>
-      <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-        <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-        <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-        <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-        <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-        <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-        <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-      </div>
-    </>
-  );
-
   const glass = { borderRadius: '24px', padding: '40px 36px', background: 'rgba(255,251,246,.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)', maxWidth: '600px', width: '100%' };
 
   const inputStyle = { width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1px solid rgba(36,23,18,.12)', background: 'hsla(0,0%,100%,.84)', fontSize: '13px', outline: 'none' };
 
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}>
-        {nav}
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)', paddingTop: '80px' }}>
         <div style={glass}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#22c55e', display: 'grid', placeItems: 'center', margin: '0 auto 20px', fontSize: '28px', color: '#fff8ef' }}>✓</div>
@@ -87,8 +65,7 @@ export default function BusinessRegister() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}>
-      {nav}
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)', paddingTop: '80px' }}>
       <div style={glass}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '24px', fontFamily: 'var(--font-display), serif', fontWeight: 700, color: 'var(--ink)' }}>

@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useTheme } from '@/lib/theme-context';
 
 const SAMPLE_TOURS = [
   { id: 1, name: 'Kakheti Wine Tour', location: 'Kakheti Region', duration: 'Full Day', price: 120, rating: 4.9, img: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&h=400&fit=crop', group: '2-8' },
@@ -12,323 +10,99 @@ const SAMPLE_TOURS = [
 ];
 
 export default function ToursPage() {
-  const { theme, toggleTheme } = useTheme();
-  const [scrolled, setScrolled] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('EN');
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <div className="site-shell">
-      <div className="shell">
-        <div className="homepage-shell" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          
-          {/* Top Sticky Header */}
-          <div 
-            className="sticky-nav-shell visible" 
-            style={{ 
-              top: scrolled ? '16px' : '54px', 
-              transform: 'translateX(-50%)',
-              transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-              zIndex: 100
-            }}
-          >
-            <nav 
-              className="nav nav-sticky-bar" 
-              aria-label="Primary navigation" 
-              style={{ transform: scrolled ? 'scale(1)' : 'scale(1.08)' }}
-            >
-              <Link className="nav-brand" href="/">
-                <span className="brandmark-dot"></span>
-                <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-              </Link>
-              
-              <div className="nav-links">
-                <Link href="/offers" className="nav-link-button">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-sparkles nav-link-icon" aria-hidden="true">
-                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
-                    <path d="M20 3v4"></path>
-                    <path d="M22 5h-4"></path>
-                    <path d="M4 17v2"></path>
-                    <path d="M5 18H3"></path>
-                  </svg>
-                  Offers
-                </Link>
-                <Link href="/tours" className="nav-link-button active">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-map nav-link-icon" aria-hidden="true">
-                    <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path>
-                    <path d="M15 5.764v15"></path>
-                    <path d="M9 3.236v15"></path>
-                  </svg>
-                  Tours
-                </Link>
-                <Link href="/guides" className="nav-link-button">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-compass nav-link-icon" aria-hidden="true">
-                    <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path>
-                    <circle cx="12" cy="12" r="10"></circle>
-                  </svg>
-                  Guides
-                </Link>
+    <main style={{ background: 'var(--bg)', minHeight: '100vh', paddingTop: '100px' }}>
+      <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '0 24px 60px' }}>
+        <header style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <span style={{ letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent, #d9653b)', fontWeight: 700, fontSize: '12px' }}>Exploration</span>
+          <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, margin: '8px 0 16px', color: 'var(--ink)' }}>Curated Tours</h1>
+          <p style={{ color: 'var(--text-secondary, #5a4538)', fontSize: '16px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+            Explore the dramatic ridges, wine valleys, and ancient monuments of Georgia with expert certified local operators.
+          </p>
+        </header>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '28px' }}>
+          {SAMPLE_TOURS.map((tour) => (
+            <div key={tour.id} className="card-3d-glow" style={{ borderRadius: '24px', overflow: 'hidden', background: 'var(--card-bg, rgba(255, 251, 246, 0.84))', border: '1px solid var(--glass-border, hsla(0,0%,100%,.35))', backdropFilter: 'blur(24px)' }}>
+              <div style={{ position: 'relative', height: '220px', width: '100%' }}>
+                <img 
+                  src={tour.img} 
+                  alt={tour.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <span style={{ 
+                  position: 'absolute', 
+                  top: '16px', 
+                  right: '16px', 
+                  background: 'rgba(255,251,246,0.92)', 
+                  padding: '6px 14px', 
+                  borderRadius: '999px', 
+                  fontSize: '12px', 
+                  fontWeight: 700, 
+                  color: 'var(--ink)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                }}>
+                  ₾{tour.price}
+                </span>
               </div>
               
-              <div className="nav-spacer"></div>
-              
-              <div className="nav-right" style={{ position: 'relative' }}>
-                <button 
-                  type="button" 
-                  className="nav-icon nav-action-btn" 
-                  aria-label="Language and currency"
-                  onClick={() => setLangOpen(!langOpen)}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16">
-                    <circle cx="12" cy="12" r="9"></circle>
-                    <path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"></path>
-                  </svg>
-                  <span style={{ fontSize: '10px', marginLeft: '2px', fontWeight: 'bold' }}>{currentLang}</span>
-                </button>
-                
-                {langOpen && (
-                  <div className="nav-dropdown nav-dropdown-compact" style={{ position: 'absolute', top: 'calc(100% + 12px)', right: 0 }}>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('EN'); setLangOpen(false); }}>🇬🇧 English (GEL)</button>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('KA'); setLangOpen(false); }}>🇬ე ქართული (GEL)</button>
-                    <button className="nav-dropdown-button" onClick={() => { setCurrentLang('RU'); setLangOpen(false); }}>🇷🇺 Русский (GEL)</button>
-                  </div>
-                )}
-
-                <button 
-                  type="button" 
-                  className="nav-icon nav-action-btn nav-theme-icon" 
-                  aria-label="Switch theme"
-                  onClick={toggleTheme}
-                >
-                  {theme === 'dark' ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16">
-                      <circle cx="12" cy="12" r="5"></circle>
-                      <line x1="12" y1="1" x2="12" y2="3"></line>
-                      <line x1="12" y1="21" x2="12" y2="23"></line>
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16">
-                      <path d="M20 14.5A7.5 7.5 0 1 1 9.5 4 6.2 6.2 0 0 0 20 14.5Z"></path>
-                    </svg>
-                  )}
-                </button>
-                
-                <Link className="nav-auth-link" href="/login">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-log-in nav-link-icon" aria-hidden="true">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                    <polyline points="10 17 15 12 10 7"></polyline>
-                    <line x1="15" x2="3" y1="12" y2="12"></line>
-                  </svg>
-                  Sign up/Login
-                </Link>
-              </div>
-            </nav>
-          </div>
-
-          {/* Main Body Content */}
-          <main style={{ flexGrow: 1, padding: '120px 24px 80px', maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
-            
-            {/* Header Title Section */}
-            <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <span className="hero-side-eyebrow" style={{ letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>Exploration</span>
-              <h1 className="display" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, margin: '8px 0 16px' }}>Curated Tours</h1>
-              <p style={{ color: 'var(--muted)', fontSize: '15px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-                Explore the dramatic ridges, wine valleys, and ancient monuments of Georgia with expert certified local operators.
-              </p>
-            </header>
-
-            {/* Tours Grid */}
-            <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-              {SAMPLE_TOURS.map((tour) => (
-                <div key={tour.id} className="glass-card hover-lift card-3d-glow" style={{ borderRadius: '24px', overflow: 'hidden', padding: 0 }}>
-                  <div style={{ position: 'relative', height: '200px', width: '100%', background: '#ccc' }}>
-                    <img 
-                      src={tour.img} 
-                      alt={tour.name} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <span style={{ 
-                      position: 'absolute', 
-                      top: '16px', 
-                      right: '16px', 
-                      background: 'rgba(255,255,255,0.9)', 
-                      padding: '6px 12px', 
-                      borderRadius: '99px', 
-                      fontSize: '11px', 
-                      fontWeight: 700, 
-                      color: '#000',
-                      backdropFilter: 'blur(4px)'
-                    }}>
-                      ₾{tour.price}
-                    </span>
-                  </div>
-                  
-                  <div style={{ padding: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span className="hero-side-card-kicker" style={{ fontSize: '11px', color: 'var(--muted)' }}>{tour.location}</span>
-                      <span style={{ fontSize: '10px', background: 'rgba(0,0,0,0.04)', padding: '3px 8px', borderRadius: '4px', fontWeight: 600 }}>{tour.duration}</span>
-                    </div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '4px 0 12px' }}>{tour.name}</h3>
-                    
-                    <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '0 0 16px', lineHeight: 1.4 }}>
-                      Perfect group setup for {tour.group} people. Guided excursions and local support included.
-                    </p>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>★ {tour.rating.toFixed(1)}</span>
-                      <Link href={`/search?type=tour`} className="pill-link" style={{ fontSize: '11px', padding: '6px 12px' }}>Explore tour</Link>
-                    </div>
-                  </div>
+              <div style={{ padding: '22px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>📍 {tour.location}</span>
+                  <span style={{ fontSize: '11px', background: 'rgba(0,0,0,0.05)', padding: '4px 10px', borderRadius: '999px', fontWeight: 600, color: 'var(--ink)' }}>⏱ {tour.duration}</span>
                 </div>
-              ))}
-            </div>
+                <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '18px', fontWeight: 600, margin: '4px 0 10px', color: 'var(--ink)' }}>{tour.name}</h3>
+                
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary, #5a4538)', margin: '0 0 18px', lineHeight: 1.5 }}>
+                  Perfect group setup for {tour.group} people. Guided excursions and local support included.
+                </p>
 
-          </main>
-
-          {/* Footer */}
-          <footer className="footer" style={{ marginTop: 'auto' }}>
-            <div>
-              <h3>kaya<span style={{ opacity: 0.5 }}>.ge</span></h3>
-              <p>Discover Georgia through curated offers, services, structured platform flows and thoughtful local context.</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light, rgba(26,18,14,0.08))', paddingTop: '14px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>★ {tour.rating.toFixed(1)}</span>
+                  <Link href="/search?type=tour" style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '999px', background: 'var(--ink)', color: '#fff', textDecoration: 'none', fontWeight: 600 }}>Explore tour</Link>
+                </div>
+              </div>
             </div>
-            <div>
-              <h4>Product</h4>
-              <ul>
-                <li><Link href="/offers">Offers</Link></li>
-                <li><Link href="/restaurants">Restaurants</Link></li>
-                <li><Link href="/tours">Tours</Link></li>
-                <li><Link href="/guides">Muse</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4>Company</h4>
-              <ul>
-                <li><Link href="/about">About</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-                <li><Link href="/blog">Blog</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4>Platform</h4>
-              <ul>
-                <li><Link href="/dashboard">Tourist dashboard</Link></li>
-                <li><Link href="/business/dashboard">Business dashboard</Link></li>
-                <li><Link href="/admin">Admin panel</Link></li>
-              </ul>
-            </div>
-            <div className="copyright">
-              <span>© 2026 Kaya.ge — Discover Georgia</span>
-              <span>Built around the Phase 1 brief</span>
-            </div>
-          </footer>
-
+          ))}
         </div>
       </div>
-      
-      {/* Mobile Top Bar */}
-      <header className="mobile-guest-topbar" aria-label="Primary navigation">
-        <Link className="mobile-guest-topbar-brand" aria-label="Kaya home" href="/">
-          <span className="brandmark-dot" aria-hidden="true"></span>
-          <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-        </Link>
-        <div className="mobile-guest-topbar-actions">
-          <button 
-            type="button" 
-            className="mobile-guest-topbar-btn" 
-            aria-label="Language and currency"
-            onClick={() => setLangOpen(!langOpen)}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"></path>
-            </svg>
-          </button>
-          
-          <button 
-            type="button" 
-            className="mobile-guest-topbar-btn" 
-            aria-label="Switch to dark theme"
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="18" height="18">
-                <path d="M20 14.5A7.5 7.5 0 1 1 9.5 4 6.2 6.2 0 0 0 20 14.5Z"></path>
-              </svg>
-            )}
-          </button>
+
+      <footer className="site-footer">
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <span className="brandmark-dot"></span>
+              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
+            </div>
+            <p className="footer-tagline">Discover Georgia, your way.</p>
+          </div>
+          <div className="footer-links">
+            <h4>Stays</h4>
+            <Link href="/hotels">Hotels</Link>
+            <Link href="/apartments">Apartments</Link>
+            <Link href="/search?type=guesthouses">Guesthouses</Link>
+            <Link href="/search?type=cabins">Cabins</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Discover</h4>
+            <Link href="/muse">Where to go</Link>
+            <Link href="/blog">Travel blog</Link>
+            <Link href="/about">About us</Link>
+            <Link href="/careers">Careers</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Support</h4>
+            <Link href="/contact">Contact us</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/resources">Resources</Link>
+          </div>
         </div>
-      </header>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="mobile-bottom-nav" aria-label="Primary navigation">
-        <ul className="mobile-bottom-nav-list" style={{ '--mobile-bottom-nav-columns': 5 } as React.CSSProperties}>
-          <li>
-            <Link className="mobile-bottom-nav-item" href="/">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-house" aria-hidden="true">
-                <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
-                <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Homepage</span>
-            </Link>
-          </li>
-          <li>
-            <Link className="mobile-bottom-nav-item" href="/offers">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-sparkles" aria-hidden="true">
-                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
-                <path d="M20 3v4"></path>
-                <path d="M22 5h-4"></path>
-                <path d="M4 17v2"></path>
-                <path d="M5 18H3"></path>
-              </svg>
-              <span>Offers</span>
-            </Link>
-          </li>
-          <li>
-            <Link className="mobile-bottom-nav-item active" aria-current="page" href="/tours">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-map" aria-hidden="true">
-                <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"></path>
-                <path d="M15 5.764v15"></path>
-                <path d="M9 3.236v15"></path>
-              </svg>
-              <span>Tours</span>
-            </Link>
-          </li>
-          <li>
-            <Link className="mobile-bottom-nav-item" href="/guides">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-compass" aria-hidden="true">
-                <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path>
-                <circle cx="12" cy="12" r="10"></circle>
-              </svg>
-              <span>Guides</span>
-            </Link>
-          </li>
-          <li>
-            <Link className="mobile-bottom-nav-item" href="/login">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-log-in" aria-hidden="true">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                <polyline points="10 17 15 12 10 7"></polyline>
-                <line x1="15" x2="3" y1="12" y2="12"></line>
-              </svg>
-              <span>Sign up/Login</span>
-            </Link>
-          </li>
-        </ul>
-      </nav>
-
-    </div>
+        <div className="footer-bottom">
+          <span>&copy; {new Date().getFullYear()} Kaya.ge &mdash; crafted in Tbilisi</span>
+        </div>
+      </footer>
+    </main>
   );
 }

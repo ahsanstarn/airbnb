@@ -18,6 +18,10 @@ interface Listing {
 const staticListings: Listing[] = [
   { id: 1, title: 'Panoramic Suite Vera', location: 'Tbilisi, Georgia', price: 280, rating: 4.96, img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=800&fit=crop' },
   { id: 6, title: 'Boutique Rustaveli', location: 'Tbilisi, Georgia', price: 195, rating: 4.91, img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=800&fit=crop' },
+  { id: 7, title: 'Rooms Hotel Kazbegi', location: 'Kazbegi, Georgia', price: 320, rating: 4.98, img: 'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&h=800&fit=crop' },
+  { id: 8, title: 'Batumi Boulevard Grand Hotel', location: 'Batumi, Georgia', price: 240, rating: 4.92, img: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=800&fit=crop' },
+  { id: 9, title: 'Chateau Kakheti Wine Estate', location: 'Kakheti, Georgia', price: 310, rating: 4.97, img: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&h=800&fit=crop' },
+  { id: 10, title: 'Svaneti Alpine Boutique', location: 'Mestia, Georgia', price: 160, rating: 4.88, img: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=800&fit=crop' },
 ];
 
 export default function HotelsPage() {
@@ -120,7 +124,7 @@ export default function HotelsPage() {
               >
                 <div style={{ position: 'relative', width: '100%', height: '240px' }}>
                   <Image src={listing.images?.[0] || listing.img} alt={listing.title} fill style={{ objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.9)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.95rem', fontWeight: 600, color: '#1a120e' }}>₾{listing.price}</div>
+                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,251,246,0.92)', borderRadius: '999px', padding: '6px 14px', fontSize: '0.95rem', fontWeight: 700, color: 'var(--brand-terracotta, #D9653B)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>₾{listing.price}</div>
                 </div>
                 <div style={{ padding: '20px 22px 24px' }}>
                   <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.15rem', fontWeight: 500, margin: '0 0 8px', color: 'var(--ink)' }}>{listing.title}</h3>

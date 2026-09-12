@@ -27,7 +27,7 @@ export default function AgencyPage() {
     if (!selectedService) return;
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('kaya_token');
+      const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
       const res = await fetch('/api/agency/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -38,40 +38,10 @@ export default function AgencyPage() {
     setSubmitting(false);
   };
 
-  const nav = (
-    <>
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand"><span className="brandmark-dot"></span><span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span></Link>
-          <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu"><span></span><span></span><span></span></button>
-          <div className="nav-links"><Link href="/klara">KLARA</Link><Link href="/search">Visitors</Link><Link href="/hotels">Stays</Link><Link href="/muse">Where to go</Link><Link href="/contact">Contact us</Link></div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setLangOpen(!langOpen)} style={{ background: 'rgba(255,251,246,.7)', border: '0', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{currentLang}</button>
-              {langOpen && <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#fff8ef', borderRadius: '12px', boxShadow: '0 12px 40px rgba(0,0,0,.12)', overflow: 'hidden', zIndex: 50, minWidth: '120px' }}>{LANGUAGES.map(l => <button key={l.code} onClick={() => { setCurrentLang(l.code); setLangOpen(false); }} style={{ display: 'block', width: '100%', padding: '8px 14px', border: '0', background: currentLang === l.code ? 'rgba(0,0,0,.05)' : 'transparent', cursor: 'pointer', fontSize: '13px', textAlign: 'left', color: 'var(--text)' }}>{l.flag} {l.label}</button>)}</div>}
-            </div>
-            <Link href="/login">Become a host</Link>
-          </div>
-        </nav>
-      </div>
-      <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-        <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-        <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-        <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-        <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-        <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-        <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-        <div style={{ marginTop: '20px', padding: '0 24px' }}>{LANGUAGES.map(l => <button key={l.code} onClick={() => { setCurrentLang(l.code); setMobileNavOpen(false); }} style={{ display: 'block', width: '100%', padding: '8px 0', border: '0', background: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: currentLang === l.code ? 700 : 400, textAlign: 'left', color: '#fff8ef' }}>{l.flag} {l.label}</button>)}</div>
-      </div>
-    </>
-  );
-
   const glass = { borderRadius: '20px', background: 'rgba(255,251,246,.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)' };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
-      {nav}
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)', paddingTop: '80px' }}>
 
       {/* Hero */}
       <section style={{ position: 'relative', overflow: 'hidden', padding: '140px 24px 60px', textAlign: 'center' }}>

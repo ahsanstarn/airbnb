@@ -430,47 +430,6 @@ export default function AdminPanel() {
   return (
     <div className="site-shell">
       <div className="shell">
-        {/* Inline Nav */}
-        <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-          <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-            <Link href="/" className="nav-brand">
-              <span className="brandmark-dot"></span>
-              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-            </Link>
-            <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
-              <span></span><span></span><span></span>
-            </button>
-            <div className="nav-links" style={{ gap: '6px' }}>
-              {tabs.filter(t => t.key !== 'add').map(tab => (
-                <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
-                  background: activeTab === tab.key ? 'rgba(26,18,14,.9)' : 'none',
-                  color: activeTab === tab.key ? '#fff8ef' : 'var(--muted)',
-                  border: '0', padding: '6px 12px', borderRadius: '999px',
-                  fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                  transition: 'all .2s',
-                }}>
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <div className="nav-spacer"></div>
-            <div className="nav-right">
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '12px', fontWeight: 600, opacity: 0.6 }}>
-                Log out
-              </button>
-            </div>
-          </nav>
-        </div>
-
-        {/* Mobile Nav Overlay */}
-        <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-          <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-          <Link href="/" onClick={() => setMobileNavOpen(false)}>Home</Link>
-          <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-          <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-          <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact</Link>
-        </div>
-
         {/* Header */}
         <section className="animate-section" style={{ marginTop: '100px' }}>
           <div style={{

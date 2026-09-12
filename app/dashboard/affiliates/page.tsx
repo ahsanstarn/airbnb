@@ -52,11 +52,11 @@ export default function AffiliatesDashboard() {
   }, [router]);
 
   if (loading) {
-    return <div style={{ color: 'var(--fg)', padding: '2rem', textAlign: 'center' }}>Loading...</div>;
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface, #fff7ef)', color: 'var(--ink, #241712)', padding: '2rem', textAlign: 'center', fontFamily: 'var(--font-display), serif', fontSize: '1.2rem' }}>Loading affiliate stats...</div>;
   }
 
   const referralLink = stats?.affiliateCode 
-    ? `https://kaya.ge?ref=${stats.affiliateCode}` 
+    ? `https://kaya.ge/signup?ref=${stats.affiliateCode}` 
     : 'No code available';
 
   const handleCopy = () => {
@@ -71,142 +71,140 @@ export default function AffiliatesDashboard() {
     return `${name.substring(0, 2)}***@${domain}`;
   };
 
+  const cardStyle = {
+    backgroundColor: 'var(--card-bg, rgba(255, 252, 248, 0.94))',
+    border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.12))',
+    borderRadius: '24px',
+    padding: '28px',
+    marginBottom: '24px',
+    boxShadow: '0 12px 32px -8px rgba(36, 24, 19, 0.08)',
+    backdropFilter: 'blur(16px)',
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: 'var(--bg, #0e0e10)',
-      color: 'var(--fg, #f5f5f5)',
-      fontFamily: 'var(--font-body, inherit)',
-      padding: '2rem'
+      background: 'radial-gradient(900px circle at 8% 8%, rgba(255, 215, 188, 0.45), transparent 60%), radial-gradient(700px circle at 92% 96%, hsla(21, 76%, 82%, 0.35), transparent 60%), linear-gradient(180deg, var(--surface, #fff7ef), var(--surface-warm, #f8e2cb) 65%, var(--surface-deep, #f3d1b3))',
+      color: 'var(--ink, #241712)',
+      fontFamily: 'var(--font-body), system-ui, sans-serif',
+      padding: '100px 24px 60px'
     }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>Affiliate Dashboard</h1>
+      <div style={{ maxWidth: '840px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <h1 style={{ margin: 0, fontFamily: 'var(--font-display), serif', fontSize: '32px', fontWeight: 700, color: 'var(--ink)' }}>Affiliate Dashboard</h1>
           <Link href="/dashboard" style={{
-            color: 'var(--accent, #E8604C)',
+            color: 'var(--accent, #d9653b)',
             textDecoration: 'none',
-            fontSize: '0.9rem',
-            border: '1px solid rgba(255,255,255,0.1)',
-            padding: '0.5rem 1rem',
-            borderRadius: '8px'
+            fontSize: '13.5px',
+            fontWeight: 600,
+            border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))',
+            backgroundColor: 'rgba(255,255,255,0.85)',
+            padding: '8px 16px',
+            borderRadius: '999px',
+            transition: 'background 0.2s'
           }}>
             &larr; Back to Dashboard
           </Link>
         </div>
 
-        <div style={{
-          backgroundColor: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: '16px',
-          padding: '1.5rem',
-          marginBottom: '2rem'
-        }}>
-          <h2 style={{ fontSize: '1.2rem', marginTop: 0, marginBottom: '1rem', color: '#ccc' }}>Your Referral Link</h2>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={cardStyle}>
+          <h2 style={{ fontFamily: 'var(--font-display), serif', fontSize: '20px', marginTop: 0, marginBottom: '14px', color: 'var(--ink)' }}>Your Personal Referral Link</h2>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <input 
               type="text" 
               readOnly 
               value={referralLink}
               style={{
                 flex: 1,
-                padding: '0.8rem 1rem',
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
-                color: '#fff',
-                fontSize: '1rem',
+                minWidth: '240px',
+                padding: '12px 16px',
+                backgroundColor: '#fff',
+                border: '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))',
+                borderRadius: '12px',
+                color: 'var(--ink)',
+                fontSize: '14px',
                 outline: 'none'
               }}
             />
             <button 
               onClick={handleCopy}
               style={{
-                backgroundColor: 'var(--accent, #E8604C)',
+                background: 'linear-gradient(135deg, var(--accent, #d9653b), var(--accent-deep, #be4f27))',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '8px',
-                padding: '0 1.5rem',
-                fontSize: '1rem',
+                borderRadius: '999px',
+                padding: '12px 24px',
+                fontSize: '14px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
-                transition: 'opacity 0.2s'
+                boxShadow: '0 6px 18px -3px rgba(217, 101, 59, 0.35)',
+                transition: 'transform 0.2s'
               }}
-              onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
             >
-              {copied ? 'Copied!' : 'Copy'}
+              {copied ? 'Copied!' : 'Copy Link'}
             </button>
           </div>
         </div>
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
-          marginBottom: '2rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '20px',
+          marginBottom: '24px'
         }}>
           {[
             { label: 'Total Clicks', value: stats?.totalClicks || 0 },
             { label: 'Total Signups', value: stats?.totalRegistered || 0 },
             { label: 'Active Referrals', value: stats?.totalActive || 0 }
           ].map((stat, i) => (
-            <div key={i} style={{
-              backgroundColor: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              textAlign: 'center'
-            }}>
-              <div style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '0.5rem' }}>{stat.label}</div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent, #E8604C)' }}>
+            <div key={i} style={{ ...cardStyle, marginBottom: 0, textAlign: 'center' }}>
+              <div style={{ color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>{stat.label}</div>
+              <div style={{ fontFamily: 'var(--font-display), serif', fontSize: '36px', fontWeight: 'bold', color: 'var(--accent, #d9653b)' }}>
                 {stat.value}
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{
-          backgroundColor: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: '16px',
-          padding: '1.5rem',
-          overflowX: 'auto'
-        }}>
-          <h2 style={{ fontSize: '1.2rem', marginTop: 0, marginBottom: '1.5rem', color: '#ccc' }}>Recent Referrals</h2>
+        <div style={cardStyle}>
+          <h2 style={{ fontFamily: 'var(--font-display), serif', fontSize: '20px', marginTop: 0, marginBottom: '18px', color: 'var(--ink)' }}>Recent Referrals</h2>
           {stats?.referrals && stats.referrals.length > 0 ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#aaa' }}>
-                  <th style={{ padding: '0.75rem 0', fontWeight: 'normal' }}>User</th>
-                  <th style={{ padding: '0.75rem 0', fontWeight: 'normal' }}>Status</th>
-                  <th style={{ padding: '0.75rem 0', fontWeight: 'normal' }}>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.referrals.map((ref) => (
-                  <tr key={ref._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1rem 0' }}>{maskEmail(ref.email)}</td>
-                    <td style={{ padding: '1rem 0' }}>
-                      <span style={{
-                        backgroundColor: ref.status === 'active' ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255,255,255,0.05)',
-                        color: ref.status === 'active' ? '#4caf50' : '#ccc',
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: '4px',
-                        fontSize: '0.8rem',
-                        textTransform: 'capitalize'
-                      }}>
-                        {ref.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem 0', color: '#888' }}>
-                      {ref.createdAt ? new Date(ref.createdAt).toLocaleDateString() : 'N/A'}
-                    </td>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-mid, rgba(26, 18, 14, 0.12))', color: 'var(--muted)' }}>
+                    <th style={{ padding: '10px 12px', fontWeight: 600, fontSize: '13px' }}>User</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 600, fontSize: '13px' }}>Status</th>
+                    <th style={{ padding: '10px 12px', fontWeight: 600, fontSize: '13px' }}>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {stats.referrals.map((ref) => (
+                    <tr key={ref._id} style={{ borderBottom: '1px solid var(--border-light, rgba(26, 18, 14, 0.06))' }}>
+                      <td style={{ padding: '12px', fontSize: '14px', color: 'var(--ink)' }}>{maskEmail(ref.email)}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{
+                          backgroundColor: ref.status === 'active' ? 'rgba(44, 157, 111, 0.15)' : 'rgba(0,0,0,0.06)',
+                          color: ref.status === 'active' ? '#2c9d6f' : 'var(--muted)',
+                          padding: '3px 10px',
+                          borderRadius: '999px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          textTransform: 'capitalize'
+                        }}>
+                          {ref.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                        {ref.createdAt ? new Date(ref.createdAt).toLocaleDateString() : 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <div style={{ textAlign: 'center', color: '#888', padding: '2rem 0' }}>
+            <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px 0', fontSize: '14px' }}>
               No referrals yet. Share your link to get started!
             </div>
           )}

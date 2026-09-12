@@ -1,49 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 
 export default function PricingPage() {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   return (
-    <div style={{ minHeight: '100vh', padding: '160px 24px 60px', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
-      {/* Glass nav */}
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand">
-            <span className="brandmark-dot"></span>
-            <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-          </Link>
-          <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu">
-            <span></span><span></span><span></span>
-          </button>
-          <div className="nav-links">
-             <Link href="/klara">KLARA</Link>
-             <Link href="/search">Visitors</Link>
-            <Link href="/hotels">Stays</Link>
-            <Link href="/muse">Where to go</Link>
-            <Link href="/contact">Contact us</Link>
-          </div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right">
-            <Link href="/login">Become a host</Link>
-            <Link href="/login" className="nav-icon" aria-label="Login">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"></path></svg>
-            </Link>
-          </div>
-        </nav>
-      </div>
-        {/* Mobile Nav Overlay */}
-        <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-          <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-          <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-          <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-          <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-          <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-          <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-          <Link href="/login" onClick={() => setMobileNavOpen(false)}>Become a host</Link>
-        </div>
-
+    <div style={{ minHeight: '100vh', padding: '110px 24px 60px', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: '3rem', fontWeight: 700, color: '#1a120e', marginBottom: '16px' }}>Simple, Transparent Pricing</h1>
@@ -53,17 +14,17 @@ export default function PricingPage() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '64px' }}>
-          <div style={{ borderRadius: '28px', padding: '40px', background: 'rgba(255, 251, 246, 0.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)', maxWidth: '400px', width: '100%', position: 'relative' }}>
-            <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '4px 16px', borderRadius: '999px', background: 'linear-gradient(135deg, #d4a373, #bc8a5f)', color: '#fff' }}>Most Popular</span>
+          <div className="card-3d-glow" style={{ borderRadius: '28px', padding: '40px', background: 'rgba(255, 251, 246, 0.88)', border: '1px solid hsla(0,0%,100%,.45)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)', maxWidth: '400px', width: '100%', position: 'relative' }}>
+            <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 18px', borderRadius: '999px', background: 'linear-gradient(135deg, #d9653b, #b84e26)', color: '#fff', boxShadow: '0 4px 12px rgba(217,101,59,0.3)' }}>Most Popular</span>
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <p style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: 'rgba(36,23,18,.58)', margin: '0 0 8px' }}>Professional Host</p>
+              <p style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: 'rgba(36,23,18,.58)', margin: '0 0 8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>Professional Host</p>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px' }}>
                 <span style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '1.5rem', color: '#1a120e' }}>₾</span>
                 <span style={{ fontFamily: 'var(--font-display), serif', fontSize: '4rem', fontWeight: 700, color: '#1a120e', lineHeight: 1 }}>20</span>
                 <span style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: 'rgba(36,23,18,.58)' }}>/month</span>
               </div>
             </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px' }}>
               {[
                 'Unlimited listings',
                 '0% commission on bookings',
@@ -72,12 +33,12 @@ export default function PricingPage() {
                 '24/7 priority support',
                 'AI-powered visibility boost'
               ].map((feat) => (
-                <li key={feat} style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: '#1a120e', padding: '8px 0', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid rgba(36,23,18,.06)' }}>
-                  <span style={{ color: '#bc8a5f', fontWeight: 700 }}>✓</span> {feat}
+                <li key={feat} style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: '#1a120e', padding: '10px 0', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid rgba(36,23,18,.06)', fontSize: '0.92rem' }}>
+                  <span style={{ color: '#d9653b', fontWeight: 800 }}>✓</span> {feat}
                 </li>
               ))}
             </ul>
-            <Link href="/login" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-body), system-ui, sans-serif', fontWeight: 600, padding: '14px 32px', borderRadius: '999px', background: 'linear-gradient(135deg, #d4a373, #bc8a5f)', color: '#fff', textDecoration: 'none', fontSize: '0.95rem' }}>
+            <Link href="/business/register" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-body), system-ui, sans-serif', fontWeight: 600, padding: '15px 32px', borderRadius: '999px', background: 'linear-gradient(135deg, #d9653b, #b84e26)', color: '#fff', textDecoration: 'none', fontSize: '0.95rem', boxShadow: '0 8px 20px rgba(217,101,59,0.35)', transition: 'all 0.25s ease' }}>
               Get Started Now
             </Link>
           </div>
