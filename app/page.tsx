@@ -193,6 +193,22 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* Mobile 3-Dots Slide Switcher */}
+                <div className="hero-mobile-dots" aria-label="Hero photo switcher">
+                  {HERO_SLIDES.map((s, i) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className={`hero-mobile-dot-item ${i === activeSlide ? 'active' : ''}`}
+                      onClick={() => setActiveSlide(i)}
+                      aria-label={`Slide ${i + 1}: ${s.copyTitle}`}
+                    >
+                      <span className="hero-mobile-dot-circle" />
+                      <span className="hero-mobile-dot-name">{s.titleSpan}</span>
+                    </button>
+                  ))}
+                </div>
+
                 {/* Airbnb-style Floating Glass Search Bar */}
                 <div className="hero-search-container animate-slide-up animate-delay-4">
                   <form onSubmit={handleSearch} className="hero-search-glass">
@@ -244,39 +260,6 @@ export default function Home() {
                 </div>
 
               </div>
-            </div>
-          </div>
-
-          {/* Mobile Hero Carousel */}
-          <div className="mobile-hero-banner-carousel">
-            <div className="mobile-hero-banner-carousel-track">
-              {HERO_SLIDES.map((s, i) => {
-                const sd = slideData(i);
-                return (
-                  <div key={s.id} className="hero-side-card hero-side-card-listing card-3d-glow" style={{ minWidth: '280px', scrollSnapAlign: 'start' }} onClick={() => setActiveSlide(i)}>
-                    <div className="hero-side-card-listing-overlay depth-bg" style={{ backgroundImage: `url(${sd.image})` }}></div>
-                    <div className="hero-side-card-listing-rail depth-fg">
-                      <div className="hero-side-card-listing-top">
-                        <span className="hero-side-card-kicker">{s.kicker}</span>
-                        <span className="hero-side-price">{s.price}</span>
-                      </div>
-                      <div className="hero-side-card-listing-bottom">
-                        <h3>{sd.copyTitle}</h3>
-                        <p>{sd.copyText.slice(0, 60)}...</p>
-                      </div>
-                      <div className="hero-side-listing-footer">
-                        <span>{s.rating}</span>
-                        <span>{t('seeListing')}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mobile-hero-banner-carousel-dot">
-              {HERO_SLIDES.map((_, i) => (
-                <button key={i} className={i === activeSlide ? 'active' : ''} onClick={() => setActiveSlide(i)} />
-              ))}
             </div>
           </div>
 
@@ -358,8 +341,148 @@ export default function Home() {
             </div>
           </section>
 
+          {/* Only on Kaya — Unique Features from Section 5 of Brief */}
+          <section className="unique-features-section fade-up" ref={setRevealRef(1)}>
+            <div className="section-head">
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(194,44,87,0.1)', color: 'var(--accent)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                  ✨ Exclusive to Kaya.ge
+                </div>
+                <h2 className="section-title">Authentic Georgian Experiences</h2>
+                <p className="section-copy">Features you won&apos;t find on Airbnb, Booking.com, or anywhere else.</p>
+              </div>
+            </div>
+
+            <div className="features-grid-4">
+              {/* 1. Georgian Moment */}
+              <Link href="/georgian-moment" className="feature-card-kaya hover-lift">
+                <span className="feature-card-tag">⚡ 24–72h Notice</span>
+                <span className="feature-card-icon">🍷</span>
+                <h3>Georgian Moment</h3>
+                <p>Spontaneous micro-experiences. Join an intimate wine tasting at a family cellar, learn khinkali making, or hike with locals today.</p>
+                <span className="feature-card-link-text">Browse moments &rarr;</span>
+              </Link>
+
+              {/* 2. Kaya Connect */}
+              <Link href="/connect" className="feature-card-kaya hover-lift">
+                <span className="feature-card-tag">🤝 Verified Buddy</span>
+                <span className="feature-card-icon">👥</span>
+                <h3>Kaya Connect</h3>
+                <p>Book a local friend to show you hidden courtyards, insider cafes, and authentic streets. Like having a close buddy in Georgia.</p>
+                <span className="feature-card-link-text">Meet a local friend &rarr;</span>
+              </Link>
+
+              {/* 3. Trip Mood AI Planner */}
+              <Link href="/trip-planner" className="feature-card-kaya hover-lift">
+                <span className="feature-card-tag">🧠 Nino AI Planner</span>
+                <span className="feature-card-icon">✨</span>
+                <h3>Trip Mood Planner</h3>
+                <p>How do you want to feel? Select Adventurous, Romantic, Spiritual, or Slow, and get a complete 1-click bookable itinerary.</p>
+                <span className="feature-card-link-text">Plan by mood &rarr;</span>
+              </Link>
+
+              {/* 4. Georgian Table */}
+              <Link href="/georgian-table" className="feature-card-kaya hover-lift">
+                <span className="feature-card-tag">🍲 Family Feasts</span>
+                <span className="feature-card-icon">🫓</span>
+                <h3>Georgian Table</h3>
+                <p>Dine at a real Georgian family&apos;s supra. Homemade qvevri wine, multi-course feast, traditional toasts, and genuine Georgian hospitality.</p>
+                <span className="feature-card-link-text">Join a family supra &rarr;</span>
+              </Link>
+            </div>
+          </section>
+
+          {/* Complete Marketplace Categories */}
+          <section className="homepage-categories-section fade-up" ref={setRevealRef(2)} style={{ padding: '30px 0' }}>
+            <div className="section-head">
+              <div>
+                <h2 className="section-title">Georgia&apos;s All-in-One Marketplace</h2>
+                <p className="section-copy">Everything you need for your journey across Sakartvelo, all in one place.</p>
+              </div>
+            </div>
+
+            <div className="categories-grid-7">
+              <Link href="/hotels" className="category-tile">
+                <span className="category-tile-icon">🏨</span>
+                <span className="category-tile-title">Boutique Stays</span>
+                <span className="category-tile-sub">Hotels & lodges</span>
+              </Link>
+              <Link href="/apartments" className="category-tile">
+                <span className="category-tile-icon">🏢</span>
+                <span className="category-tile-title">Apartments</span>
+                <span className="category-tile-sub">City flats</span>
+              </Link>
+              <Link href="/restaurants" className="category-tile">
+                <span className="category-tile-icon">🍷</span>
+                <span className="category-tile-title">Dining & Wine</span>
+                <span className="category-tile-sub">Supra & cellars</span>
+              </Link>
+              <Link href="/cars" className="category-tile">
+                <span className="category-tile-icon">🚙</span>
+                <span className="category-tile-title">4x4 & Cars</span>
+                <span className="category-tile-sub">Mountain rentals</span>
+              </Link>
+              <Link href="/tours" className="category-tile">
+                <span className="category-tile-icon">🏔️</span>
+                <span className="category-tile-title">Tours</span>
+                <span className="category-tile-sub">Treks & trips</span>
+              </Link>
+              <Link href="/salons" className="category-tile">
+                <span className="category-tile-icon">🧖</span>
+                <span className="category-tile-title">Spas & Baths</span>
+                <span className="category-tile-sub">Sulfur baths</span>
+              </Link>
+              <Link href="/services" className="category-tile">
+                <span className="category-tile-icon">🛎️</span>
+                <span className="category-tile-title">Services</span>
+                <span className="category-tile-sub">Chefs & guides</span>
+              </Link>
+              <Link href="/muse" className="category-tile">
+                <span className="category-tile-icon">🏛️</span>
+                <span className="category-tile-title">Muse Guide</span>
+                <span className="category-tile-sub">Info & culture</span>
+              </Link>
+            </div>
+          </section>
+
+          {/* Business Host Banner (20 GEL/month) */}
+          <section className="business-cta-banner fade-up" ref={setRevealRef(3)} style={{ padding: '30px 0 60px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #241712 0%, #3a2218 100%)',
+              borderRadius: '28px',
+              padding: '44px 36px',
+              color: '#fff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              boxShadow: '0 20px 50px rgba(36,23,18,0.25)'
+            }}>
+              <div style={{ maxWidth: '580px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#d4a373', display: 'block', marginBottom: '8px' }}>
+                  For Georgian Businesses & Hosts
+                </span>
+                <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(1.6rem,3vw,2.2rem)', margin: '0 0 10px', color: '#fff' }}>
+                  List Your Property or Service for 20 GEL/month
+                </h3>
+                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.6 }}>
+                  Zero commission on bookings. Flat subscription fee. Direct inquiries and reservations from international tourists.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <Link href="/business/register" className="pill-link" style={{ background: '#c22c57', color: '#fff', padding: '14px 28px', fontSize: '14px' }}>
+                  List Your Business &rarr;
+                </Link>
+                <Link href="/pricing" style={{ padding: '14px 24px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}>
+                  Pricing Details
+                </Link>
+              </div>
+            </div>
+          </section>
+
           {/* Footer */}
-          <footer className="footer fade-up" ref={setRevealRef(1)}>
+          <footer className="footer fade-up" ref={setRevealRef(4)}>
             <div className="footer-grid">
               <div className="footer-brand">
                 <div className="footer-logo">

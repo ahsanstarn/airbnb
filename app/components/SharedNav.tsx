@@ -167,7 +167,10 @@ export default function SharedNav() {
         </nav>
       </div>
 
-      <div className={`global-mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
+      <div 
+        className={`global-mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}
+        style={{ display: mobileNavOpen ? 'flex' : 'none' }}
+      >
         <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
         <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>{t('stays') || 'Stays'}</Link>
         <Link href="/apartments" onClick={() => setMobileNavOpen(false)}>Apartments</Link>

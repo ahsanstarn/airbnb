@@ -272,19 +272,30 @@ button, input, select, textarea { font: inherit; }
 }
 .nav-dropdown-button:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
-/* MOBILE NAV */
+/* MOBILE NAV OVERLAY */
 .global-mobile-nav-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(26, 18, 14, 0.98);
+  background: rgba(22, 15, 12, 0.98);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  padding: 80px 24px;
+  padding: 80px 24px 40px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transform: translateY(-100%);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.25s ease;
 }
-.global-mobile-nav-overlay.open { transform: translateY(0); }
+.global-mobile-nav-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
 .global-mobile-nav-overlay a {
   color: #fff;
   font-size: 24px;
@@ -356,8 +367,155 @@ button, input, select, textarea { font: inherit; }
 .hero-thumb.active{width:160px;height:160px;opacity:1;border:3px solid #fff;box-shadow:0 20px 40px rgba(0,0,0,0.4);z-index:10}
 .hero-thumb.active::after{opacity:0}
 
+/* MOBILE HERO DOTS (Hidden on desktop) */
+.hero-mobile-dots { display: none; }
+
+/* UNIQUE KAYA FEATURES SECTION */
+.unique-features-section {
+  padding: 60px 0;
+}
+
+.features-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.feature-card-kaya {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, rgba(255, 252, 248, 0.92));
+  border: 1px solid var(--border, rgba(26, 18, 14, 0.08));
+  border-radius: var(--radius-xl, 24px);
+  padding: 28px 24px;
+  text-decoration: none;
+  color: var(--ink, #241712);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px -8px rgba(36, 24, 19, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card-kaya:hover {
+  transform: translateY(-5px);
+  border-color: rgba(194, 44, 87, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(36, 24, 19, 0.2);
+}
+
+.feature-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(194, 44, 87, 0.09);
+  color: var(--accent, #c22c57);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+
+.feature-card-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.feature-card-kaya h3 {
+  font-family: var(--font-display), serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.feature-card-kaya p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.feature-card-link-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent, #c22c57);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* MARKETPLACE CATEGORIES EXPANDED */
+.categories-grid-7 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.category-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 22px 14px;
+  border-radius: var(--radius-lg, 20px);
+  background: var(--card-bg, rgba(255, 252, 248, 0.92));
+  border: 1px solid var(--border, rgba(26, 18, 14, 0.08));
+  text-decoration: none;
+  color: var(--ink);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(36, 24, 19, 0.06);
+}
+
+.category-tile:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 28px -6px rgba(36, 24, 19, 0.15);
+}
+
+.category-tile-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.category-tile-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.category-tile-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* KLARA AI HERO BANNER */
+.klara-promo-card {
+  margin-top: 40px;
+  background: linear-gradient(135deg, rgba(34, 22, 17, 0.96), rgba(46, 28, 22, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-2xl, 32px);
+  padding: 40px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
 /* MOBILE HERO CAROUSEL */
-.mobile-hero-banner-carousel{display:none}
+.mobile-hero-banner-carousel{display:none !important}
 
 /* SECTIONS */
 .homepage-featured-section{padding:60px 0}
@@ -791,7 +949,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   .hero{min-height:420px;border-radius:var(--radius-xl)}
   .hero-title{font-size:clamp(2rem,8vw,3rem)}
   .hero-copy{padding:16px}
-  .mobile-hero-banner-carousel{display:block}
+  .mobile-hero-banner-carousel{display:none !important}
   .homepage-featured-section{padding:40px 0}
   .site-footer, .footer{padding:40px 0 100px}
 
@@ -952,6 +1110,58 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
 
   .hero-content {
     padding: 32px 20px;
+  }
+
+  /* Mobile 3 Dots Hero Photo Switcher */
+  .hero-mobile-dots {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    z-index: 10;
+  }
+
+  .hero-mobile-dot-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(255, 252, 248, 0.22);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hero-mobile-dot-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.65);
+    transition: all 0.25s ease;
+  }
+
+  .hero-mobile-dot-item.active {
+    background: var(--accent, #c22c57);
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(194, 44, 87, 0.5);
+    transform: scale(1.05);
+  }
+
+  .hero-mobile-dot-item.active .hero-mobile-dot-circle {
+    background: #fff;
+    box-shadow: 0 0 8px #fff;
   }
 
   /* Floating Klara widget positioned cleanly above mobile bottom nav */

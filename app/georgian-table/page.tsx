@@ -18,43 +18,10 @@ export default function GeorgianTable() {
     fetch('/api/georgian-table').then(r => r.json()).then(setData).catch(() => {});
   }, []);
 
-  const nav = (
-    <>
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand"><span className="brandmark-dot"></span><span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span></Link>
-          <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu"><span></span><span></span><span></span></button>
-          <div className="nav-links"><Link href="/klara">{t('nav.klara')}</Link><Link href="/search">{t('nav.visitors')}</Link><Link href="/hotels">{t('nav.stays')}</Link><Link href="/muse">{t('nav.guide')}</Link><Link href="/contact">{t('nav.contact')}</Link></div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setLangOpen(!langOpen)} style={{ padding: '6px 12px', borderRadius: '999px', border: '1px solid rgba(36,23,18,.14)', background: 'rgba(255,251,246,.7)', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}>{lang}</button>
-              {langOpen && <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '6px', padding: '6px', borderRadius: '14px', background: 'rgba(255,251,246,.96)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px)', boxShadow: '0 8px 24px rgba(0,0,0,.08)', zIndex: 100, minWidth: '140px' }}>{LANGS.map(code => (
-                <button key={code} onClick={() => { setLang(code); setLangOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 12px', borderRadius: '10px', border: '0', background: lang === code ? 'rgba(26,18,14,.06)' : 'transparent', cursor: 'pointer', fontSize: '12px', fontWeight: lang === code ? 700 : 500, textAlign: 'left' }}><span>{LANG_FLAGS[code]}</span> {t(`lang.${code.toLowerCase()}`)} {lang === code && <span style={{ marginLeft: 'auto', fontSize: '11px' }}>✓</span>}</button>
-              ))}</div>}
-            </div>
-            <Link href="/login">{t('nav.becomeHost')}</Link></div>
-        </nav>
-      </div>
-      <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-        <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-        <Link href="/klara" onClick={() => setMobileNavOpen(false)}>{t('nav.klara')}</Link>
-        <Link href="/search" onClick={() => setMobileNavOpen(false)}>{t('nav.visitors')}</Link>
-        <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>{t('nav.stays')}</Link>
-        <Link href="/muse" onClick={() => setMobileNavOpen(false)}>{t('nav.guide')}</Link>
-        <Link href="/contact" onClick={() => setMobileNavOpen(false)}>{t('nav.contact')}</Link>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.1)', margin: '8px 0', padding: '8px 0' }}>{LANGS.map(code => (
-          <button key={code} onClick={() => { setLang(code); setMobileNavOpen(false); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 24px', border: '0', background: 'transparent', color: '#fff8ef', fontSize: '14px', fontWeight: lang === code ? 700 : 400, cursor: 'pointer', textAlign: 'left' }}>{LANG_FLAGS[code]} {t(`lang.${code.toLowerCase()}`)} {lang === code && ' ✓'}</button>
-        ))}</div>
-      </div>
-    </>
-  );
-
   const glass = { borderRadius: '20px', background: 'rgba(255,251,246,.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)' };
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
-      {nav}
 
       {/* Hero */}
       <section style={{ position: 'relative', overflow: 'hidden', padding: '140px 24px 60px', textAlign: 'center' }}>

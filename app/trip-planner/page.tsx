@@ -46,33 +46,10 @@ export default function TripPlanner() {
     }
   };
 
-  const nav = (
-    <>
-      <div className="sticky-nav-shell visible" style={{ top: '54px', transform: 'translateX(-50%)' }}>
-        <nav className="nav nav-sticky-bar" style={{ transform: 'scale(1.08)' }}>
-          <Link href="/" className="nav-brand"><span className="brandmark-dot"></span><span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span></Link>
-          <button className={`mobile-nav-toggle ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="Toggle menu"><span></span><span></span><span></span></button>
-          <div className="nav-links"><Link href="/klara">KLARA</Link><Link href="/search">Visitors</Link><Link href="/hotels">Stays</Link><Link href="/muse">Where to go</Link><Link href="/contact">Contact us</Link></div>
-          <div className="nav-spacer"></div>
-          <div className="nav-right"><Link href="/login">Become a host</Link></div>
-        </nav>
-      </div>
-      <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`}>
-        <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-        <Link href="/klara" onClick={() => setMobileNavOpen(false)}>KLARA</Link>
-        <Link href="/search" onClick={() => setMobileNavOpen(false)}>Visitors</Link>
-        <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>Stays</Link>
-        <Link href="/muse" onClick={() => setMobileNavOpen(false)}>Where to go</Link>
-        <Link href="/contact" onClick={() => setMobileNavOpen(false)}>Contact us</Link>
-      </div>
-    </>
-  );
-
   const glass = { borderRadius: '20px', background: 'rgba(255,251,246,.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)' };
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
-      {nav}
 
       <section style={{ padding: '120px 24px 40px', textAlign: 'center' }}>
         <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>🧠</span>
