@@ -36,46 +36,56 @@ export async function GET(request: NextRequest) {
     const limit = 12;
     const skip = (page - 1) * limit;
 
-    const filter: any = {};
+    const conditions: any[] = [];
 
     if (mine === 'true') {
       const user = await getCurrentUser(request);
       if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      filter.$or = [
-        { businessId: user._id },
-        { businessId: user._id.toString() },
-      ];
+      conditions.push({
+        $or: [
+          { businessId: user._id },
+          { businessId: user._id.toString() },
+        ]
+      });
     } else {
-      filter.is_published = true;
+      conditions.push({ is_published: true });
     }
 
-    if (category) {
-      filter.category = category;
+    if (category && category !== 'all') {
+      conditions.push({ category });
     }
 
-    if (city) {
-      filter.$or = [
-        { city: { $regex: city, $options: 'i' } },
-        { location: { $regex: city, $options: 'i' } }
-      ];
+    if (city && !q) {
+      conditions.push({
+        $or: [
+          { city: { $regex: city, $options: 'i' } },
+          { location: { $regex: city, $options: 'i' } }
+        ]
+      });
     }
 
     if (q) {
-      filter.$or = [
-        { title: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { location: { $regex: q, $options: 'i' } },
-        { city: { $regex: q, $options: 'i' } }
-      ];
+      conditions.push({
+        $or: [
+          { title: { $regex: q, $options: 'i' } },
+          { description: { $regex: q, $options: 'i' } },
+          { location: { $regex: q, $options: 'i' } },
+          { city: { $regex: q, $options: 'i' } },
+          { category: { $regex: q, $options: 'i' } }
+        ]
+      });
     }
 
     if (minPrice || maxPrice) {
-      filter.price_per_night = {};
-      if (minPrice) filter.price_per_night.$gte = parseFloat(minPrice);
-      if (maxPrice) filter.price_per_night.$lte = parseFloat(maxPrice);
+      const priceFilter: any = {};
+      if (minPrice) priceFilter.$gte = parseFloat(minPrice);
+      if (maxPrice) priceFilter.$lte = parseFloat(maxPrice);
+      conditions.push({ price_per_night: priceFilter });
     }
+
+    const filter = conditions.length === 1 ? conditions[0] : (conditions.length > 1 ? { $and: conditions } : {});
 
     // Sort definition
     let sortQuery: any = { is_featured: -1, createdAt: -1 };

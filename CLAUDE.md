@@ -24,8 +24,11 @@
 - `--surface`: `#fff7ef` (warm cream)
 - `--surface-warm`: `#f8e2cb` (warm terracotta peach)
 - `--card-bg`: `rgba(255, 252, 248, 0.92)`
-- `--accent`: `#c22c57` (Georgian pomegranate / wine crimson)
-- `--accent-soft`: `#f1577f`
+- `--accent`: `#d9653b` (Warm Georgian terracotta orange / clay qvevri)
+- `--accent-soft`: `#e88c5d` (Light terracotta)
+- `--accent-deep`: `#be4f27` (Deep amber clay)
+- `--sand`: `#e5b287` (Warm sand)
+- `--sand-gold`: `#d4a373` (Amber gold)
 - `--success`: `#2c9d6f`
 - `--warning`: `#e58c55`
 - `--error`: `#d04a3b`

@@ -73,27 +73,27 @@ export default function SharedNav() {
           <div className="nav-links">
             <Link href="/hotels" className="nav-link-button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" className="nav-link-icon"><path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M10 11h2M10 15h2M14 11h2M14 15h2M18 11h2M18 15h2M9 3h6v4H9z"/></svg>
-              {t('stays') || 'Stays'}
+              {t('nav.stays', 'Stays')}
             </Link>
             <Link href="/apartments" className="nav-link-button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" className="nav-link-icon"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/></svg>
-              Apartments
+              {t('nav.apartments', 'Apartments')}
             </Link>
             <Link href="/search" className="nav-link-button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" className="nav-link-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              Search
+              {t('nav.search', 'Search')}
             </Link>
             <Link href="/offers" className="nav-link-button">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nav-link-icon"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
-              {t('offers') || 'Offers'}
+              {t('nav.offers', 'Offers')}
             </Link>
             <Link href="/tours" className="nav-link-button">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nav-link-icon"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></svg>
-              {t('tours') || 'Tours'}
+              {t('nav.tours', 'Tours')}
             </Link>
             <Link href="/guides" className="nav-link-button">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nav-link-icon"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/><circle cx="12" cy="12" r="10"/></svg>
-              {t('guides') || 'Guides'}
+              {t('nav.guides', 'Guides')}
             </Link>
           </div>
           
@@ -113,7 +113,7 @@ export default function SharedNav() {
               </div>
             )}
 
-            <button type="button" className="nav-icon nav-action-btn nav-theme-icon" onClick={toggleTheme}>
+            <button type="button" className="nav-icon nav-action-btn nav-theme-icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
               ) : (
@@ -133,14 +133,18 @@ export default function SharedNav() {
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    backgroundColor: '#2c9d6f'
+                    backgroundColor: 'var(--accent, #d9653b)'
                   }}></span>
-                  <span>{currentUser.name ? currentUser.name.split(' ')[0] : 'Dashboard'}</span>
+                  <span>
+                    {currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya')
+                      ? currentUser.name.split(' ')[0]
+                      : t('nav.account', 'Account')}
+                  </span>
                 </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  title="Logout"
+                  title={t('nav.logout', 'Logout')}
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -154,9 +158,9 @@ export default function SharedNav() {
                 </button>
               </div>
             ) : (
-              <Link className="nav-auth-link" href="/login">
+              <Link className="nav-auth-link nav-login-btn" href="/login">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nav-link-icon"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-                {t('login') || 'SIGN UP/LOGIN'}
+                {t('nav.login', 'Log In')}
               </Link>
             )}
             
@@ -172,37 +176,37 @@ export default function SharedNav() {
         style={{ display: mobileNavOpen ? 'flex' : 'none' }}
       >
         <button className="mobile-nav-overlay-close" onClick={() => setMobileNavOpen(false)}>✕</button>
-        <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>{t('stays') || 'Stays'}</Link>
-        <Link href="/apartments" onClick={() => setMobileNavOpen(false)}>Apartments</Link>
-        <Link href="/search" onClick={() => setMobileNavOpen(false)}>Search</Link>
-        <Link href="/offers" onClick={() => setMobileNavOpen(false)}>{t('offers') || 'Offers'}</Link>
-        <Link href="/tours" onClick={() => setMobileNavOpen(false)}>{t('tours') || 'Tours'}</Link>
-        <Link href="/guides" onClick={() => setMobileNavOpen(false)}>{t('guides') || 'Guides'}</Link>
+        <Link href="/hotels" onClick={() => setMobileNavOpen(false)}>{t('nav.stays', 'Stays')}</Link>
+        <Link href="/apartments" onClick={() => setMobileNavOpen(false)}>{t('nav.apartments', 'Apartments')}</Link>
+        <Link href="/search" onClick={() => setMobileNavOpen(false)}>{t('nav.search', 'Search')}</Link>
+        <Link href="/offers" onClick={() => setMobileNavOpen(false)}>{t('nav.offers', 'Offers')}</Link>
+        <Link href="/tours" onClick={() => setMobileNavOpen(false)}>{t('nav.tours', 'Tours')}</Link>
+        <Link href="/guides" onClick={() => setMobileNavOpen(false)}>{t('nav.guides', 'Guides')}</Link>
         {currentUser ? (
           <>
             <Link href={currentUser.role === 'business' ? '/business/dashboard' : '/dashboard'} onClick={() => setMobileNavOpen(false)}>
-              Dashboard ({currentUser.name})
+              {t('nav.dashboard', 'Dashboard')} ({currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya') ? currentUser.name : 'Account'})
             </Link>
             <Link href="/dashboard/affiliates" onClick={() => setMobileNavOpen(false)}>
-              Affiliate Program
+              {t('nav.affiliates', 'Affiliate Program')}
             </Link>
             <button
               onClick={() => { setMobileNavOpen(false); handleLogout(); }}
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#E8604C',
+                color: 'var(--accent, #d9653b)',
                 textAlign: 'left',
                 padding: '12px 0',
                 fontSize: '18px',
                 cursor: 'pointer'
               }}
             >
-              Logout
+              {t('nav.logout', 'Logout')}
             </button>
           </>
         ) : (
-          <Link href="/login" onClick={() => setMobileNavOpen(false)}>{t('login') || 'SIGN UP/LOGIN'}</Link>
+          <Link href="/login" onClick={() => setMobileNavOpen(false)}>{t('nav.login', 'Log In')}</Link>
         )}
       </div>
     </>

@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/lib/lang-context';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
 
   useEffect(() => {
@@ -36,8 +38,8 @@ export default function MobileBottomNav() {
     : '/login';
 
   const profileLabel = currentUser
-    ? (currentUser.name ? currentUser.name.split(' ')[0] : 'Profile')
-    : 'Log In';
+    ? (currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya') ? currentUser.name.split(' ')[0] : t('nav.account', 'Account'))
+    : t('nav.login', 'Log In');
 
   const isHomeActive = pathname === '/';
   const isSearchActive = pathname === '/search';
@@ -59,7 +61,7 @@ export default function MobileBottomNav() {
             <path d="M9 21v-7a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v7" />
           </svg>
         </span>
-        <span className="mobile-bottom-nav-label">Explore</span>
+        <span className="mobile-bottom-nav-label">{t('nav.home', 'Explore')}</span>
       </Link>
 
       {/* 2. Search */}
@@ -74,7 +76,7 @@ export default function MobileBottomNav() {
             <path d="M16.5 16.5L21.5 21.5" strokeLinecap="round" />
           </svg>
         </span>
-        <span className="mobile-bottom-nav-label">Search</span>
+        <span className="mobile-bottom-nav-label">{t('nav.search', 'Search')}</span>
       </Link>
 
       {/* 3. Stays */}
@@ -90,7 +92,7 @@ export default function MobileBottomNav() {
             <path d="M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1" strokeLinecap="round" />
           </svg>
         </span>
-        <span className="mobile-bottom-nav-label">Stays</span>
+        <span className="mobile-bottom-nav-label">{t('nav.stays', 'Stays')}</span>
       </Link>
 
       {/* 4. KLARA AI (Special Assistant) */}
@@ -105,7 +107,7 @@ export default function MobileBottomNav() {
             <defs>
               <linearGradient id="sparkle-grad" x1="3" y1="2" x2="21" y2="20" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#d4a373" />
-                <stop offset="1" stopColor="#c22c57" />
+                <stop offset="1" stopColor="#d9653b" />
               </linearGradient>
             </defs>
           </svg>

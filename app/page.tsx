@@ -117,7 +117,11 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (searchCity) params.append('city', searchCity);
+    const query = searchCity.trim();
+    if (query) {
+      params.append('q', query);
+      params.append('city', query);
+    }
     if (checkIn) params.append('checkIn', checkIn);
     if (checkOut) params.append('checkOut', checkOut);
     if (guests) params.append('guests', guests);
@@ -213,17 +217,17 @@ export default function Home() {
                 <div className="hero-search-container animate-slide-up animate-delay-4">
                   <form onSubmit={handleSearch} className="hero-search-glass">
                     <div className="search-field-unit">
-                      <label>Where</label>
+                      <label>{t('where', 'Where')}</label>
                       <input 
                         type="text" 
-                        placeholder="Tbilisi, Batumi, Kazbegi..." 
+                        placeholder={t('wherePlaceholder', 'Tbilisi, Batumi, Kazbegi...')} 
                         value={searchCity}
                         onChange={(e) => setSearchCity(e.target.value)}
                       />
                     </div>
                     <div className="search-divider-v"></div>
                     <div className="search-field-unit">
-                      <label>Check In</label>
+                      <label>{t('checkIn', 'Check In')}</label>
                       <input 
                         type="date" 
                         value={checkIn}
@@ -232,7 +236,7 @@ export default function Home() {
                     </div>
                     <div className="search-divider-v"></div>
                     <div className="search-field-unit">
-                      <label>Check Out</label>
+                      <label>{t('checkOut', 'Check Out')}</label>
                       <input 
                         type="date" 
                         value={checkOut}
@@ -241,12 +245,12 @@ export default function Home() {
                     </div>
                     <div className="search-divider-v"></div>
                     <div className="search-field-unit">
-                      <label>Guests</label>
+                      <label>{t('guests', 'Guests')}</label>
                       <select value={guests} onChange={(e) => setGuests(e.target.value)}>
-                        <option value="1">1 guest</option>
-                        <option value="2">2 guests</option>
-                        <option value="3">3 guests</option>
-                        <option value="4">4+ guests</option>
+                        <option value="1">{t('guestsOption1', '1 guest')}</option>
+                        <option value="2">{t('guestsOption2', '2 guests')}</option>
+                        <option value="3">{t('guestsOption3', '3 guests')}</option>
+                        <option value="4">{t('guestsOption4', '4+ guests')}</option>
                       </select>
                     </div>
                     <button type="submit" className="hero-search-submit">
@@ -254,7 +258,7 @@ export default function Home() {
                         <circle cx="11" cy="11" r="8"></circle>
                         <path d="m21 21-4.3-4.3"></path>
                       </svg>
-                      Search
+                      {t('searchBtn', 'Search')}
                     </button>
                   </form>
                 </div>
@@ -267,11 +271,11 @@ export default function Home() {
           <section className="homepage-featured-section fade-up" ref={setRevealRef(0)}>
             <div className="section-head">
               <div>
-                <h2 className="section-title">{t('popularOffers')}</h2>
-                <p className="section-copy">Handpicked boutique lofts, mountain cabins, family guesthouses, and wine villas across Georgia.</p>
+                <h2 className="section-title">{t('stays.title', 'Popular Stays & Offers')}</h2>
+                <p className="section-copy">{t('stays.subtitle', 'Handpicked boutique lofts, mountain cabins, family guesthouses, and wine villas across Georgia.')}</p>
               </div>
               <Link href="/search" className="pill-link">
-                View all stays &rarr;
+                {t('viewAll', 'View all stays')} &rarr;
               </Link>
             </div>
 
@@ -285,7 +289,7 @@ export default function Home() {
                   onClick={() => setSelectedCategory(cat.id)}
                 >
                   <span>{cat.icon}</span>
-                  <span>{cat.label}</span>
+                  <span>{t(`cat.${cat.id}`, cat.label)}</span>
                 </button>
               ))}
             </div>
@@ -303,14 +307,14 @@ export default function Home() {
                   <Link href={`/listing/${itemId}`} key={itemId} className="listing-card hover-lift">
                     <div className="listing-card-media" style={{ backgroundImage: `url(${coverImage})` }}>
                       <div className="listing-card-top">
-                        <span className="price-tag">{price} GEL / night</span>
+                        <span className="price-tag">{price} GEL {t('perNight', '/ night')}</span>
                         <button 
                           type="button" 
                           className="icon-badge" 
                           onClick={(e) => toggleFavorite(e, String(itemId))}
                           aria-label="Save to favorites"
                         >
-                          <svg viewBox="0 0 24 24" fill={isFav ? 'var(--accent, #c22c57)' : 'none'} stroke={isFav ? 'var(--accent, #c22c57)' : 'currentColor'} strokeWidth="2" width="16" height="16">
+                          <svg viewBox="0 0 24 24" fill={isFav ? 'var(--accent, #d9653b)' : 'none'} stroke={isFav ? 'var(--accent, #d9653b)' : 'currentColor'} strokeWidth="2" width="16" height="16">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                           </svg>
                         </button>
@@ -345,11 +349,11 @@ export default function Home() {
           <section className="unique-features-section fade-up" ref={setRevealRef(1)}>
             <div className="section-head">
               <div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '999px', background: 'rgba(194,44,87,0.1)', color: 'var(--accent)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-                  ✨ Exclusive to Kaya.ge
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', borderRadius: '999px', background: 'rgba(217,101,59,0.12)', color: 'var(--accent, #d9653b)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                  ✨ {t('differentiators.badge', 'Only on Kaya.ge')}
                 </div>
-                <h2 className="section-title">Authentic Georgian Experiences</h2>
-                <p className="section-copy">Features you won&apos;t find on Airbnb, Booking.com, or anywhere else.</p>
+                <h2 className="section-title">{t('differentiators.title', "Georgia's All-in-One Travel Ecosystem")}</h2>
+                <p className="section-copy">{t('differentiators.desc', "Beyond ordinary bookings — experience verified hosts, deep local dining, traveler connections, and AI itineraries.")}</p>
               </div>
             </div>
 
@@ -358,36 +362,36 @@ export default function Home() {
               <Link href="/georgian-moment" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">⚡ 24–72h Notice</span>
                 <span className="feature-card-icon">🍷</span>
-                <h3>Georgian Moment</h3>
-                <p>Spontaneous micro-experiences. Join an intimate wine tasting at a family cellar, learn khinkali making, or hike with locals today.</p>
-                <span className="feature-card-link-text">Browse moments &rarr;</span>
+                <h3>{t('differentiators.gmTitle', 'Georgian Moment')}</h3>
+                <p>{t('differentiators.gmDesc', 'Spontaneous micro-experiences. Wine workshops, family cellars, khinkali making, and hiking with locals.')}</p>
+                <span className="feature-card-link-text">{t('learnMore', 'Explore')} &rarr;</span>
               </Link>
 
               {/* 2. Kaya Connect */}
               <Link href="/connect" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">🤝 Verified Buddy</span>
                 <span className="feature-card-icon">👥</span>
-                <h3>Kaya Connect</h3>
-                <p>Book a local friend to show you hidden courtyards, insider cafes, and authentic streets. Like having a close buddy in Georgia.</p>
-                <span className="feature-card-link-text">Meet a local friend &rarr;</span>
+                <h3>{t('differentiators.connectTitle', 'Kaya Connect')}</h3>
+                <p>{t('differentiators.connectDesc', 'Match with verified travelers heading to Svaneti, Kazbegi, or Kakheti. Share rides and tips.')}</p>
+                <span className="feature-card-link-text">{t('learnMore', 'Meet travelers')} &rarr;</span>
               </Link>
 
               {/* 3. Trip Mood AI Planner */}
               <Link href="/trip-planner" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag">🧠 Nino AI Planner</span>
+                <span className="feature-card-tag">🧠 AI Itinerary</span>
                 <span className="feature-card-icon">✨</span>
-                <h3>Trip Mood Planner</h3>
-                <p>How do you want to feel? Select Adventurous, Romantic, Spiritual, or Slow, and get a complete 1-click bookable itinerary.</p>
-                <span className="feature-card-link-text">Plan by mood &rarr;</span>
+                <h3>{t('differentiators.tripTitle', 'Trip Mood AI')}</h3>
+                <p>{t('differentiators.tripDesc', 'Tell us your vibe and budget — receive a tailored Georgian itinerary in 30 seconds.')}</p>
+                <span className="feature-card-link-text">{t('learnMore', 'Plan by mood')} &rarr;</span>
               </Link>
 
               {/* 4. Georgian Table */}
               <Link href="/georgian-table" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">🍲 Family Feasts</span>
                 <span className="feature-card-icon">🫓</span>
-                <h3>Georgian Table</h3>
-                <p>Dine at a real Georgian family&apos;s supra. Homemade qvevri wine, multi-course feast, traditional toasts, and genuine Georgian hospitality.</p>
-                <span className="feature-card-link-text">Join a family supra &rarr;</span>
+                <h3>{t('differentiators.gtTitle', 'Georgian Table')}</h3>
+                <p>{t('differentiators.gtDesc', "Curated qvevri wine cellars, traditional suphas, and chef table reservations across Georgia.")}</p>
+                <span className="feature-card-link-text">{t('learnMore', 'Join a supra')} &rarr;</span>
               </Link>
             </div>
           </section>
@@ -396,25 +400,25 @@ export default function Home() {
           <section className="homepage-categories-section fade-up" ref={setRevealRef(2)} style={{ padding: '30px 0' }}>
             <div className="section-head">
               <div>
-                <h2 className="section-title">Georgia&apos;s All-in-One Marketplace</h2>
-                <p className="section-copy">Everything you need for your journey across Sakartvelo, all in one place.</p>
+                <h2 className="section-title">{t('differentiators.title', "Georgia's All-in-One Marketplace")}</h2>
+                <p className="section-copy">{t('hero.subtitle', 'Everything you need for your journey across Sakartvelo, all in one place.')}</p>
               </div>
             </div>
 
             <div className="categories-grid-7">
               <Link href="/hotels" className="category-tile">
                 <span className="category-tile-icon">🏨</span>
-                <span className="category-tile-title">Boutique Stays</span>
+                <span className="category-tile-title">{t('cat.hotels', 'Boutique Stays')}</span>
                 <span className="category-tile-sub">Hotels & lodges</span>
               </Link>
               <Link href="/apartments" className="category-tile">
                 <span className="category-tile-icon">🏢</span>
-                <span className="category-tile-title">Apartments</span>
+                <span className="category-tile-title">{t('cat.apartments', 'Apartments')}</span>
                 <span className="category-tile-sub">City flats</span>
               </Link>
               <Link href="/restaurants" className="category-tile">
                 <span className="category-tile-icon">🍷</span>
-                <span className="category-tile-title">Dining & Wine</span>
+                <span className="category-tile-title">{t('restaurants', 'Dining & Wine')}</span>
                 <span className="category-tile-sub">Supra & cellars</span>
               </Link>
               <Link href="/cars" className="category-tile">
@@ -424,7 +428,7 @@ export default function Home() {
               </Link>
               <Link href="/tours" className="category-tile">
                 <span className="category-tile-icon">🏔️</span>
-                <span className="category-tile-title">Tours</span>
+                <span className="category-tile-title">{t('tours', 'Tours')}</span>
                 <span className="category-tile-sub">Treks & trips</span>
               </Link>
               <Link href="/salons" className="category-tile">
@@ -439,7 +443,7 @@ export default function Home() {
               </Link>
               <Link href="/muse" className="category-tile">
                 <span className="category-tile-icon">🏛️</span>
-                <span className="category-tile-title">Muse Guide</span>
+                <span className="category-tile-title">{t('muse', 'Muse Guide')}</span>
                 <span className="category-tile-sub">Info & culture</span>
               </Link>
             </div>
@@ -461,21 +465,21 @@ export default function Home() {
             }}>
               <div style={{ maxWidth: '580px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#d4a373', display: 'block', marginBottom: '8px' }}>
-                  For Georgian Businesses & Hosts
+                  {t('hostBanner.badge', 'For Property & Service Hosts')}
                 </span>
                 <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(1.6rem,3vw,2.2rem)', margin: '0 0 10px', color: '#fff' }}>
-                  List Your Property or Service for 20 GEL/month
+                  {t('hostBanner.title', 'Host on Kaya.ge — 0% Commission, Flat 20 GEL/month')}
                 </h3>
                 <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.6 }}>
-                  Zero commission on bookings. Flat subscription fee. Direct inquiries and reservations from international tourists.
+                  {t('hostBanner.desc', 'Keep 100% of what you earn. Unlike Booking.com (15–20%) or Airbnb (14–18%), Kaya charges a flat monthly subscription. Join Georgia\'s fastest growing travel platform.')}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <Link href="/business/register" className="pill-link" style={{ background: '#c22c57', color: '#fff', padding: '14px 28px', fontSize: '14px' }}>
-                  List Your Business &rarr;
+                <Link href="/business/register" className="pill-link" style={{ background: 'linear-gradient(135deg, #d9653b 0%, #c45228 100%)', color: '#fff', padding: '14px 28px', fontSize: '14px', boxShadow: '0 8px 24px -4px rgba(217, 101, 59, 0.5)' }}>
+                  {t('hostBanner.cta', 'Register Your Business')} &rarr;
                 </Link>
                 <Link href="/pricing" style={{ padding: '14px 24px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}>
-                  Pricing Details
+                  {t('learnMore', 'Pricing Details')}
                 </Link>
               </div>
             </div>

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/lang-context';
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const staticListings: any[] = [
     { id: 101, title: 'Panoramic Suite Vera', location: 'Tbilisi, Georgia', city: 'Tbilisi', price_per_night: 280, overall_rating: 4.96, category: 'hotels', images: ['https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop'] },
     { id: 102, title: 'Boutique Rustaveli', location: 'Tbilisi, Georgia', city: 'Tbilisi', price_per_night: 195, overall_rating: 4.91, category: 'hotels', images: ['https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&h=700&fit=crop'] },
@@ -32,44 +34,44 @@ function SearchContent() {
     sort: searchParams.get('sort') || 'recommended',
     page: 1,
   });
-  const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
+  const [searchInput, setSearchInput] = useState(searchParams.get('q') || searchParams.get('city') || '');
 
+  // Synchronize state when URL searchParams change
   useEffect(() => {
-    fetchListings();
-  }, [filters]);
+    const qParam = searchParams.get('q') || '';
+    const cityParam = searchParams.get('city') || '';
+    const catParam = searchParams.get('type') || searchParams.get('category') || '';
+    const minParam = searchParams.get('minPrice') || '';
+    const maxParam = searchParams.get('maxPrice') || '';
+    const sortParam = searchParams.get('sort') || 'recommended';
 
-  const fetchListings = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.category) params.append('category', filters.category);
-      if (filters.city) params.append('city', filters.city);
-      if (filters.minPrice) params.append('minPrice', filters.minPrice);
-      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
-      if (filters.sort) params.append('sort', filters.sort);
-      params.append('page', filters.page.toString());
+    setSearchInput(qParam || cityParam);
+    setFilters(prev => ({
+      ...prev,
+      category: catParam,
+      city: cityParam,
+      minPrice: minParam,
+      maxPrice: maxParam,
+      sort: sortParam,
+      page: 1,
+    }));
+  }, [searchParams]);
 
-      const res = await fetch(`/api/listings?${params.toString()}`);
-      const data = await res.json();
-      if (data.listings && data.listings.length > 0) {
-        setListings(data.listings);
-      } else {
-        // Fall back to static data
-        fiterListingsStatic(staticListings);
-      }
-    } catch {
-      fiterListingsStatic(staticListings);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fiterListingsStatic = (all: any[]) => {
+  const fiterListingsStatic = useCallback((all: any[], queryText?: string) => {
     let filtered = [...all];
+    const q = (queryText !== undefined ? queryText : searchInput).trim().toLowerCase();
+    if (q) {
+      filtered = filtered.filter(l =>
+        l.title?.toLowerCase().includes(q) ||
+        l.city?.toLowerCase().includes(q) ||
+        l.location?.toLowerCase().includes(q) ||
+        l.category?.toLowerCase().includes(q)
+      );
+    }
     if (filters.category) {
       filtered = filtered.filter(l => l.category === filters.category);
     }
-    if (filters.city) {
+    if (filters.city && !q.includes(filters.city.toLowerCase())) {
       filtered = filtered.filter(l => l.city?.toLowerCase().includes(filters.city.toLowerCase()));
     }
     if (filters.minPrice) {
@@ -82,19 +84,58 @@ function SearchContent() {
     if (filters.sort === 'price_desc') filtered.sort((a, b) => b.price_per_night - a.price_per_night);
     if (filters.sort === 'rating') filtered.sort((a, b) => (b.overall_rating || 0) - (a.overall_rating || 0));
     setListings(filtered);
-  };
+  }, [filters, searchInput]);
+
+  const fetchListings = useCallback(async (customQuery?: string) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      const q = customQuery !== undefined ? customQuery : searchInput.trim();
+      if (q) params.append('q', q);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.city) params.append('city', filters.city);
+      if (filters.minPrice) params.append('minPrice', filters.minPrice);
+      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+      if (filters.sort) params.append('sort', filters.sort);
+      params.append('page', filters.page.toString());
+
+      const res = await fetch(`/api/listings?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.listings && data.listings.length > 0) {
+          setListings(data.listings);
+          return;
+        }
+      }
+      // Fall back to static data
+      fiterListingsStatic(staticListings, q);
+    } catch {
+      fiterListingsStatic(staticListings, customQuery !== undefined ? customQuery : searchInput);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, searchInput, fiterListingsStatic]);
+
+  useEffect(() => {
+    fetchListings();
+  }, [filters, fetchListings]);
 
   const handleFilterChange = (field: string, value: string) => {
-    setFilters({ ...filters, [field]: value, page: 1 });
+    setFilters(prev => ({ ...prev, [field]: value, page: 1 }));
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const query = searchInput.trim();
     const params = new URLSearchParams();
-    if (searchInput) params.append('q', searchInput);
+    if (query) params.append('q', query);
     if (filters.category) params.append('category', filters.category);
     if (filters.city) params.append('city', filters.city);
+    if (filters.minPrice) params.append('minPrice', filters.minPrice);
+    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+    if (filters.sort) params.append('sort', filters.sort);
     router.push(`/search?${params.toString()}`);
+    fetchListings(query);
   };
 
   const categoryInfo: Record<string, { description: string; highlights: string[] }> = {
@@ -162,13 +203,13 @@ function SearchContent() {
             }}></div>
             <div style={{ position: 'relative', zIndex: 2 }}>
               <h1 className="display" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', color: 'rgba(255,250,243,.92)', margin: '0 0 24px', lineHeight: 1.05 }}>
-                {filters.category ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)} in Georgia` : 'Discover Georgia'}
+                {filters.category ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)} in Georgia` : t('discoverGeorgia', 'Discover Georgia')}
               </h1>
               <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', maxWidth: '700px' }}>
                 <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
                   <input
                     type="text"
-                    placeholder="Search destinations..."
+                    placeholder={t('searchDestinations', 'Search destinations...')}
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     style={{
@@ -191,9 +232,9 @@ function SearchContent() {
                     outline: 'none', fontSize: '13px',
                   }}
                 >
-                  <option value="">All</option>
+                  <option value="">{t('allCategories', 'All Categories')}</option>
                   {categories.map((cat) => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    <option key={cat} value={cat}>{t(`cat.${cat}`, cat.charAt(0).toUpperCase() + cat.slice(1))}</option>
                   ))}
                 </select>
                 <select
@@ -207,7 +248,7 @@ function SearchContent() {
                     outline: 'none', fontSize: '13px',
                   }}
                 >
-                  <option value="">All Cities</option>
+                  <option value="">{t('allCities', 'All Cities')}</option>
                   {cities.map((city) => (
                     <option key={city} value={city}>{city}</option>
                   ))}
@@ -223,18 +264,20 @@ function SearchContent() {
                     outline: 'none', fontSize: '13px',
                   }}
                 >
-                  <option value="recommended">Recommended</option>
-                  <option value="price_asc">Price: Low</option>
-                  <option value="price_desc">Price: High</option>
-                  <option value="rating">Top Rated</option>
+                  <option value="recommended">{t('recommended', 'Recommended')}</option>
+                  <option value="price_asc">{t('priceLow', 'Price: Low')}</option>
+                  <option value="price_desc">{t('priceHigh', 'Price: High')}</option>
+                  <option value="rating">{t('topRated', 'Top Rated')}</option>
                 </select>
                 <button type="submit" style={{
-                  padding: '14px 24px', borderRadius: '999px',
-                  border: '0', background: '#1a120e',
-                  color: '#fff8ef', fontSize: '13px', fontWeight: 700,
+                  padding: '14px 28px', borderRadius: '999px',
+                  border: '0', background: 'linear-gradient(135deg, #d9653b 0%, #c45228 100%)',
+                  color: '#fff', fontSize: '13px', fontWeight: 700,
                   cursor: 'pointer',
+                  boxShadow: '0 8px 24px -4px rgba(217, 101, 59, 0.45)',
+                  transition: 'all 0.25s ease',
                 }}>
-                  Search
+                  {t('searchBtn', 'Search')}
                 </button>
               </form>
             </div>

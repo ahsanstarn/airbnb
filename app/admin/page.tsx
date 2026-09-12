@@ -363,7 +363,7 @@ export default function AdminPanel() {
           textAlign: 'center'
         }}>
           <div style={{ marginBottom: '16px' }}>
-            <span className="brandmark-dot" style={{ width: '10px', height: '10px', display: 'inline-block', borderRadius: '50%', backgroundColor: 'var(--accent, #c22c57)', marginRight: '8px' }}></span>
+            <span className="brandmark-dot" style={{ width: '10px', height: '10px', display: 'inline-block', borderRadius: '50%', backgroundColor: 'var(--accent, #d9653b)', marginRight: '8px' }}></span>
             <span style={{ fontFamily: 'var(--font-display), serif', fontSize: '28px', fontWeight: 'bold' }}>kaya.ge Admin</span>
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>

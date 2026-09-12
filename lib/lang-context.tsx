@@ -8,7 +8,7 @@ type Language = 'EN' | 'KA' | 'RU';
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, fallback?: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -30,10 +30,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('kaya-lang', newLang);
   };
 
-  const t = (key: string): string => {
-    const dict = translations[lang];
-    if (!dict) return key;
-    return dict[key] || key;
+  const t = (key: string, fallback?: string): string => {
+    const dict = translations[lang] || translations['EN'];
+    if (dict && dict[key]) return dict[key];
+    if (fallback !== undefined) return fallback;
+    if (dict && key.includes('.')) {
+      const sub = key.split('.').pop()!;
+      if (dict[sub]) return dict[sub];
+    }
+    // Fallback to EN dictionary if current lang is missing key
+    const enDict = translations['EN'];
+    if (enDict && enDict[key]) return enDict[key];
+    return fallback !== undefined ? fallback : key;
   };
 
   return (

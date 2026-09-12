@@ -81,7 +81,7 @@ export default function LoginPage() {
       }}>
         <div style={{ textAlign: 'center' }}>
           <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', marginBottom: '8px' }}>
-            <span className="brandmark-dot" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent, #c22c57)' }}></span>
+            <span className="brandmark-dot" style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent, #d9653b)' }}></span>
             <span style={{ fontFamily: 'var(--font-display), serif', fontSize: '28px', fontWeight: 'bold', color: 'var(--ink, #241712)' }}>
               kaya<span style={{ opacity: 0.6 }}>.ge</span>
             </span>
@@ -91,15 +91,15 @@ export default function LoginPage() {
 
         {/* Quick Fill Demo Credentials */}
         <div style={{
-          background: 'rgba(194, 44, 87, 0.05)',
-          border: '1px dashed rgba(194, 44, 87, 0.25)',
+          background: 'rgba(217, 101, 59, 0.08)',
+          border: '1px dashed rgba(217, 101, 59, 0.3)',
           borderRadius: '16px',
           padding: '12px 14px',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px'
         }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent, #c22c57)' }}>
+          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent, #d9653b)' }}>
             Quick Demo Accounts (1-Click Fill)
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -226,7 +226,7 @@ export default function LoginPage() {
 
         <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--muted, rgba(36, 23, 18, 0.65))' }}>
           Don&apos;t have an account?{' '}
-          <Link href="/signup" style={{ color: 'var(--accent, #c22c57)', fontWeight: 700, textDecoration: 'none' }}>
+          <Link href="/signup" style={{ color: 'var(--accent, #d9653b)', fontWeight: 700, textDecoration: 'none' }}>
             Create one
           </Link>
         </div>
