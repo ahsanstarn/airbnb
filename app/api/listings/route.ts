@@ -114,9 +114,13 @@ export async function GET(request: NextRequest) {
       page,
       pages: Math.ceil(total / limit) || 1,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Listings search error:', error);
-    return NextResponse.json({ error: 'Failed to fetch listings' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to fetch listings',
+      details: error?.message || String(error),
+      type: error?.name || 'Error'
+    }, { status: 500 });
   }
 }
 
