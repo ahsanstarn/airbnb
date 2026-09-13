@@ -223,7 +223,7 @@ export class LocalCollection {
     return db[this.collectionName];
   }
 
-  async find(filter: any = {}) {
+  find(filter: any = {}) {
     const items = this.getItems().filter(item => matchFilter(item, filter));
     let result = [...items];
 
