@@ -6,87 +6,21 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/lang-context';
 import { SEED_LISTINGS } from '@/lib/seed-data';
 
-// 1-to-1 Destinations for Hero Carousel (Matching media_1789317359953.jpg)
-const GLOBAL_DESTINATIONS = [
-  {
-    id: 'cameo-island',
-    title: 'Cameo Island',
-    location: 'Zakynthos, Greece',
-    tag: 'Ionian Pearl',
-    description: 'A secluded private islet connected by a romantic wooden footbridge over crystal clear azure waters, framed by scenic cliffs and pine groves.',
-    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=400&fit=crop',
-  },
-  {
-    id: 'koh-phi-phi',
-    title: 'Koh Phi Phi Don',
-    location: 'Islands, Thailand',
-    tag: 'Tropical Haven',
-    description: 'Towering limestone karst cliffs plunging directly into turquoise lagoons, framed by pristine beaches and vibrant marine life.',
-    image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&h=400&fit=crop',
-  },
-  {
-    id: 'braies-boathouse',
-    title: 'Braies Boathouse',
-    location: 'Dolomites, Italy',
-    tag: 'Alpine Sanctuary',
-    description: 'The world-famous rustic wooden stilt boathouse over glass-still alpine waters, mirroring rugged Dolomite peaks under dramatic skies.',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=500&fit=crop',
-  },
-  {
-    id: 'cinque-terre',
-    title: 'Cinque Terre',
-    location: 'Vernazza, Italy',
-    tag: 'Riviera Cliffside',
-    description: 'Pastel-hued fishing villages cascading down sheer Mediterranean cliffs, olive groves, and sunsets glowing over the Ligurian Sea.',
-    image: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=400&fit=crop',
-  },
-  {
-    id: 'grand-canal',
-    title: 'Grand Canal',
-    location: 'Venice, Italy',
-    tag: 'Venetian Splendor',
-    description: 'Historic Renaissance palaces and graceful gondolas navigating the world’s most enchanting waterways under golden evening light.',
-    image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&h=400&fit=crop',
-  }
-];
-
+// Authentic Georgian Destinations for Hero Carousel
 const GEORGIA_DESTINATIONS = [
   {
     id: 'gergeti-kazbegi',
-    title: 'Gergeti Trinity',
-    location: 'Kazbegi, Georgia',
+    title: 'Mount Kazbek',
+    location: 'Stepantsminda, Georgia',
     tag: 'Caucasus Peak',
     description: 'Perched at 2,170 meters against the dramatic snowy pyramid of Mount Kazbek, Georgia’s most iconic alpine sanctuary.',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
-  },
-  {
-    id: 'martvili-canyon',
-    title: 'Martvili Canyon',
-    location: 'Samegrelo, Georgia',
-    tag: 'Emerald Rapids',
-    description: 'A breathtaking limestone canyon carved by emerald river waters, cascading waterfalls, and prehistoric boat trails.',
     image: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1920&q=85',
     thumb: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=400&h=400&fit=crop',
   },
   {
-    id: 'shaori-boathouse',
-    title: 'Shaori Boathouse',
-    location: 'Racha, Georgia',
-    tag: 'Highland Lake',
-    description: 'A serene mountain lake surrounded by dense alpine forests, timber chalets, and crisp Caucasus mountain reflections.',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=500&fit=crop',
-  },
-  {
     id: 'batumi-boulevard',
     title: 'Batumi Boulevard',
-    location: 'Adjara, Georgia',
+    location: 'Adjara Coast, Georgia',
     tag: 'Black Sea Coast',
     description: 'Lush subtropical palms meeting modern architectural silhouettes, magnetic Black Sea sunsets, and lively seaside promenades.',
     image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=85',
@@ -94,20 +28,37 @@ const GEORGIA_DESTINATIONS = [
   },
   {
     id: 'old-tbilisi',
-    title: 'Old Tbilisi & Narikala',
+    title: 'Old Tbilisi',
     location: 'Tbilisi, Georgia',
     tag: 'Silk Road Heart',
     description: 'Winding cobblestone alleyways, intricately carved wooden balconies, ancient fortress views, and atmospheric sulfur baths.',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1920&q=85',
     thumb: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&h=400&fit=crop',
+  },
+  {
+    id: 'svaneti-towers',
+    title: 'Svaneti Towers',
+    location: 'Mestia, Georgia',
+    tag: 'High Caucasus',
+    description: 'Ancient UNESCO millennium-old defensive stone towers standing vigilant under towering glaciers in the heart of Svaneti.',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
+  },
+  {
+    id: 'kakheti-valleys',
+    title: 'Kakheti Vineyards',
+    location: 'Sighnaghi, Georgia',
+    tag: 'Cradle of Wine',
+    description: 'Rolling vineyard hills overlooking the Alazani Valley, historic hilltop fortress walls, and 8,000 vintages of ancient qvevri winemaking.',
+    image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=400&fit=crop',
   }
 ];
 
 export default function Home() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [activeDestIdx, setActiveDestIdx] = useState(2); // Center active boathouse portal
-  const [useGeoDestinations, setUseGeoDestinations] = useState(false);
+  const [activeDestIdx, setActiveDestIdx] = useState(2); // Center active portal (Old Tbilisi)
   const heroRef = useRef<HTMLDivElement>(null);
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
 
@@ -122,7 +73,7 @@ export default function Home() {
   const [listings, setListings] = useState<any[]>(SEED_LISTINGS);
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  const activeDestList = useGeoDestinations ? GEORGIA_DESTINATIONS : GLOBAL_DESTINATIONS;
+  const activeDestList = GEORGIA_DESTINATIONS;
 
   useEffect(() => {
     // Load favorites from local storage
@@ -268,25 +219,6 @@ export default function Home() {
                 </svg>
               </Link>
 
-              {/* Destination Showcase Switcher */}
-              <div className="hero-mode-switcher animate-slide-up animate-delay-4">
-                <button
-                  type="button"
-                  className={`hero-mode-btn ${!useGeoDestinations ? 'active' : ''}`}
-                  onClick={() => setUseGeoDestinations(false)}
-                  title="Showcase Global Wonder Presets from Mockup"
-                >
-                  World Wonders
-                </button>
-                <button
-                  type="button"
-                  className={`hero-mode-btn ${useGeoDestinations ? 'active' : ''}`}
-                  onClick={() => setUseGeoDestinations(true)}
-                  title="Showcase Georgia Sakartvelo Wonders"
-                >
-                  Sakartvelo Gems
-                </button>
-              </div>
             </div>
           </div>
 
