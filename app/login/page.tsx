@@ -58,11 +58,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError('');
-  };
 
   return (
     <div style={{
@@ -97,55 +92,7 @@ export default function LoginPage() {
           <p style={{ color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontSize: '14px', margin: 0 }}>Welcome back to Georgia</p>
         </div>
 
-        {/* Quick Fill Demo Credentials */}
-        <div style={{
-          background: 'rgba(217, 101, 59, 0.08)',
-          border: '1px dashed rgba(217, 101, 59, 0.3)',
-          borderRadius: '16px',
-          padding: '12px 14px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px'
-        }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent, #d9653b)' }}>
-            Quick Demo Accounts (1-Click Fill)
-          </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('admin@kaya.ge', 'admin123')}
-              style={{
-                flex: 1, padding: '6px 10px', fontSize: '12px', fontWeight: 600,
-                borderRadius: '8px', border: '1px solid var(--border-mid, rgba(26,18,14,0.12))',
-                background: '#fff', color: 'var(--ink, #241712)', cursor: 'pointer'
-              }}
-            >
-              👑 Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('host@kaya.ge', 'host123')}
-              style={{
-                flex: 1, padding: '6px 10px', fontSize: '12px', fontWeight: 600,
-                borderRadius: '8px', border: '1px solid var(--border-mid, rgba(26,18,14,0.12))',
-                background: '#fff', color: 'var(--ink, #241712)', cursor: 'pointer'
-              }}
-            >
-              🏡 Host
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('tourist@kaya.ge', 'tourist123')}
-              style={{
-                flex: 1, padding: '6px 10px', fontSize: '12px', fontWeight: 600,
-                borderRadius: '8px', border: '1px solid var(--border-mid, rgba(26,18,14,0.12))',
-                background: '#fff', color: 'var(--ink, #241712)', cursor: 'pointer'
-              }}
-            >
-              🧳 Tourist
-            </button>
-          </div>
-        </div>
+
 
         {error && (
           <div style={{
