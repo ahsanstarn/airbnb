@@ -6,65 +6,108 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/lib/lang-context';
 import { SEED_LISTINGS } from '@/lib/seed-data';
 
-const HERO_SLIDES = [
+// 1-to-1 Destinations for Hero Carousel (Matching media_1789317359953.jpg)
+const GLOBAL_DESTINATIONS = [
   {
-    id: 'tbilisi',
-    kicker: 'City Stay',
-    eyebrow: 'Featured Stay',
-    title: 'STAY IN',
-    titleSpan: 'TBILISI',
-    copyTitle: 'Discover Tbilisi',
-    copyText: 'Ancient history, winding brick streets, cozy sulphur baths, and a vibrant modern culinary scene at the heart of Georgia.',
-    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1200&q=80',
-    price: '180 GEL / night',
-    location: 'Tbilisi, Old Town',
-    rating: '4.9 rating',
-    desc: 'kaya.ge helps you find Tbilisi stays fast, clearly and without extra steps.'
+    id: 'cameo-island',
+    title: 'Cameo Island',
+    location: 'Zakynthos, Greece',
+    tag: 'Ionian Pearl',
+    description: 'A secluded private islet connected by a romantic wooden footbridge over crystal clear azure waters, framed by scenic cliffs and pine groves.',
+    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&h=400&fit=crop',
   },
   {
-    id: 'kazbegi',
-    kicker: 'Mountain Escape',
-    eyebrow: 'Featured Stay',
-    title: 'BREATHE IN',
-    titleSpan: 'KAZBEGI',
-    copyTitle: 'Discover Kazbegi',
-    copyText: 'Snowline views, dramatic ridges, ancient church silhouettes and crisp alpine air make this the ultimate contrast to the capital.',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80',
-    price: '280 GEL / night',
-    location: 'Kazbegi, Gergeti',
-    rating: '4.8 rating',
-    desc: 'kaya.ge helps you find Kazbegi stays fast, clearly and without extra steps.'
+    id: 'koh-phi-phi',
+    title: 'Koh Phi Phi Don',
+    location: 'Islands, Thailand',
+    tag: 'Tropical Haven',
+    description: 'Towering limestone karst cliffs plunging directly into turquoise lagoons, framed by pristine beaches and vibrant marine life.',
+    image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&h=400&fit=crop',
   },
   {
-    id: 'batumi',
-    kicker: 'Sea View Stay',
-    eyebrow: 'Featured Stay',
-    title: 'WAVES OF',
-    titleSpan: 'BATUMI',
-    copyTitle: 'Discover Batumi',
-    copyText: 'A light-filled stay framed around the promenade, sea-facing mornings, magnetic sunsets, and easy evening walks along the coast.',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
-    price: '210 GEL / night',
-    location: 'Batumi, Coastline',
-    rating: '4.7 rating',
-    desc: 'kaya.ge helps you find Batumi stays fast, clearly and without extra steps.'
+    id: 'braies-boathouse',
+    title: 'Braies Boathouse',
+    location: 'Dolomites, Italy',
+    tag: 'Alpine Sanctuary',
+    description: 'The world-famous rustic wooden stilt boathouse over glass-still alpine waters, mirroring rugged Dolomite peaks under dramatic skies.',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=500&fit=crop',
+  },
+  {
+    id: 'cinque-terre',
+    title: 'Cinque Terre',
+    location: 'Vernazza, Italy',
+    tag: 'Riviera Cliffside',
+    description: 'Pastel-hued fishing villages cascading down sheer Mediterranean cliffs, olive groves, and sunsets glowing over the Ligurian Sea.',
+    image: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=400&h=400&fit=crop',
+  },
+  {
+    id: 'grand-canal',
+    title: 'Grand Canal',
+    location: 'Venice, Italy',
+    tag: 'Venetian Splendor',
+    description: 'Historic Renaissance palaces and graceful gondolas navigating the world’s most enchanting waterways under golden evening light.',
+    image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&h=400&fit=crop',
   }
 ];
 
-const CATEGORIES = [
-  { id: 'all', label: 'All Stays', icon: '✨' },
-  { id: 'favorites', label: 'Favorites', icon: '❤️' },
-  { id: 'hotels', label: 'Boutique Hotels', icon: '🏨' },
-  { id: 'apartments', label: 'City Apartments', icon: '🏢' },
-  { id: 'guesthouses', label: 'Family Guesthouses', icon: '🏡' },
-  { id: 'cabins', label: 'Mountain Cabins', icon: '🏔️' },
-  { id: 'villas', label: 'Wine Villas', icon: '🍷' },
+const GEORGIA_DESTINATIONS = [
+  {
+    id: 'gergeti-kazbegi',
+    title: 'Gergeti Trinity',
+    location: 'Kazbegi, Georgia',
+    tag: 'Caucasus Peak',
+    description: 'Perched at 2,170 meters against the dramatic snowy pyramid of Mount Kazbek, Georgia’s most iconic alpine sanctuary.',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
+  },
+  {
+    id: 'martvili-canyon',
+    title: 'Martvili Canyon',
+    location: 'Samegrelo, Georgia',
+    tag: 'Emerald Rapids',
+    description: 'A breathtaking limestone canyon carved by emerald river waters, cascading waterfalls, and prehistoric boat trails.',
+    image: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=400&h=400&fit=crop',
+  },
+  {
+    id: 'shaori-boathouse',
+    title: 'Shaori Boathouse',
+    location: 'Racha, Georgia',
+    tag: 'Highland Lake',
+    description: 'A serene mountain lake surrounded by dense alpine forests, timber chalets, and crisp Caucasus mountain reflections.',
+    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=500&fit=crop',
+  },
+  {
+    id: 'batumi-boulevard',
+    title: 'Batumi Boulevard',
+    location: 'Adjara, Georgia',
+    tag: 'Black Sea Coast',
+    description: 'Lush subtropical palms meeting modern architectural silhouettes, magnetic Black Sea sunsets, and lively seaside promenades.',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop',
+  },
+  {
+    id: 'old-tbilisi',
+    title: 'Old Tbilisi & Narikala',
+    location: 'Tbilisi, Georgia',
+    tag: 'Silk Road Heart',
+    description: 'Winding cobblestone alleyways, intricately carved wooden balconies, ancient fortress views, and atmospheric sulfur baths.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1920&q=85',
+    thumb: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&h=400&fit=crop',
+  }
 ];
 
 export default function Home() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [activeSlide, setActiveSlide] = useState(1);
+  const [activeDestIdx, setActiveDestIdx] = useState(2); // Center active boathouse portal
+  const [useGeoDestinations, setUseGeoDestinations] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
 
@@ -78,6 +121,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [listings, setListings] = useState<any[]>(SEED_LISTINGS);
   const [favorites, setFavorites] = useState<string[]>([]);
+
+  const activeDestList = useGeoDestinations ? GEORGIA_DESTINATIONS : GLOBAL_DESTINATIONS;
 
   useEffect(() => {
     // Load favorites from local storage
@@ -145,17 +190,6 @@ export default function Home() {
     return () => obs.disconnect();
   }, []);
 
-  const slide = HERO_SLIDES[activeSlide];
-  const tTitle = t(slide.id + '_title');
-  const tSpan = t(slide.id + '_span');
-  const tCopyTitle = t(slide.id + '_copyTitle');
-  const tCopyText = t(slide.id + '_copyText');
-
-  const slideData = (idx: number) => {
-    const s = HERO_SLIDES[idx];
-    return { title: t(s.id + '_title'), span: t(s.id + '_span'), copyTitle: t(s.id + '_copyTitle'), copyText: t(s.id + '_copyText'), image: s.image };
-  };
-
   const setRevealRef = (i: number) => (el: HTMLElement | null) => { revealRefs.current[i] = el; };
 
   const filteredListings = selectedCategory === 'all'
@@ -169,109 +203,174 @@ export default function Home() {
       <div className="shell">
         <div className="homepage-shell">
 
-          {/* Hero Stage */}
-          <div className="hero-stage depth-scene">
-            <div className="hero mouse-tilt-hero" ref={heroRef}>
-              <div className="hero-media active" style={{ backgroundImage: `url(${slide.image})` }}></div>
-              <div className="hero-mist depth-mid"></div>
-              <div className="hero-content depth-fg" style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div className="hero-title-area">
-                    <h1 className="hero-title animate-blur-in" style={{ perspective: '800px' }}>
-                      {tTitle}<span className="animate-slide-up animate-delay-2">{tSpan}</span>
-                    </h1>
-                    <div className="hero-copy animate-slide-up animate-delay-3" style={{ maxWidth: '520px' }}>
-                      <h2>{tCopyTitle}</h2>
-                      <p>{tCopyText}</p>
-                    </div>
-                  </div>
-                  
-                  {/* Right side circular thumbnails */}
-                  <div className="hero-thumbnails">
-                    {HERO_SLIDES.map((s, i) => (
-                      <div 
-                        key={s.id} 
-                        className={`hero-thumb ${i === activeSlide ? 'active' : ''}`} 
-                        style={{ backgroundImage: `url(${s.image})` }} 
-                        onClick={() => setActiveSlide(i)} 
-                        aria-label={s.copyTitle}
-                      />
-                    ))}
-                  </div>
+          {/* ========================================================
+              ===== 1-TO-1 HERO RECREATION (media_1789317359953.jpg) =====
+              ======================================================== */}
+          <div className="hero-1to1-stage" ref={heroRef}>
+            {/* Background Crossfade Layers */}
+            {activeDestList.map((dest, idx) => (
+              <div
+                key={dest.id}
+                className={`hero-1to1-media-layer ${idx === activeDestIdx ? 'active' : ''}`}
+                style={{ backgroundImage: `url(${dest.image})` }}
+              />
+            ))}
+
+            {/* Cinematic Gradient Overlay */}
+            <div className="hero-1to1-overlay" />
+
+            {/* Main 1-to-1 Content Layout */}
+            <div className="hero-1to1-content">
+              {/* Left Column: Pill Badge, Script Title, Subtitle, CTA */}
+              <div className="hero-1to1-left">
+                {/* Frosted Glass Capsule Badge */}
+                <div className="hero-pill-badge animate-blur-in">
+                  <span className="hero-pill-tag">New</span>
+                  <span className="hero-pill-label">Travel Beyond Expectations</span>
                 </div>
 
-                {/* Mobile 3-Dots Slide Switcher */}
-                <div className="hero-mobile-dots" aria-label="Hero photo switcher">
-                  {HERO_SLIDES.map((s, i) => (
+                {/* Flowing Cursive Script Headline matching Image */}
+                <h1 className="hero-script-title animate-slide-up animate-delay-2">
+                  Travel Beyond the Ordinary
+                </h1>
+
+                {/* Subtitle Paragraph */}
+                <p className="hero-script-desc animate-slide-up animate-delay-3">
+                  Explore extraordinary places, compare travel options, and uncover experiences that match your travel style. Travel smarter, discover more, and make every moment count.
+                </p>
+
+                {/* Frosted Glass CTA Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                  <Link href="/search" className="hero-explore-btn animate-slide-up animate-delay-4">
+                    <span>Explore Destinations</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" width="16" height="16">
+                      <line x1="7" y1="17" x2="17" y2="7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                  </Link>
+
+                  {/* Destination Showcase Switcher */}
+                  <div className="hero-mode-switcher animate-slide-up animate-delay-4">
                     <button
-                      key={s.id}
                       type="button"
-                      className={`hero-mobile-dot-item ${i === activeSlide ? 'active' : ''}`}
-                      onClick={() => setActiveSlide(i)}
-                      aria-label={`Slide ${i + 1}: ${s.copyTitle}`}
+                      className={`hero-mode-btn ${!useGeoDestinations ? 'active' : ''}`}
+                      onClick={() => setUseGeoDestinations(false)}
+                      title="Showcase Global Wonder Presets from Mockup"
                     >
-                      <span className="hero-mobile-dot-circle" />
-                      <span className="hero-mobile-dot-name">{s.titleSpan}</span>
+                      World Wonders
                     </button>
+                    <button
+                      type="button"
+                      className={`hero-mode-btn ${useGeoDestinations ? 'active' : ''}`}
+                      onClick={() => setUseGeoDestinations(true)}
+                      title="Showcase Georgia Sakartvelo Wonders"
+                    >
+                      Sakartvelo Gems
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Signature 5-Circle Curved Vertical Arc with Active Halo & Vertical Dots */}
+              <div className="hero-1to1-right">
+                <div className="hero-arc-container">
+                  {activeDestList.map((dest, idx) => {
+                    const isActive = idx === activeDestIdx;
+                    return (
+                      <div
+                        key={dest.id}
+                        className={`hero-arc-row pos-${idx} ${isActive ? 'active' : ''}`}
+                        onClick={() => setActiveDestIdx(idx)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Select ${dest.title}`}
+                      >
+                        {/* Title & Subtitle to the Left */}
+                        <div className="hero-arc-label">
+                          <div className="hero-arc-title">{dest.title}</div>
+                          <div className="hero-arc-subtitle">{dest.location}</div>
+                        </div>
+
+                        {/* Circular Image Portal */}
+                        <div
+                          className="hero-arc-circle"
+                          style={{ backgroundImage: `url(${dest.thumb || dest.image})` }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 5-Dot Vertical Indicator next to the active circle */}
+                <div className="hero-v-dots" aria-label="Destination navigation dots">
+                  {activeDestList.map((dest, idx) => (
+                    <button
+                      key={dest.id}
+                      type="button"
+                      className={`hero-v-dot ${idx === activeDestIdx ? 'active' : ''}`}
+                      onClick={() => setActiveDestIdx(idx)}
+                      aria-label={`Go to ${dest.title}`}
+                    />
                   ))}
                 </div>
-
-                {/* Airbnb-style Floating Glass Search Bar */}
-                <div className="hero-search-container animate-slide-up animate-delay-4">
-                  <form onSubmit={handleSearch} className="hero-search-glass">
-                    <div className="search-field-unit">
-                      <label>{t('where', 'Where')}</label>
-                      <input 
-                        type="text" 
-                        placeholder={t('wherePlaceholder', 'Tbilisi, Batumi, Kazbegi...')} 
-                        value={searchCity}
-                        onChange={(e) => setSearchCity(e.target.value)}
-                      />
-                    </div>
-                    <div className="search-divider-v"></div>
-                    <div className="search-field-unit">
-                      <label>{t('checkIn', 'Check In')}</label>
-                      <input 
-                        type="date" 
-                        value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
-                      />
-                    </div>
-                    <div className="search-divider-v"></div>
-                    <div className="search-field-unit">
-                      <label>{t('checkOut', 'Check Out')}</label>
-                      <input 
-                        type="date" 
-                        value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
-                      />
-                    </div>
-                    <div className="search-divider-v"></div>
-                    <div className="search-field-unit">
-                      <label>{t('guests', 'Guests')}</label>
-                      <select value={guests} onChange={(e) => setGuests(e.target.value)}>
-                        <option value="1">{t('guestsOption1', '1 guest')}</option>
-                        <option value="2">{t('guestsOption2', '2 guests')}</option>
-                        <option value="3">{t('guestsOption3', '3 guests')}</option>
-                        <option value="4">{t('guestsOption4', '4+ guests')}</option>
-                      </select>
-                    </div>
-                    <button type="submit" className="hero-search-submit">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.3-4.3"></path>
-                      </svg>
-                      {t('searchBtn', 'Search')}
-                    </button>
-                  </form>
-                </div>
-
               </div>
             </div>
           </div>
 
-          {/* Featured Offers Section with Category Ribbon and Listings Grid */}
-          <section className="homepage-featured-section fade-up" ref={setRevealRef(0)}>
+          {/* Airbnb-style Floating Glass Search Bar positioned below the Hero */}
+          <div className="hero-search-container animate-slide-up animate-delay-4" style={{ marginTop: '-12px', marginBottom: '40px' }}>
+            <form onSubmit={handleSearch} className="hero-search-glass">
+              <div className="search-field-unit">
+                <label>{t('where', 'Where')}</label>
+                <input 
+                  type="text" 
+                  placeholder={t('wherePlaceholder', 'Tbilisi, Batumi, Kazbegi...')} 
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                />
+              </div>
+              <div className="search-divider-v"></div>
+              <div className="search-field-unit">
+                <label>{t('checkIn', 'Check In')}</label>
+                <input 
+                  type="date" 
+                  value={checkIn}
+                  onChange={(e) => setCheckIn(e.target.value)}
+                />
+              </div>
+              <div className="search-divider-v"></div>
+              <div className="search-field-unit">
+                <label>{t('checkOut', 'Check Out')}</label>
+                <input 
+                  type="date" 
+                  value={checkOut}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                />
+              </div>
+              <div className="search-divider-v"></div>
+              <div className="search-field-unit">
+                <label>{t('guests', 'Guests')}</label>
+                <select value={guests} onChange={(e) => setGuests(e.target.value)}>
+                  <option value="1">{t('guestsOption1', '1 guest')}</option>
+                  <option value="2">{t('guestsOption2', '2 guests')}</option>
+                  <option value="3">{t('guestsOption3', '3 guests')}</option>
+                  <option value="4">{t('guestsOption4', '4+ guests')}</option>
+                </select>
+              </div>
+              <button type="submit" className="hero-search-submit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.3-4.3"></path>
+                </svg>
+                {t('searchBtn', 'Search')}
+              </button>
+            </form>
+          </div>
+
+          {/* ========================================================
+              ===== FEATURED OFFERS WITH CLEAN SVG CATEGORY RIBBON =====
+              ======================================================== */}
+          <section className="homepage-featured-section fade-up" ref={setRevealRef(0)} style={{ marginTop: '10px' }}>
             <div className="section-head">
               <div>
                 <h2 className="section-title">{t('stays.title', 'Popular Stays & Offers')}</h2>
@@ -282,16 +381,53 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Category Ribbon */}
+            {/* Category Ribbon with clean vector icons */}
             <div className="category-ribbon">
-              {CATEGORIES.map((cat) => (
+              {[
+                {
+                  id: 'all',
+                  label: 'All Stays',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                },
+                {
+                  id: 'favorites',
+                  label: 'Favorites',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                },
+                {
+                  id: 'hotels',
+                  label: 'Boutique Hotels',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M3 21h18M5 21V7l7-4 7 4v14M10 21v-3h4v3" /></svg>
+                },
+                {
+                  id: 'apartments',
+                  label: 'City Apartments',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4" /></svg>
+                },
+                {
+                  id: 'guesthouses',
+                  label: 'Family Guesthouses',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                },
+                {
+                  id: 'cabins',
+                  label: 'Mountain Cabins',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="m8 3 4 8 5-5 5 15H2L8 3z" /></svg>
+                },
+                {
+                  id: 'villas',
+                  label: 'Wine Villas',
+                  svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M8 2h8m-5 0v3m2-3v3M6 5h12c0 4-2 7-2 11 0 3-1.8 6-4 6s-4-3-4-6c0-4-2-7-2-11z" /></svg>
+                },
+              ].map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
                   className={`category-chip ${selectedCategory === cat.id ? 'active' : ''}`}
                   onClick={() => setSelectedCategory(cat.id)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
-                  <span>{cat.icon}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>{cat.svg}</span>
                   <span>{t(`cat.${cat.id}`, cat.label)}</span>
                 </button>
               ))}
@@ -374,12 +510,17 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Only on Kaya — Unique Features from Section 5 of Brief */}
+          {/* ========================================================
+              ===== ONLY ON KAYA — 4 DIFFERENTIATOR CARDS WITH BESPOKE SVGs =====
+              ======================================================== */}
           <section className="unique-features-section fade-up" ref={setRevealRef(1)}>
             <div className="section-head">
               <div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', borderRadius: '999px', background: 'rgba(217,101,59,0.12)', color: 'var(--accent, #d9653b)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-                  ✨ {t('differentiators.badge', 'Only on Kaya.ge')}
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                    <path d="M12 2l2.4 7.2h7.6l-6.1 4.5 2.3 7.3-6.2-4.6-6.2 4.6 2.3-7.3-6.1-4.5h7.6z" />
+                  </svg>
+                  {t('differentiators.badge', 'Only on Kaya.ge')}
                 </div>
                 <h2 className="section-title">{t('differentiators.title', "Georgia's All-in-One Travel Ecosystem")}</h2>
                 <p className="section-copy">{t('differentiators.desc', "Beyond ordinary bookings — experience verified hosts, deep local dining, traveler connections, and AI itineraries.")}</p>
@@ -390,25 +531,50 @@ export default function Home() {
               {/* 1. Georgian Moment */}
               <Link href="/georgian-moment" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">⚡ 24–72h Notice</span>
-                <span className="feature-card-icon">🍷</span>
+                <div className="feature-svg-box">
+                  {/* Georgian Clay Qvevri Amphora & Wine Goblet SVG */}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 2h8m-5 0v3m2-3v3" />
+                    <path d="M6 5h12c0 4-2 7-2 11 0 3-1.8 6-4 6s-4-3-4-6c0-4-2-7-2-11z" fill="rgba(217,101,59,0.18)" />
+                    <circle cx="12" cy="14" r="2" fill="currentColor" />
+                    <path d="M17 10a4 4 0 0 1 4 4c0 2.2-1.8 3.5-3.5 3.5" />
+                  </svg>
+                </div>
                 <h3>{t('differentiators.gmTitle', 'Georgian Moment')}</h3>
-                <p>{t('differentiators.gmDesc', 'Spontaneous micro-experiences. Wine workshops, family cellars, khinkali making, and hiking with locals.')}</p>
+                <p>{t('differentiators.gmDesc', 'Wine masterclasses, mountain horse trekking, clay pottery, folk polyphony.')}</p>
                 <span className="feature-card-link-text">{t('learnMore', 'Explore')} &rarr;</span>
               </Link>
 
               {/* 2. Kaya Connect */}
               <Link href="/connect" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">🤝 Verified Buddy</span>
-                <span className="feature-card-icon">👥</span>
+                <div className="feature-svg-box" style={{ background: 'rgba(56, 189, 248, 0.12)', color: '#0284c7' }}>
+                  {/* Two Travelers with Waypoint Compass SVG */}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" fill="rgba(56, 189, 248, 0.2)" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    <path d="M12 11l2 2 4-4" stroke="#0284c7" strokeWidth="2" />
+                  </svg>
+                </div>
                 <h3>{t('differentiators.connectTitle', 'Kaya Connect')}</h3>
-                <p>{t('differentiators.connectDesc', 'Match with verified travelers heading to Svaneti, Kazbegi, or Kakheti. Share rides and tips.')}</p>
+                <p>{t('differentiators.connectDesc', 'Match with verified travelers heading to Svaneti, Kazbegi, or Kakheti.')}</p>
                 <span className="feature-card-link-text">{t('learnMore', 'Meet travelers')} &rarr;</span>
               </Link>
 
               {/* 3. Trip Mood AI Planner */}
               <Link href="/trip-planner" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">🧠 AI Itinerary</span>
-                <span className="feature-card-icon">✨</span>
+                <div className="feature-svg-box" style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#9333ea' }}>
+                  {/* AI Neural Sparkle Constellation SVG */}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
+                    <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+                    <circle cx="12" cy="12" r="3.5" fill="rgba(168, 85, 247, 0.25)" />
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                  </svg>
+                </div>
                 <h3>{t('differentiators.tripTitle', 'Trip Mood AI')}</h3>
                 <p>{t('differentiators.tripDesc', 'Tell us your vibe and budget — receive a tailored Georgian itinerary in 30 seconds.')}</p>
                 <span className="feature-card-link-text">{t('learnMore', 'Plan by mood')} &rarr;</span>
@@ -417,61 +583,134 @@ export default function Home() {
               {/* 4. Georgian Table */}
               <Link href="/georgian-table" className="feature-card-kaya hover-lift">
                 <span className="feature-card-tag">🍲 Family Feasts</span>
-                <span className="feature-card-icon">🫓</span>
+                <div className="feature-svg-box" style={{ background: 'rgba(234, 179, 8, 0.14)', color: '#ca8a04' }}>
+                  {/* Traditional Georgian Supra Feast Table SVG */}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
+                    <ellipse cx="12" cy="7" rx="9" ry="4" fill="rgba(234, 179, 8, 0.2)" />
+                    <path d="M3 7v3c0 2.2 4 4 9 4s9-1.8 9-4V7" />
+                    <path d="M5 13v7m14-7v7m-7-5v5" />
+                    <circle cx="12" cy="7" r="1.5" fill="currentColor" />
+                  </svg>
+                </div>
                 <h3>{t('differentiators.gtTitle', 'Georgian Table')}</h3>
-                <p>{t('differentiators.gtDesc', "Curated qvevri wine cellars, traditional suphas, and chef table reservations across Georgia.")}</p>
+                <p>{t('differentiators.gtDesc', "Curated qvevri wine cellars, traditional suphas, and chef table reservations.")}</p>
                 <span className="feature-card-link-text">{t('learnMore', 'Join a supra')} &rarr;</span>
               </Link>
             </div>
           </section>
 
-          {/* Complete Marketplace Categories */}
-          <section className="homepage-categories-section fade-up" ref={setRevealRef(2)} style={{ padding: '30px 0' }}>
+          {/* ========================================================
+              ===== COMPLETE MARKETPLACE CATEGORIES WITH LUXURY SVGs =====
+              ===== (FIXED: NO DUPLICATE TITLE) =====
+              ======================================================== */}
+          <section className="homepage-categories-section fade-up" ref={setRevealRef(2)} style={{ padding: '36px 0 20px' }}>
             <div className="section-head">
               <div>
-                <h2 className="section-title">{t('differentiators.title', "Georgia's All-in-One Marketplace")}</h2>
-                <p className="section-copy">{t('hero.subtitle', 'Everything you need for your journey across Sakartvelo, all in one place.')}</p>
+                <h2 className="section-title">{t('marketplace.title', "Explore Sakartvelo by Category")}</h2>
+                <p className="section-copy">{t('marketplace.desc', 'Hotels, city apartments, wine cellars, 4x4 rentals, alpine treks, and thermal spas.')}</p>
               </div>
             </div>
 
             <div className="categories-grid-7">
-              <Link href="/hotels" className="category-tile">
-                <span className="category-tile-icon">🏨</span>
-                <span className="category-tile-title">{t('cat.hotels', 'Boutique Stays')}</span>
+              {/* 1. Boutique Hotels */}
+              <Link href="/hotels" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="M3 21h18M5 21V7l7-4 7 4v14" />
+                    <path d="M9 10h1m4 0h1M9 14h1m4 0h1M9 18h1m4 0h1" />
+                    <path d="M10 21v-3h4v3" />
+                  </svg>
+                </div>
+                <span className="category-tile-title">{t('cat.hotels', 'Boutique Hotels')}</span>
                 <span className="category-tile-sub">Hotels & lodges</span>
               </Link>
-              <Link href="/apartments" className="category-tile">
-                <span className="category-tile-icon">🏢</span>
-                <span className="category-tile-title">{t('cat.apartments', 'Apartments')}</span>
+
+              {/* 2. City Apartments */}
+              <Link href="/apartments" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <rect x="4" y="2" width="16" height="20" rx="2" />
+                    <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01" />
+                  </svg>
+                </div>
+                <span className="category-tile-title">{t('cat.apartments', 'City Apartments')}</span>
                 <span className="category-tile-sub">City flats</span>
               </Link>
-              <Link href="/restaurants" className="category-tile">
-                <span className="category-tile-icon">🍷</span>
-                <span className="category-tile-title">{t('restaurants', 'Dining & Wine')}</span>
+
+              {/* 3. Restaurants / Supra & Wine */}
+              <Link href="/restaurants" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="M18 2h-4c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                    <path d="M16 12v9m-3 0h6" />
+                    <path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11m-3 0h6" />
+                  </svg>
+                </div>
+                <span className="category-tile-title">{t('restaurants', 'Restaurants')}</span>
                 <span className="category-tile-sub">Supra & cellars</span>
               </Link>
-              <Link href="/cars" className="category-tile">
-                <span className="category-tile-icon">🚙</span>
+
+              {/* 4. 4x4 & Cars */}
+              <Link href="/cars" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="M5 17h14M3 13h18M5 13l2-6h10l2 6" />
+                    <circle cx="7.5" cy="17.5" r="2.5" />
+                    <circle cx="16.5" cy="17.5" r="2.5" />
+                    <path d="M4 10h16M7 7l-2-2m14 2l2-2" />
+                  </svg>
+                </div>
                 <span className="category-tile-title">4x4 & Cars</span>
                 <span className="category-tile-sub">Mountain rentals</span>
               </Link>
-              <Link href="/tours" className="category-tile">
-                <span className="category-tile-icon">🏔️</span>
+
+              {/* 5. Tours */}
+              <Link href="/tours" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                    <path d="M12 11l3 4" />
+                  </svg>
+                </div>
                 <span className="category-tile-title">{t('tours', 'Tours')}</span>
                 <span className="category-tile-sub">Treks & trips</span>
               </Link>
-              <Link href="/salons" className="category-tile">
-                <span className="category-tile-icon">🧖</span>
+
+              {/* 6. Spas & Baths */}
+              <Link href="/salons" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="M4 19a8 8 0 0 1 16 0H4z" />
+                    <path d="M12 3c-1.5 2-2 3.5-2 5 0 1.1.9 2 2 2s2-.9 2-2c0-1.5-.5-3-2-5z" />
+                    <path d="M8 7c-.8 1-1 1.8-1 2.5 0 .6.4 1 1 1s1-.4 1-1c0-.7-.2-1.5-1-2.5zm8 0c-.8 1-1 1.8-1 2.5 0 .6.4 1 1 1s1-.4 1-1c0-.7-.2-1.5-1-2.5z" />
+                  </svg>
+                </div>
                 <span className="category-tile-title">Spas & Baths</span>
                 <span className="category-tile-sub">Sulfur baths</span>
               </Link>
-              <Link href="/services" className="category-tile">
-                <span className="category-tile-icon">🛎️</span>
+
+              {/* 7. Services */}
+              <Link href="/services" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    <circle cx="12" cy="2" r="1" />
+                  </svg>
+                </div>
                 <span className="category-tile-title">Services</span>
                 <span className="category-tile-sub">Chefs & guides</span>
               </Link>
-              <Link href="/muse" className="category-tile">
-                <span className="category-tile-icon">🏛️</span>
+
+              {/* 8. Muse Guide */}
+              <Link href="/muse" className="category-tile hover-lift">
+                <div className="cat-svg-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="26" height="26">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    <path d="M9 7h6m-6 4h4" />
+                  </svg>
+                </div>
                 <span className="category-tile-title">{t('muse', 'Muse Guide')}</span>
                 <span className="category-tile-sub">Info & culture</span>
               </Link>

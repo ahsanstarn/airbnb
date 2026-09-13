@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Cormorant_Garamond, Manrope, Caveat } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
 import { LanguageProvider } from "@/lib/lang-context";
 import SharedNav from "@/app/components/SharedNav";
@@ -21,6 +21,13 @@ const manrope = Manrope({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-body",
+  display: "swap",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-script",
   display: "swap",
 });
 
@@ -48,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${cormorant.variable} ${manrope.variable} is-guest`}>
+      <body className={`${cormorant.variable} ${manrope.variable} ${caveat.variable} is-guest`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>
           <ThemeProvider>
