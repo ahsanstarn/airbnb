@@ -200,172 +200,144 @@ export default function Home() {
 
   return (
     <div className="site-shell">
-      <div className="shell">
-        <div className="homepage-shell">
+      {/* ========================================================
+          ===== 1-TO-1 FULL-SCREEN HERO (media_1789317359953.jpg) =====
+          ======================================================== */}
+      <div className="hero-1to1-stage" ref={heroRef}>
+        {/* Background Crossfade Layers */}
+        {activeDestList.map((dest, idx) => (
+          <div
+            key={dest.id}
+            className={`hero-1to1-media-layer ${idx === activeDestIdx ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${dest.image})` }}
+          />
+        ))}
 
-          {/* ========================================================
-              ===== 1-TO-1 HERO RECREATION (media_1789317359953.jpg) =====
-              ======================================================== */}
-          <div className="hero-1to1-stage" ref={heroRef}>
-            {/* Background Crossfade Layers */}
-            {activeDestList.map((dest, idx) => (
-              <div
-                key={dest.id}
-                className={`hero-1to1-media-layer ${idx === activeDestIdx ? 'active' : ''}`}
-                style={{ backgroundImage: `url(${dest.image})` }}
-              />
-            ))}
+        {/* Cinematic Gradient Overlay */}
+        <div className="hero-1to1-overlay" />
 
-            {/* Cinematic Gradient Overlay */}
-            <div className="hero-1to1-overlay" />
+        {/* Integrated Frameless Top Navigation matching Mockup */}
+        <div className="hero-1to1-nav">
+          <Link href="/" className="hero-1to1-logo">
+            <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
+              <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" />
+              <path d="M12 18C12 14 18 10 18 18C18 26 24 22 24 18" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" />
+            </svg>
+            <span className="hero-1to1-logo-text">kaya.ge</span>
+          </Link>
 
-            {/* Main 1-to-1 Content Layout */}
-            <div className="hero-1to1-content">
-              {/* Left Column: Pill Badge, Script Title, Subtitle, CTA */}
-              <div className="hero-1to1-left">
-                {/* Frosted Glass Capsule Badge */}
-                <div className="hero-pill-badge animate-blur-in">
-                  <span className="hero-pill-tag">New</span>
-                  <span className="hero-pill-label">Travel Beyond Expectations</span>
-                </div>
+          <nav className="hero-1to1-menu">
+            <Link href="/" className="hero-1to1-menu-item active">Home</Link>
+            <Link href="/hotels" className="hero-1to1-menu-item">Destinations</Link>
+            <Link href="/tours" className="hero-1to1-menu-item">Travel Packages</Link>
+            <Link href="/pricing" className="hero-1to1-menu-item">About Us</Link>
+            <Link href="/dashboard" className="hero-1to1-menu-item">Contact</Link>
+          </nav>
 
-                {/* Flowing Cursive Script Headline matching Image */}
-                <h1 className="hero-script-title animate-slide-up animate-delay-2">
-                  Travel Beyond the Ordinary
-                </h1>
+          <div className="hero-1to1-actions">
+            <Link href="/dashboard" className="hero-1to1-auth-pill">
+              <span>Dashboard</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          </div>
+        </div>
 
-                {/* Subtitle Paragraph */}
-                <p className="hero-script-desc animate-slide-up animate-delay-3">
-                  Explore extraordinary places, compare travel options, and uncover experiences that match your travel style. Travel smarter, discover more, and make every moment count.
-                </p>
+        {/* Main 1-to-1 Content Layout */}
+        <div className="hero-1to1-content">
+          {/* Left Column: Script Title, Subtitle, CTA */}
+          <div className="hero-1to1-left">
+            {/* Flowing Cursive Script Headline matching Image */}
+            <h1 className="hero-script-title animate-slide-up animate-delay-2">
+              Travel Beyond the Ordinary
+            </h1>
 
-                {/* Frosted Glass CTA Button */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                  <Link href="/search" className="hero-explore-btn animate-slide-up animate-delay-4">
-                    <span>Explore Destinations</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" width="16" height="16">
-                      <line x1="7" y1="17" x2="17" y2="7" />
-                      <polyline points="7 7 17 7 17 17" />
-                    </svg>
-                  </Link>
+            {/* Subtitle Paragraph */}
+            <p className="hero-script-desc animate-slide-up animate-delay-3">
+              Explore extraordinary places, compare travel options, and uncover experiences that match your travel style. Travel smarter, discover more, and make every moment count.
+            </p>
 
-                  {/* Destination Showcase Switcher */}
-                  <div className="hero-mode-switcher animate-slide-up animate-delay-4">
-                    <button
-                      type="button"
-                      className={`hero-mode-btn ${!useGeoDestinations ? 'active' : ''}`}
-                      onClick={() => setUseGeoDestinations(false)}
-                      title="Showcase Global Wonder Presets from Mockup"
-                    >
-                      World Wonders
-                    </button>
-                    <button
-                      type="button"
-                      className={`hero-mode-btn ${useGeoDestinations ? 'active' : ''}`}
-                      onClick={() => setUseGeoDestinations(true)}
-                      title="Showcase Georgia Sakartvelo Wonders"
-                    >
-                      Sakartvelo Gems
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {/* Frosted Glass CTA Button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <Link href="/search" className="hero-explore-btn animate-slide-up animate-delay-4">
+                <span>Explore Destinations</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" width="16" height="16">
+                  <line x1="7" y1="17" x2="17" y2="7" />
+                  <polyline points="7 7 17 7 17 17" />
+                </svg>
+              </Link>
 
-              {/* Right Column: Signature 5-Circle Curved Vertical Arc with Active Halo & Vertical Dots */}
-              <div className="hero-1to1-right">
-                <div className="hero-arc-container">
-                  {activeDestList.map((dest, idx) => {
-                    const isActive = idx === activeDestIdx;
-                    return (
-                      <div
-                        key={dest.id}
-                        className={`hero-arc-row pos-${idx} ${isActive ? 'active' : ''}`}
-                        onClick={() => setActiveDestIdx(idx)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Select ${dest.title}`}
-                      >
-                        {/* Title & Subtitle to the Left */}
-                        <div className="hero-arc-label">
-                          <div className="hero-arc-title">{dest.title}</div>
-                          <div className="hero-arc-subtitle">{dest.location}</div>
-                        </div>
-
-                        {/* Circular Image Portal */}
-                        <div
-                          className="hero-arc-circle"
-                          style={{ backgroundImage: `url(${dest.thumb || dest.image})` }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* 5-Dot Vertical Indicator next to the active circle */}
-                <div className="hero-v-dots" aria-label="Destination navigation dots">
-                  {activeDestList.map((dest, idx) => (
-                    <button
-                      key={dest.id}
-                      type="button"
-                      className={`hero-v-dot ${idx === activeDestIdx ? 'active' : ''}`}
-                      onClick={() => setActiveDestIdx(idx)}
-                      aria-label={`Go to ${dest.title}`}
-                    />
-                  ))}
-                </div>
+              {/* Destination Showcase Switcher */}
+              <div className="hero-mode-switcher animate-slide-up animate-delay-4">
+                <button
+                  type="button"
+                  className={`hero-mode-btn ${!useGeoDestinations ? 'active' : ''}`}
+                  onClick={() => setUseGeoDestinations(false)}
+                  title="Showcase Global Wonder Presets from Mockup"
+                >
+                  World Wonders
+                </button>
+                <button
+                  type="button"
+                  className={`hero-mode-btn ${useGeoDestinations ? 'active' : ''}`}
+                  onClick={() => setUseGeoDestinations(true)}
+                  title="Showcase Georgia Sakartvelo Wonders"
+                >
+                  Sakartvelo Gems
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Airbnb-style Floating Glass Search Bar positioned below the Hero */}
-          <div className="hero-search-container animate-slide-up animate-delay-4" style={{ marginTop: '-12px', marginBottom: '40px' }}>
-            <form onSubmit={handleSearch} className="hero-search-glass">
-              <div className="search-field-unit">
-                <label>{t('where', 'Where')}</label>
-                <input 
-                  type="text" 
-                  placeholder={t('wherePlaceholder', 'Tbilisi, Batumi, Kazbegi...')} 
-                  value={searchCity}
-                  onChange={(e) => setSearchCity(e.target.value)}
+          {/* Right Column: Signature 5-Circle Curved Vertical Arc with Active Halo & Vertical Dots */}
+          <div className="hero-1to1-right">
+            <div className="hero-arc-container">
+              {activeDestList.map((dest, idx) => {
+                const isActive = idx === activeDestIdx;
+                return (
+                  <div
+                    key={dest.id}
+                    className={`hero-arc-row pos-${idx} ${isActive ? 'active' : ''}`}
+                    onClick={() => setActiveDestIdx(idx)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Select ${dest.title}`}
+                  >
+                    {/* Title & Subtitle to the Left */}
+                    <div className="hero-arc-label">
+                      <div className="hero-arc-title">{dest.title}</div>
+                      <div className="hero-arc-subtitle">{dest.location}</div>
+                    </div>
+
+                    {/* Circular Image Portal */}
+                    <div
+                      className="hero-arc-circle"
+                      style={{ backgroundImage: `url(${dest.thumb || dest.image})` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 5-Dot Vertical Indicator next to the active circle */}
+            <div className="hero-v-dots" aria-label="Destination navigation dots">
+              {activeDestList.map((dest, idx) => (
+                <button
+                  key={dest.id}
+                  type="button"
+                  className={`hero-v-dot ${idx === activeDestIdx ? 'active' : ''}`}
+                  onClick={() => setActiveDestIdx(idx)}
+                  aria-label={`Go to ${dest.title}`}
                 />
-              </div>
-              <div className="search-divider-v"></div>
-              <div className="search-field-unit">
-                <label>{t('checkIn', 'Check In')}</label>
-                <input 
-                  type="date" 
-                  value={checkIn}
-                  onChange={(e) => setCheckIn(e.target.value)}
-                />
-              </div>
-              <div className="search-divider-v"></div>
-              <div className="search-field-unit">
-                <label>{t('checkOut', 'Check Out')}</label>
-                <input 
-                  type="date" 
-                  value={checkOut}
-                  onChange={(e) => setCheckOut(e.target.value)}
-                />
-              </div>
-              <div className="search-divider-v"></div>
-              <div className="search-field-unit">
-                <label>{t('guests', 'Guests')}</label>
-                <select value={guests} onChange={(e) => setGuests(e.target.value)}>
-                  <option value="1">{t('guestsOption1', '1 guest')}</option>
-                  <option value="2">{t('guestsOption2', '2 guests')}</option>
-                  <option value="3">{t('guestsOption3', '3 guests')}</option>
-                  <option value="4">{t('guestsOption4', '4+ guests')}</option>
-                </select>
-              </div>
-              <button type="submit" className="hero-search-submit">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.3-4.3"></path>
-                </svg>
-                {t('searchBtn', 'Search')}
-              </button>
-            </form>
+              ))}
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div className="shell">
+        <div className="homepage-shell">
 
           {/* ========================================================
               ===== FEATURED OFFERS WITH CLEAN SVG CATEGORY RIBBON =====

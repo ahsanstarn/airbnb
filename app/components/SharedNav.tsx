@@ -60,6 +60,7 @@ export default function SharedNav() {
   }, [langOpen]);
 
   if (pathname === '/login') return null;
+  if (pathname === '/' && !scrolled) return null;
 
   return (
     <>

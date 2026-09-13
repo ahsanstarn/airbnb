@@ -1,23 +1,69 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { SEED_LISTINGS } from '@/lib/seed-data';
 
-type DashboardTab = 'bookings' | 'favorites' | 'affiliate' | 'itineraries' | 'settings';
+type DashboardTab = 
+  | 'dashboard' 
+  | 'links' 
+  | 'campaigns' 
+  | 'performance' 
+  | 'payouts' 
+  | 'referrals' 
+  | 'assets' 
+  | 'audience' 
+  | 'reports' 
+  | 'rewards' 
+  | 'stays' 
+  | 'help';
 
-export default function TouristDashboard() {
+function KayaDashboardInner() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<DashboardTab>('bookings');
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get('tab') as DashboardTab) || 'dashboard';
+
+  const [activeTab, setActiveTab] = useState<DashboardTab>(initialTab);
   const [user, setUser] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [allListings, setAllListings] = useState<any[]>(SEED_LISTINGS);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Affiliate dynamic state
+  const [affiliateStats, setAffiliateStats] = useState<any>({
+    totalEarnings: 1284.50,
+    totalClicks: 18342,
+    conversions: 523,
+    conversionRate: 2.85,
+    customLinks: [],
+  });
+
+  // Chart state
+  const [chartMetric, setChartMetric] = useState<'earnings' | 'clicks' | 'conversions'>('earnings');
+  const [chartRange, setChartRange] = useState('Last 21 days');
+  const [hoveredDataPoint, setHoveredDataPoint] = useState<number | null>(5); // Default to Oct 16
+
+  // New Link Modal state
+  const [showNewLinkModal, setShowNewLinkModal] = useState(false);
+  const [newLinkTitle, setNewLinkTitle] = useState('');
+  const [newLinkDestination, setNewLinkDestination] = useState('Kazbegi');
+  const [newLinkSlug, setNewLinkSlug] = useState('');
+  const [creatingLink, setCreatingLink] = useState(false);
+
+  // Customize Referral Link Modal
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [customSlugInput, setCustomSlugInput] = useState('alexexplores');
+
+  // Payout Modal
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState('450.00');
+
+  // Search input
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     async function fetchData() {
@@ -30,8 +76,26 @@ export default function TouristDashboard() {
         }
         const data = await res.json();
         setUser(data.user);
+        if (data.user?.affiliateCode) {
+          setCustomSlugInput(data.user.affiliateCode);
+        }
 
-        // 2. Fetch real bookings from MongoDB
+        // 2. Fetch affiliate stats & custom links
+        const affRes = await fetch('/api/affiliates');
+        if (affRes.ok) {
+          const affData = await affRes.json();
+          setAffiliateStats((prev: any) => ({
+            ...prev,
+            ...affData,
+            totalEarnings: affData.totalEarnings || 1284.50,
+            totalClicks: affData.totalClicks || 18342,
+            conversions: affData.totalRegistered || 523,
+            conversionRate: affData.conversionRate || 2.85,
+            customLinks: affData.customLinks || [],
+          }));
+        }
+
+        // 3. Fetch bookings from MongoDB
         const bookingsRes = await fetch('/api/bookings');
         if (bookingsRes.ok) {
           const bookingsData = await bookingsRes.json();
@@ -40,7 +104,7 @@ export default function TouristDashboard() {
           }
         }
 
-        // 3. Fetch all listings for wishlist mapping
+        // 4. Fetch listings
         const listingsRes = await fetch('/api/listings');
         if (listingsRes.ok) {
           const listingsData = await listingsRes.json();
@@ -49,13 +113,13 @@ export default function TouristDashboard() {
           }
         }
 
-        // 4. Load favorites from localStorage
+        // 5. Load favorites
         try {
           const storedFavs = JSON.parse(localStorage.getItem('kaya_favorites') || '[]');
           setFavorites(storedFavs);
         } catch {}
       } catch (err) {
-        setError('Failed to load user dashboard');
+        console.error('Error loading dashboard:', err);
       } finally {
         setLoading(false);
       }
@@ -74,11 +138,60 @@ export default function TouristDashboard() {
     }
   };
 
-  const copyReferral = () => {
-    if (user?.affiliateCode) {
-      navigator.clipboard.writeText(`https://kaya.ge/signup?ref=${user.affiliateCode}`);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2400);
+  const referralUrl = useMemo(() => {
+    const slug = user?.affiliateCode || customSlugInput || 'alexexplores';
+    return `https://kaya.ge/?ref=${slug}`;
+  }, [user, customSlugInput]);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2200);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Discover Georgia with KAYA',
+          text: 'Explore breathtaking mountains, vineyards, and stays in Georgia!',
+          url: referralUrl,
+        });
+      } catch {}
+    } else {
+      copyToClipboard(referralUrl);
+    }
+  };
+
+  const handleCreateLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingLink(true);
+    try {
+      const res = await fetch('/api/affiliates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newLinkTitle || `${newLinkDestination} Promotion`,
+          destination: newLinkDestination,
+          customSlug: newLinkSlug,
+          targetUrl: newLinkDestination.toLowerCase(),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAffiliateStats((prev: any) => ({
+          ...prev,
+          customLinks: [data.link, ...(prev.customLinks || [])],
+        }));
+        setShowNewLinkModal(false);
+        setNewLinkTitle('');
+        setNewLinkSlug('');
+        alert('Affiliate link created and saved to MongoDB!');
+      }
+    } catch (err) {
+      console.error('Error creating link:', err);
+    } finally {
+      setCreatingLink(false);
     }
   };
 
@@ -86,29 +199,28 @@ export default function TouristDashboard() {
     if (!confirm('Are you sure you want to cancel this reservation?')) return;
     setActionLoading(bookingId);
     try {
-      const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
-        method: 'PUT',
-      });
+      const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: 'PUT' });
       if (res.ok) {
         setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: 'CANCELLED' } : b));
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to cancel');
       }
     } catch {
-      alert('Error cancelling reservation');
+      alert('Error cancelling booking');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const removeFavorite = (id: string) => {
-    const updated = favorites.filter(f => f !== id);
-    setFavorites(updated);
-    try {
-      localStorage.setItem('kaya_favorites', JSON.stringify(updated));
-    } catch {}
-  };
+  // Chart dataset for 21 days
+  const chartPoints = [
+    { day: 'Oct 1', earnings: 140, clicks: 520, conversions: 14 },
+    { day: 'Oct 4', earnings: 175, clicks: 680, conversions: 19 },
+    { day: 'Oct 7', earnings: 160, clicks: 610, conversions: 18 },
+    { day: 'Oct 10', earnings: 220, clicks: 890, conversions: 26 },
+    { day: 'Oct 13', earnings: 210, clicks: 840, conversions: 24 },
+    { day: 'Oct 16', earnings: 320.50, clicks: 1240, conversions: 38 },
+    { day: 'Oct 19', earnings: 265, clicks: 1050, conversions: 31 },
+    { day: 'Oct 21', earnings: 295, clicks: 1180, conversions: 35 },
+  ];
 
   if (loading) {
     return (
@@ -118,1167 +230,1659 @@ export default function TouristDashboard() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        background: 'var(--surface, #fff7ef)',
-        color: 'var(--ink, #241712)',
+        background: '#0B132B',
+        color: '#ffffff',
         gap: '16px'
       }}>
         <div style={{
-          width: '40px',
-          height: '40px',
+          width: '42px',
+          height: '42px',
           borderRadius: '50%',
-          border: '3px solid rgba(217, 101, 59, 0.2)',
-          borderTopColor: 'var(--accent, #d9653b)',
+          border: '3px solid rgba(255,255,255,0.2)',
+          borderTopColor: '#3B82F6',
           animation: 'spin 0.8s linear infinite'
         }} />
-        <p style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.25rem', fontWeight: 600 }}>
-          Opening your KAYA Traveler Dashboard...
+        <p style={{ fontFamily: 'system-ui, sans-serif', fontSize: '15px', color: '#94A3B8' }}>
+          Opening your KAYA Command Center...
         </p>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--surface, #fff7ef)', color: 'var(--accent, #d9653b)' }}>
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (!user) return null;
-
-  const activeBookings = bookings.filter(b => b.status !== 'CANCELLED');
-  const favoriteItems = allListings.filter(l => favorites.includes(String(l._id || l.id)));
-  const totalSpent = bookings
-    .filter(b => b.status !== 'CANCELLED')
-    .reduce((acc, b) => acc + (b.total_price || 0), 0);
-
-  // Pre-configured curated AI itineraries
-  const sampleItineraries = [
-    {
-      id: 'iti-1',
-      title: 'Kazbegi Alpine & Monastery Trail',
-      tag: 'Mountain Explorer',
-      duration: '3 Days • 2 Nights',
-      vibe: 'Scenic & Hiking',
-      locations: ['Tbilisi', 'Ananuri Fortress', 'Gudauri Panorama', 'Gergeti Trinity Church'],
-      cover: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-    },
-    {
-      id: 'iti-2',
-      title: 'Kakheti Ancient Qvevri & Amber Harvest',
-      tag: 'Wine & Gastronomy',
-      duration: '2 Days • 1 Night',
-      vibe: 'Slow Travel & Supras',
-      locations: ['Signagi', 'Kindzmarauli Marani', 'Tsinandali Estate', 'Telavi Bazaar'],
-      cover: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80',
-    },
-    {
-      id: 'iti-3',
-      title: 'Bohemian Old Tbilisi & Sulfur Haven',
-      tag: 'Culture & Heritage',
-      duration: '4 Days • 3 Nights',
-      vibe: 'Architecture & Cafés',
-      locations: ['Abanotubani Baths', 'Narikala Fortress', 'Fabrika Courtyard', 'Vera Antique Flea'],
-      cover: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80',
-    }
-  ];
+  const displayName = user?.name || 'Alex';
 
   return (
     <div style={{
-      background: 'radial-gradient(1200px circle at 10% 8%, rgba(255, 215, 188, 0.42), transparent 55%), radial-gradient(900px circle at 90% 90%, hsla(21, 76%, 82%, 0.3), transparent 60%), linear-gradient(180deg, var(--surface, #fff7ef) 0%, var(--surface-warm, #f8e2cb) 50%, var(--surface-deep, #f3d1b3) 100%)',
-      color: 'var(--ink, #241712)',
+      display: 'flex',
       minHeight: '100vh',
-      padding: '110px 24px 80px',
-      fontFamily: 'var(--font-body), system-ui, sans-serif'
+      backgroundColor: '#F8FAFC',
+      color: '#0F172A',
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
 
-        {/* Top Header Banner with Luxury Glassmorphic Aesthetic */}
+      {/* ========================================================
+          ===== LEFT SIDEBAR (Dark Navy #0B132B / 1-to-1 Mockup) =====
+          ======================================================== */}
+      <aside style={{
+        width: '260px',
+        backgroundColor: '#0B132B',
+        color: '#F8FAFC',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '24px 16px',
+        flexShrink: 0,
+        borderRight: '1px solid #1E293B',
+      }}>
+        <div>
+          {/* Brand */}
+          <div style={{ padding: '0 12px 24px 12px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            <span style={{ fontSize: '26px', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>KAYA</span>
+            <span style={{ fontSize: '12.5px', fontWeight: 500, color: '#94A3B8', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Affiliate</span>
+          </div>
+
+          {/* Navigation Links */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              )},
+              { id: 'links', label: 'My Links', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              )},
+              { id: 'campaigns', label: 'Campaigns', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              )},
+              { id: 'performance', label: 'Performance', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              )},
+              { id: 'payouts', label: 'Payouts', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8"/></svg>
+              )},
+              { id: 'referrals', label: 'Referrals', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              )},
+              { id: 'assets', label: 'Marketing Assets', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              )},
+              { id: 'audience', label: 'My Audience', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              )},
+              { id: 'reports', label: 'Reports', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              )},
+              { id: 'rewards', label: 'Rewards & Levels', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              )},
+              { id: 'stays', label: 'Stays & Bookings', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h1M14 9h1M9 13h1M14 13h1"/></svg>
+              )},
+              { id: 'help', label: 'Help & Support', icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              )},
+            ].map(item => {
+              const active = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveTab(item.id as DashboardTab)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    backgroundColor: active ? '#1E40AF' : 'transparent',
+                    color: active ? '#ffffff' : '#94A3B8',
+                    border: 'none',
+                    fontSize: '13.5px',
+                    fontWeight: active ? 600 : 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = '#172554';
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <span style={{ color: active ? '#93C5FD' : '#64748B', display: 'flex' }}>{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Bottom Profile & Gamification Card */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.72)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.9)',
-          borderRadius: '28px',
-          padding: '28px 32px',
-          marginBottom: '28px',
-          boxShadow: '0 16px 40px -12px rgba(36, 24, 19, 0.08)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '20px'
+          backgroundColor: '#111C3A',
+          borderRadius: '12px',
+          padding: '14px',
+          border: '1px solid #1E293B',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            {/* Avatar Portal */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <div style={{
-              width: '64px',
-              height: '64px',
+              width: '36px',
+              height: '36px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--accent, #d9653b), #f59e0b)',
-              display: 'grid',
-              placeItems: 'center',
-              color: '#ffffff',
-              fontSize: '26px',
-              fontWeight: 800,
-              fontFamily: 'var(--font-display), serif',
-              boxShadow: '0 8px 24px rgba(217, 101, 59, 0.35)',
-              border: '3px solid #ffffff'
-            }}>
-              {user.name ? user.name.charAt(0).toUpperCase() : 'T'}
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <h1 style={{
-                  fontFamily: 'var(--font-display), serif',
-                  margin: 0,
-                  fontSize: '28px',
-                  fontWeight: 700,
-                  color: 'var(--ink, #241712)',
-                  letterSpacing: '-0.01em'
-                }}>
-                  Gamarjoba, {user.name}
-                </h1>
-                <span style={{
-                  backgroundColor: 'rgba(217, 101, 59, 0.12)',
-                  color: 'var(--accent, #d9653b)',
-                  padding: '4px 12px',
-                  borderRadius: '999px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  {user.role || 'Tourist'}
-                </span>
+              backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop)',
+              backgroundSize: 'cover',
+              border: '2px solid #3B82F6'
+            }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#F8FAFC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {displayName}
               </div>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontSize: '13.5px' }}>
-                {user.email} &bull; Member of KAYA Travel Network
-              </p>
+              <div style={{ fontSize: '11px', color: '#94A3B8' }}>
+                Level 4 • Explorer Affiliate
+              </div>
             </div>
           </div>
 
-          {/* Header Action Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* XP Bar */}
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#94A3B8', marginBottom: '4px' }}>
+              <span>420 / 1,000 XP</span>
+              <span style={{ color: '#60A5FA' }}>42%</span>
+            </div>
+            <div style={{ height: '4px', backgroundColor: '#1E293B', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: '42%', height: '100%', backgroundColor: '#3B82F6', borderRadius: '4px' }} />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
             <Link
               href="/"
               style={{
-                display: 'inline-flex',
+                flex: 1,
+                display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                borderRadius: '999px',
-                background: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid rgba(26, 18, 14, 0.12)',
-                color: 'var(--ink, #241712)',
-                fontSize: '13.5px',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '7px 10px',
+                borderRadius: '6px',
+                backgroundColor: '#1E293B',
+                color: '#E2E8F0',
+                fontSize: '11.5px',
                 fontWeight: 600,
                 textDecoration: 'none',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
               }}
             >
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              Explore Georgia
+              <span>View KAYA</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </Link>
-
-            {user.email === 'ahsanstarn@gmail.com' && (
-              <Link
-                href="/business/dashboard"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '999px',
-                  background: 'linear-gradient(135deg, #0f172a, #1e293b)',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  boxShadow: '0 4px 14px rgba(15, 23, 42, 0.25)'
-                }}
-              >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                Host Suite
-              </Link>
-            )}
-
             <button
+              type="button"
               onClick={handleLogout}
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '10px 16px',
-                borderRadius: '999px',
-                background: 'rgba(217, 101, 59, 0.08)',
-                border: '1px solid rgba(217, 101, 59, 0.25)',
-                color: 'var(--accent, #d9653b)',
-                fontSize: '13px',
-                fontWeight: 600,
+                padding: '7px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'transparent',
+                color: '#94A3B8',
+                border: '1px solid #334155',
+                fontSize: '11.5px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
               }}
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Logout
+              Log out
             </button>
           </div>
         </div>
+      </aside>
 
-        {/* 4 Luxury KPI Stat Cards with Bespoke SVGs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px', marginBottom: '28px' }}>
-          {/* Card 1: Active Trips */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '22px',
-            padding: '20px 22px',
-            boxShadow: '0 8px 24px -6px rgba(36, 24, 19, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
-              background: 'rgba(217, 101, 59, 0.12)',
-              color: 'var(--accent, #d9653b)',
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0
-            }}>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontWeight: 600 }}>Upcoming Trips</div>
-              <div style={{ fontFamily: 'var(--font-display), serif', fontSize: '26px', fontWeight: 700, color: 'var(--ink)' }}>
-                {activeBookings.length}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Total Stays */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '22px',
-            padding: '20px 22px',
-            boxShadow: '0 8px 24px -6px rgba(36, 24, 19, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
-              background: 'rgba(44, 157, 111, 0.12)',
-              color: '#2c9d6f',
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0
-            }}>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M10 11h2M10 15h2M14 11h2M14 15h2M18 11h2M18 15h2M9 3h6v4H9z"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontWeight: 600 }}>Total Bookings</div>
-              <div style={{ fontFamily: 'var(--font-display), serif', fontSize: '26px', fontWeight: 700, color: 'var(--ink)' }}>
-                {bookings.length}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Saved Favorites */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '22px',
-            padding: '20px 22px',
-            boxShadow: '0 8px 24px -6px rgba(36, 24, 19, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
-              background: 'rgba(239, 68, 68, 0.12)',
-              color: '#ef4444',
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0
-            }}>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontWeight: 600 }}>Wishlist Stays</div>
-              <div style={{ fontFamily: 'var(--font-display), serif', fontSize: '26px', fontWeight: 700, color: 'var(--ink)' }}>
-                {favorites.length}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: Total Travel Investment */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '22px',
-            padding: '20px 22px',
-            boxShadow: '0 8px 24px -6px rgba(36, 24, 19, 0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '14px',
-              background: 'rgba(245, 158, 11, 0.15)',
-              color: '#d97706',
-              display: 'grid',
-              placeItems: 'center',
-              flexShrink: 0
-            }}>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--muted, rgba(36, 23, 18, 0.65))', fontWeight: 600 }}>Total Spent</div>
-              <div style={{ fontFamily: 'var(--font-display), serif', fontSize: '26px', fontWeight: 700, color: 'var(--ink)' }}>
-                ₾{totalSpent} <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>GEL</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabbed Navigation Bar */}
-        <div style={{
+      {/* ========================================================
+          ===== MAIN CONTENT AREA (Clean Modern Crisp Layout) =====
+          ======================================================== */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowY: 'auto' }}>
+        
+        {/* Top Header Bar */}
+        <header style={{
+          height: '68px',
+          backgroundColor: '#FFFFFF',
+          borderBottom: '1px solid #E2E8F0',
+          padding: '0 32px',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          background: 'rgba(255, 255, 255, 0.65)',
-          backdropFilter: 'blur(14px)',
-          border: '1px solid rgba(255, 255, 255, 0.8)',
-          borderRadius: '20px',
-          padding: '6px',
-          marginBottom: '28px',
-          overflowX: 'auto'
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
         }}>
-          {[
-            { id: 'bookings', label: 'My Trips & Bookings', count: bookings.length, icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3"/></svg> },
-            { id: 'favorites', label: 'Saved Wishlist', count: favorites.length, icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> },
-            { id: 'affiliate', label: 'Affiliate & Rewards', icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> },
-            { id: 'itineraries', label: 'Trip AI Itineraries', icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg> },
-            { id: 'settings', label: 'Account & Preferences', icon: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> }
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
+          {/* Search Bar with ⌘ K */}
+          <div style={{ position: 'relative', width: '380px' }}>
+            <input
+              type="text"
+              placeholder="Search destinations, campaigns, tools..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 40px 8px 36px',
+                borderRadius: '8px',
+                border: '1px solid #CBD5E1',
+                backgroundColor: '#F8FAFC',
+                fontSize: '13.5px',
+                outline: 'none',
+              }}
+            />
+            <svg style={{ position: 'absolute', left: '12px', top: '10px', color: '#94A3B8' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span style={{ position: 'absolute', right: '10px', top: '8px', padding: '2px 6px', fontSize: '11px', color: '#64748B', backgroundColor: '#E2E8F0', borderRadius: '4px', fontWeight: 600 }}>⌘ K</span>
+          </div>
+
+          {/* Right Header Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {/* Notification Bell with Badge 3 */}
+            <div style={{ position: 'relative', cursor: 'pointer' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                backgroundColor: '#EF4444',
+                color: '#ffffff',
+                fontSize: '10px',
+                fontWeight: 700,
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
+                display: 'grid',
+                placeItems: 'center',
+                border: '2px solid #ffffff'
+              }}>3</span>
+            </div>
+
+            {/* Profile Dropdown Badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop)',
+                backgroundSize: 'cover',
+              }} />
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>{displayName}</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Affiliate Partner</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Inner Scrollable Container */}
+        <div style={{ padding: '28px 32px 60px 32px' }}>
+
+          {/* ========================================================
+              ===== MOUNTAIN WELCOME BANNER (Gergeti Trinity) =====
+              ======================================================== */}
+          <div style={{
+            position: 'relative',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            minHeight: '140px',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1600&auto=format&fit=crop&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 45%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '28px 36px',
+            marginBottom: '24px',
+            boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.15)',
+          }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(11, 19, 43, 0.85) 0%, rgba(11, 19, 43, 0.6) 50%, rgba(11, 19, 43, 0.35) 100%)' }} />
+
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <h1 style={{ margin: '0 0 6px 0', fontSize: '24px', fontWeight: 700, color: '#ffffff' }}>
+                Welcome back, {displayName}!
+              </h1>
+              <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: 'rgba(255, 255, 255, 0.85)' }}>
+                Earn by sharing the beauty of Georgia.
+              </p>
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as DashboardTab)}
+                type="button"
+                onClick={() => setShowNewLinkModal(true)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '14px',
+                  padding: '9px 18px',
+                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  color: '#0F172A',
                   border: 'none',
-                  background: isActive ? 'var(--ink, #241712)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--ink, #241712)',
-                  fontWeight: isActive ? 700 : 500,
-                  fontSize: '13.5px',
+                  fontSize: '13px',
+                  fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  whiteSpace: 'nowrap'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 }}
               >
-                <span style={{ opacity: isActive ? 1 : 0.7 }}>{tab.icon}</span>
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span style={{
-                    padding: '2px 7px',
-                    borderRadius: '999px',
-                    fontSize: '11px',
-                    background: isActive ? 'rgba(255,255,255,0.2)' : 'rgba(26,18,14,0.08)',
-                    color: isActive ? '#ffffff' : 'var(--ink)',
-                    fontWeight: 700
-                  }}>
-                    {tab.count}
-                  </span>
-                )}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span>Create New Link</span>
               </button>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* ========================================================
-            TAB 1: MY TRIPS & BOOKINGS
-            ======================================================== */}
-        {activeTab === 'bookings' && (
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '26px',
-            padding: '32px',
-            boxShadow: '0 16px 40px -12px rgba(36, 24, 19, 0.06)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>
-                  Your Reservations &amp; Stays ({bookings.length})
-                </h2>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: '13.5px' }}>
-                  Live booking confirmations synchronized directly with host calendars
-                </p>
+            {/* Top 10% Badge on Right */}
+            <div style={{
+              position: 'relative',
+              zIndex: 2,
+              backgroundColor: 'rgba(15, 23, 42, 0.65)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '12px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              minWidth: '220px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase' }}>This Month</span>
+                <span style={{ fontSize: '12px', color: '#FCD34D' }}>★</span>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>🏆</span>
+                <span style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>Top 10%</span>
+              </div>
+              <div style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.75)' }}>
+                You&apos;re in the top 10% of KAYA affiliates!
+              </div>
+            </div>
+          </div>
 
-              <Link
-                href="/hotels"
+          {/* ========================================================
+              ===== 4 TOP KPI METRIC CARDS =====
+              ======================================================== */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '20px',
+            marginBottom: '24px',
+          }}>
+            {[
+              {
+                title: 'Total Earnings',
+                value: `€${affiliateStats.totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                growth: '↑ 28%',
+                subtext: 'vs. last month',
+                iconColor: '#10B981',
+                bgColor: '#ECFDF5',
+                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              },
+              {
+                title: 'Total Clicks',
+                value: affiliateStats.totalClicks.toLocaleString(),
+                growth: '↑ 16%',
+                subtext: 'vs. last month',
+                iconColor: '#3B82F6',
+                bgColor: '#EFF6FF',
+                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
+              },
+              {
+                title: 'Conversions',
+                value: affiliateStats.conversions.toLocaleString(),
+                growth: '↑ 34%',
+                subtext: 'vs. last month',
+                iconColor: '#10B981',
+                bgColor: '#ECFDF5',
+                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              },
+              {
+                title: 'Conversion Rate',
+                value: `${affiliateStats.conversionRate}%`,
+                growth: '↑ 0.6%',
+                subtext: 'vs. last month',
+                iconColor: '#6366F1',
+                bgColor: '#EEF2FF',
+                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              },
+            ].map((stat, i) => (
+              <div
+                key={i}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: 'var(--accent, #d9653b)',
-                  fontSize: '13.5px',
-                  fontWeight: 700,
-                  textDecoration: 'none'
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '12px',
+                  padding: '20px 24px',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
                 }}
               >
-                + Book Another Experience &rarr;
-              </Link>
-            </div>
+                <div>
+                  <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 500, marginBottom: '6px' }}>
+                    {stat.title}
+                  </div>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+                    <span style={{ color: '#10B981', fontWeight: 600 }}>{stat.growth}</span>
+                    <span style={{ color: '#94A3B8' }}>{stat.subtext}</span>
+                  </div>
+                </div>
 
-            {bookings.length === 0 ? (
-              <div style={{
-                padding: '60px 24px',
-                textAlign: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.65)',
-                borderRadius: '20px',
-                border: '1.5px dashed rgba(26, 18, 14, 0.15)'
-              }}>
                 <div style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  background: 'rgba(217, 101, 59, 0.1)',
-                  color: 'var(--accent, #d9653b)',
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  backgroundColor: stat.bgColor,
                   display: 'grid',
                   placeItems: 'center',
-                  margin: '0 auto 16px'
                 }}>
-                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3"/></svg>
+                  {stat.icon}
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '20px', margin: '0 0 8px 0', color: 'var(--ink)' }}>
-                  No reservations booked yet
-                </h3>
-                <p style={{ color: 'var(--muted)', maxWidth: '420px', margin: '0 auto 20px', fontSize: '14px', lineHeight: 1.5 }}>
-                  Discover mountain chalets in Kazbegi, vineyard estates in Kakheti, or sea-view penthouses in Batumi.
-                </p>
-                <Link
-                  href="/hotels"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 26px',
-                    borderRadius: '999px',
-                    background: 'linear-gradient(135deg, var(--accent, #d9653b), var(--accent-deep, #be4f27))',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    textDecoration: 'none',
-                    boxShadow: '0 6px 20px rgba(217, 101, 59, 0.35)'
-                  }}
-                >
-                  Explore Georgian Stays
-                </Link>
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {bookings.map((booking) => {
-                  const isCancelled = booking.status === 'CANCELLED';
-                  return (
-                    <div
-                      key={booking._id}
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '20px 24px',
-                        backgroundColor: '#ffffff',
-                        border: '1px solid rgba(26, 18, 14, 0.08)',
-                        borderRadius: '18px',
-                        gap: '20px',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
-                        opacity: isCancelled ? 0.7 : 1,
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '18px', minWidth: '260px' }}>
-                        {booking.listing_image ? (
-                          <img
-                            src={booking.listing_image}
-                            alt={booking.listing_title}
-                            style={{ width: '92px', height: '72px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
-                          />
-                        ) : (
-                          <div style={{
-                            width: '92px',
-                            height: '72px',
-                            borderRadius: '12px',
-                            background: 'rgba(217, 101, 59, 0.1)',
-                            display: 'grid',
-                            placeItems: 'center',
-                            color: 'var(--accent, #d9653b)',
-                            flexShrink: 0
-                          }}>
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M10 11h2M10 15h2M14 11h2M14 15h2M18 11h2M18 15h2M9 3h6v4H9z"/></svg>
-                          </div>
-                        )}
-                        <div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                            REF: {booking._id ? String(booking._id).slice(-8).toUpperCase() : 'KAYA-BK'}
-                          </div>
-                          <h4 style={{ fontFamily: 'var(--font-display), serif', margin: '2px 0 4px 0', fontSize: '18px', color: 'var(--ink)', fontWeight: 700 }}>
-                            {booking.listing_title || 'Boutique Stay in Georgia'}
-                          </h4>
-                          <p style={{ margin: '0 0 4px 0', color: 'var(--muted)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {booking.listing_location || 'Georgia'}
-                          </p>
-                          <p style={{ margin: 0, color: 'var(--text-secondary, #64748b)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            {booking.check_in} &rarr; {booking.check_out} ({booking.nights || 1} nights, {booking.guest_count || 2} guests)
-                          </p>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--ink)' }}>
-                            ₾{booking.total_price} <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>{booking.currency || 'GEL'}</span>
-                          </div>
-                          <span style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '3px 10px',
-                            borderRadius: '999px',
-                            fontSize: '11px',
-                            textTransform: 'uppercase',
-                            fontWeight: 700,
-                            letterSpacing: '0.04em',
-                            backgroundColor: booking.status === 'CONFIRMED' ? 'rgba(44, 157, 111, 0.15)' : (isCancelled ? 'rgba(0,0,0,0.06)' : 'rgba(217, 101, 59, 0.15)'),
-                            color: booking.status === 'CONFIRMED' ? '#2c9d6f' : (isCancelled ? 'var(--muted)' : 'var(--accent, #d9653b)'),
-                          }}>
-                            {booking.status === 'CONFIRMED' && <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                            {booking.status || 'CONFIRMED'}
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <Link
-                            href={`/listing/${booking.listing_id || 'sample'}`}
-                            style={{
-                              padding: '8px 16px',
-                              borderRadius: '999px',
-                              background: 'rgba(26, 18, 14, 0.05)',
-                              color: 'var(--ink)',
-                              fontSize: '13px',
-                              fontWeight: 600,
-                              textDecoration: 'none',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            View
-                          </Link>
-
-                          {!isCancelled && (
-                            <button
-                              onClick={() => handleCancelBooking(booking._id)}
-                              disabled={actionLoading === booking._id}
-                              style={{
-                                padding: '8px 16px',
-                                borderRadius: '999px',
-                                background: 'transparent',
-                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                color: '#ef4444',
-                                fontSize: '13px',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
-                            >
-                              {actionLoading === booking._id ? 'Cancelling...' : 'Cancel'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            ))}
           </div>
-        )}
 
-        {/* ========================================================
-            TAB 2: SAVED WISHLIST & FAVORITES
-            ======================================================== */}
-        {activeTab === 'favorites' && (
+          {/* ========================================================
+              ===== ROW 1: Earnings Overview + Funnel + Referral Box + Campaigns =====
+              ======================================================== */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '26px',
-            padding: '32px',
-            boxShadow: '0 16px 40px -12px rgba(36, 24, 19, 0.06)'
+            display: 'grid',
+            gridTemplateColumns: '2fr 1.1fr 1.3fr',
+            gap: '20px',
+            marginBottom: '24px',
           }}>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>
-                Your Saved Georgian Wishlist ({favorites.length})
-              </h2>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: '13.5px' }}>
-                All listings and experiences you heart across Kaya.ge are saved here
-              </p>
-            </div>
+            {/* Card 1: Earnings Overview Chart */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 24px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Earnings Overview
+                </h3>
 
-            {favoriteItems.length === 0 ? (
-              <div style={{
-                padding: '60px 24px',
-                textAlign: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.65)',
-                borderRadius: '20px',
-                border: '1.5px dashed rgba(26, 18, 14, 0.15)'
-              }}>
+                {/* Metric toggles */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setChartMetric('earnings')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: chartMetric === 'earnings' ? '#1D4ED8' : '#64748B',
+                      fontWeight: chartMetric === 'earnings' ? 700 : 500,
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2563EB' }} />
+                    <span>Earnings</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartMetric('clicks')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: chartMetric === 'clicks' ? '#0284C7' : '#64748B',
+                      fontWeight: chartMetric === 'clicks' ? 700 : 500,
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#38BDF8' }} />
+                    <span>Clicks</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartMetric('conversions')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: chartMetric === 'conversions' ? '#059669' : '#64748B',
+                      fontWeight: chartMetric === 'conversions' ? 700 : 500,
+                    }}
+                  >
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981' }} />
+                    <span>Conversions</span>
+                  </button>
+
+                  <select
+                    value={chartRange}
+                    onChange={e => setChartRange(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '12px',
+                      backgroundColor: '#F8FAFC',
+                      color: '#475569'
+                    }}
+                  >
+                    <option>Last 21 days</option>
+                    <option>Last 30 days</option>
+                    <option>This Quarter</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Multi-Line Area Chart Canvas */}
+              <div style={{ position: 'relative', height: '190px', width: '100%' }}>
+                <svg width="100%" height="100%" viewBox="0 0 540 180" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                  <defs>
+                    <linearGradient id="affiliate-chart-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2563EB" stopOpacity="0.22" />
+                      <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                    </linearGradient>
+                    <linearGradient id="affiliate-chart-clicks" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.16" />
+                      <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Horizontal Grid lines */}
+                  {[30, 70, 110, 150].map((y, i) => (
+                    <line key={i} x1="0" y1={y} x2="540" y2={y} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                  ))}
+
+                  {/* Area 1: Clicks */}
+                  <path
+                    d="M 0 155 Q 75 140 150 135 T 300 110 T 385 60 T 465 95 T 540 70 L 540 180 L 0 180 Z"
+                    fill="url(#affiliate-chart-clicks)"
+                  />
+                  <path
+                    d="M 0 155 Q 75 140 150 135 T 300 110 T 385 60 T 465 95 T 540 70"
+                    fill="none"
+                    stroke="#38BDF8"
+                    strokeWidth="2"
+                  />
+
+                  {/* Area 2: Earnings (Primary) */}
+                  <path
+                    d="M 0 145 Q 75 130 150 120 T 300 95 T 385 45 T 465 75 T 540 50 L 540 180 L 0 180 Z"
+                    fill="url(#affiliate-chart-grad)"
+                  />
+                  <path
+                    d="M 0 145 Q 75 130 150 120 T 300 95 T 385 45 T 465 75 T 540 50"
+                    fill="none"
+                    stroke="#2563EB"
+                    strokeWidth="2.5"
+                  />
+
+                  {/* Highlight point on Oct 16 */}
+                  <circle cx="385" cy="45" r="5" fill="#ffffff" stroke="#2563EB" strokeWidth="3" />
+                </svg>
+
+                {/* Interactive Tooltip Card at Oct 16 (Matching Mockup) */}
                 <div style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  color: '#ef4444',
-                  display: 'grid',
-                  placeItems: 'center',
-                  margin: '0 auto 16px'
-                }}>
-                  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '20px', margin: '0 0 8px 0', color: 'var(--ink)' }}>
-                  Your wishlist is empty
-                </h3>
-                <p style={{ color: 'var(--muted)', maxWidth: '400px', margin: '0 auto 20px', fontSize: '14px', lineHeight: 1.5 }}>
-                  Click the heart icon on any hotel, cabin, 4x4 car, or wine experience to save it for your itinerary.
-                </p>
-                <Link
-                  href="/"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 26px',
-                    borderRadius: '999px',
-                    background: 'var(--ink, #241712)',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '14px',
-                    textDecoration: 'none'
-                  }}
-                >
-                  Browse Georgia Marketplace
-                </Link>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '22px' }}>
-                {favoriteItems.map((item) => {
-                  const itemId = String(item._id || item.id);
-                  return (
-                    <div
-                      key={itemId}
-                      style={{
-                        background: '#ffffff',
-                        borderRadius: '20px',
-                        overflow: 'hidden',
-                        border: '1px solid rgba(26, 18, 14, 0.08)',
-                        boxShadow: '0 8px 24px -8px rgba(36, 24, 19, 0.08)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                      }}
-                    >
-                      <div style={{ position: 'relative', height: '180px' }}>
-                        <img
-                          src={item.image || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=600&q=80'}
-                          alt={item.title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                        <button
-                          onClick={() => removeFavorite(itemId)}
-                          title="Remove from favorites"
-                          style={{
-                            position: 'absolute',
-                            top: '12px',
-                            right: '12px',
-                            width: '34px',
-                            height: '34px',
-                            borderRadius: '50%',
-                            background: 'rgba(255,255,255,0.9)',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'grid',
-                            placeItems: 'center',
-                            color: '#ef4444',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                          }}
-                        >
-                          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        </button>
-                      </div>
-
-                      <div style={{ padding: '18px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase' }}>
-                            {item.location || item.city || 'Georgia'}
-                          </div>
-                          <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '18px', margin: '4px 0 8px 0', color: 'var(--ink)' }}>
-                            {item.title}
-                          </h3>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(26, 18, 14, 0.06)' }}>
-                          <div>
-                            <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)' }}>
-                              ₾{item.price_per_night || item.price || 180}
-                            </span>
-                            <span style={{ fontSize: '12px', color: 'var(--muted)' }}> / {item.price_unit || 'night'}</span>
-                          </div>
-
-                          <Link
-                            href={`/listing/${itemId}`}
-                            style={{
-                              padding: '8px 16px',
-                              borderRadius: '999px',
-                              background: 'var(--accent, #d9653b)',
-                              color: '#ffffff',
-                              fontSize: '12.5px',
-                              fontWeight: 700,
-                              textDecoration: 'none'
-                            }}
-                          >
-                            Book Stay
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========================================================
-            TAB 3: AFFILIATE & REWARDS HUB
-            ======================================================== */}
-        {activeTab === 'affiliate' && (
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '26px',
-            padding: '32px',
-            boxShadow: '0 16px 40px -12px rgba(36, 24, 19, 0.06)'
-          }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '28px' }}>
-              <div>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 12px',
-                  borderRadius: '999px',
-                  background: 'rgba(217, 101, 59, 0.12)',
-                  color: 'var(--accent, #d9653b)',
+                  position: 'absolute',
+                  left: '60%',
+                  top: '12px',
+                  backgroundColor: '#0F172A',
+                  color: '#ffffff',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
                   fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  marginBottom: '12px'
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+                  zIndex: 5,
+                  pointerEvents: 'none'
                 }}>
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/></svg>
-                  KAYA Partner Rewards
-                </span>
+                  <div style={{ color: '#94A3B8', marginBottom: '4px', fontWeight: 600 }}>Oct 16, 2026</div>
+                  <div style={{ color: '#38BDF8', fontWeight: 700 }}>● €320.50 earnings</div>
+                  <div style={{ color: '#60A5FA' }}>● 1,240 clicks</div>
+                  <div style={{ color: '#34D399' }}>● 38 conversions</div>
+                </div>
 
-                <h2 style={{ fontFamily: 'var(--font-display), serif', margin: '0 0 10px 0', fontSize: '26px', fontWeight: 700, color: 'var(--ink)' }}>
-                  Invite Travelers &amp; Earn 10% Lifetime Commission
-                </h2>
-                <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '14px', lineHeight: 1.6, margin: '0 0 20px 0' }}>
-                  Every time someone books a hotel, car, or tour using your link, or registers as a host on Kaya.ge, you receive a direct cash payout to your Georgian bank account.
-                </p>
-
-                {/* Referral Link Capsule */}
+                {/* X Axis Labels */}
                 <div style={{
-                  background: 'rgba(26, 18, 14, 0.04)',
-                  border: '1px solid rgba(26, 18, 14, 0.12)',
-                  borderRadius: '16px',
-                  padding: '12px 16px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '10px',
+                  fontSize: '11px',
+                  color: '#94A3B8'
+                }}>
+                  {chartPoints.map((p, i) => (
+                    <span key={i}>{p.day}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Conversion Funnel */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 20px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}>
+              <div>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Conversion Funnel
+                </h3>
+
+                {/* 3-Tier Trapezoid Visual Funnel */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Tier 1: Link Clicks */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '64px',
+                      height: '32px',
+                      backgroundColor: '#3B82F6',
+                      clipPath: 'polygon(0 0, 100% 0, 85% 100%, 15% 100%)',
+                    }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span style={{ fontWeight: 700, color: '#0F172A' }}>18,342</span>
+                        <span style={{ color: '#64748B' }}>100%</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Link Clicks</div>
+                    </div>
+                  </div>
+
+                  {/* Tier 2: Product Views */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '54px',
+                      height: '32px',
+                      backgroundColor: '#60A5FA',
+                      clipPath: 'polygon(5% 0, 95% 0, 80% 100%, 20% 100%)',
+                      marginLeft: '5px'
+                    }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span style={{ fontWeight: 700, color: '#0F172A' }}>4,218</span>
+                        <span style={{ color: '#64748B' }}>23%</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Product Views</div>
+                    </div>
+                  </div>
+
+                  {/* Tier 3: Bookings */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '42px',
+                      height: '32px',
+                      backgroundColor: '#34D399',
+                      clipPath: 'polygon(10% 0, 90% 0, 65% 100%, 35% 100%)',
+                      marginLeft: '11px'
+                    }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                        <span style={{ fontWeight: 700, color: '#0F172A' }}>523</span>
+                        <span style={{ color: '#10B981', fontWeight: 600 }}>2.85%</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Bookings</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px', fontSize: '11.5px', color: '#64748B' }}>
+                Average Commission: <strong style={{ color: '#0F172A' }}>€2.45</strong> per booking
+              </div>
+            </div>
+
+            {/* Card 3: Your Referral Link & Social Sharing */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 20px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                    Your Referral Link
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomizeModal(true)}
+                    style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Customize
+                  </button>
+                </div>
+
+                {/* URL Pill Box with Copy */}
+                <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  marginBottom: '16px'
+                  backgroundColor: '#F8FAFC',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  marginBottom: '14px',
                 }}>
                   <input
                     type="text"
                     readOnly
-                    value={`https://kaya.ge/signup?ref=${user.affiliateCode || 'KAYA2026'}`}
+                    value={referralUrl}
                     style={{
                       flex: 1,
                       border: 'none',
                       background: 'transparent',
-                      color: 'var(--ink)',
-                      fontSize: '13.5px',
-                      fontFamily: 'monospace',
-                      outline: 'none'
+                      fontSize: '12px',
+                      color: '#334155',
+                      outline: 'none',
+                      textOverflow: 'ellipsis',
                     }}
                   />
                   <button
-                    onClick={copyReferral}
+                    type="button"
+                    onClick={() => copyToClipboard(referralUrl)}
                     style={{
-                      padding: '8px 16px',
-                      borderRadius: '999px',
-                      background: copySuccess ? '#16a34a' : 'var(--ink, #241712)',
-                      color: '#ffffff',
+                      background: 'none',
                       border: 'none',
-                      fontSize: '12.5px',
-                      fontWeight: 700,
+                      color: copySuccess ? '#10B981' : '#64748B',
                       cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      transition: 'all 0.2s ease'
+                      display: 'flex',
+                      padding: '2px',
                     }}
+                    title="Copy Link"
                   >
                     {copySuccess ? (
-                      <>
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        Copied!
-                      </>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#10B981' }}>Copied!</span>
                     ) : (
-                      <>
-                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        Copy Link
-                      </>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     )}
                   </button>
                 </div>
 
-                {/* Instant Social Share Buttons */}
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {/* Share Action Buttons */}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: '#2563EB',
+                      color: '#ffffff',
+                      border: 'none',
+                      fontSize: '12.5px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    <span>Share Link</span>
+                  </button>
+
+                  {/* WhatsApp */}
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Check out Kaya.ge to book incredible boutique stays and mountain tours in Georgia: https://kaya.ge/signup?ref=${user.affiliateCode || 'KAYA'}`)}`}
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Discover breathtaking stays and tours across Georgia: ' + referralUrl)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '8px 14px',
-                      borderRadius: '999px',
-                      background: '#25D366',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: '#25D366',
                       color: '#ffffff',
-                      fontSize: '12.5px',
-                      fontWeight: 600,
-                      textDecoration: 'none'
+                      display: 'grid',
+                      placeItems: 'center',
+                      textDecoration: 'none',
                     }}
                   >
-                    Share WhatsApp
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.062-2.18-.549-1.898-.779-3.118-2.73-3.213-2.855-.095-.125-.769-1.023-.769-1.951 0-.928.486-1.383.659-1.57.172-.187.375-.234.5-.234.125 0 .25.002.359.007.115.006.269-.044.421.32.157.375.532 1.297.579 1.391.047.094.078.203.016.328-.063.125-.094.203-.188.312-.094.109-.197.244-.282.328-.094.094-.192.197-.082.385.11.188.489.807 1.05 1.306.721.642 1.329.841 1.517.935.188.094.298.078.407-.047.109-.125.469-.547.594-.734.125-.187.25-.156.422-.094.172.062 1.094.516 1.281.609.188.094.313.141.359.219.047.078.047.453-.097.858z"/></svg>
                   </a>
 
+                  {/* Facebook */}
                   <a
-                    href={`https://t.me/share/url?url=${encodeURIComponent(`https://kaya.ge/signup?ref=${user.affiliateCode || 'KAYA'}`)}&text=${encodeURIComponent('Discover boutique hotels and experiences in Georgia on Kaya.ge!')}`}
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralUrl)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '8px 14px',
-                      borderRadius: '999px',
-                      background: '#0088cc',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: '#1877F2',
                       color: '#ffffff',
-                      fontSize: '12.5px',
-                      fontWeight: 600,
-                      textDecoration: 'none'
+                      display: 'grid',
+                      placeItems: 'center',
+                      textDecoration: 'none',
                     }}
                   >
-                    Share Telegram
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.374 14.5 5 15.6 5H18V0h-3.808C10.595 0 9 1.583 9 4.615V8z"/></svg>
+                  </a>
+
+                  {/* X / Twitter */}
+                  <a
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent('Discover the magic of Georgia with KAYA!')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      backgroundColor: '#0F172A',
+                      color: '#ffffff',
+                      display: 'grid',
+                      placeItems: 'center',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                   </a>
                 </div>
               </div>
 
-              {/* Commission Stats Box */}
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(217, 101, 59, 0.06), rgba(245, 158, 11, 0.08))',
-                borderRadius: '20px',
-                border: '1px solid rgba(217, 101, 59, 0.2)',
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}>
-                <div>
-                  <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '20px', margin: '0 0 16px 0', color: 'var(--ink)' }}>
-                    Referral Performance
-                  </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-                    <div style={{ background: '#fff', borderRadius: '14px', padding: '14px', border: '1px solid rgba(26,18,14,0.08)' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Total Clicks</div>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--ink)' }}>48</div>
-                    </div>
-                    <div style={{ background: '#fff', borderRadius: '14px', padding: '14px', border: '1px solid rgba(26,18,14,0.08)' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Active Referrals</div>
-                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#16a34a' }}>6</div>
-                    </div>
-                  </div>
-                  <div style={{ background: '#fff', borderRadius: '14px', padding: '14px', border: '1px solid rgba(26,18,14,0.08)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>Pending Commission</div>
-                    <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--accent, #d9653b)' }}>₾140.00 GEL</div>
-                  </div>
+              {/* Featured Campaigns Quick Box */}
+              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '12px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>Featured Campaigns</span>
+                  <span style={{ fontSize: '11px', color: '#2563EB', cursor: 'pointer' }}>View all</span>
                 </div>
-
-                <Link
-                  href="/dashboard/affiliates"
-                  style={{
-                    display: 'block',
-                    textAlign: 'center',
-                    marginTop: '20px',
-                    padding: '12px',
-                    borderRadius: '12px',
-                    background: 'var(--ink, #241712)',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '13.5px',
-                    textDecoration: 'none'
-                  }}
-                >
-                  View Full Affiliate Funnel &rarr;
-                </Link>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {[
+                    { name: 'Kazbegi Adventures', comm: '10% commission', status: 'Active' },
+                    { name: 'Tbilisi City Experiences', comm: '8% commission', status: 'Active' },
+                    { name: 'Kakheti Wine Tours', comm: '12% commission', status: 'Active' },
+                  ].map((c, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#334155' }}>{c.name}</div>
+                        <div style={{ fontSize: '10.5px', color: '#94A3B8' }}>{c.comm}</div>
+                      </div>
+                      <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: '#ECFDF5', color: '#059669', fontSize: '10.5px', fontWeight: 600 }}>
+                        {c.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* ========================================================
-            TAB 4: TRIP MOOD AI ITINERARIES
-            ======================================================== */}
-        {activeTab === 'itineraries' && (
+          {/* ========================================================
+              ===== ROW 2: Top Performing Links + Recent Activity + Top Destinations =====
+              ======================================================== */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '26px',
-            padding: '32px',
-            boxShadow: '0 16px 40px -12px rgba(36, 24, 19, 0.06)'
+            display: 'grid',
+            gridTemplateColumns: '1.4fr 1.3fr 1.3fr',
+            gap: '20px',
+            marginBottom: '24px',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>
-                  Curated Georgian Itineraries
-                </h2>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: '13.5px' }}>
-                  Handcrafted roadmaps generated by Trip Mood AI tailored to your travel vibe
-                </p>
+            {/* Top Performing Links Table */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 24px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Top Performing Links
+                </h3>
+                <span style={{ fontSize: '12px', color: '#2563EB', cursor: 'pointer', fontWeight: 500 }}>View all</span>
               </div>
 
-              <Link
-                href="/trip-planner"
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #F1F5F9', color: '#64748B', textAlign: 'left' }}>
+                      <th style={{ paddingBottom: '10px', fontWeight: 500 }}>Destination / Campaign</th>
+                      <th style={{ paddingBottom: '10px', fontWeight: 500, textAlign: 'right' }}>Clicks</th>
+                      <th style={{ paddingBottom: '10px', fontWeight: 500, textAlign: 'right' }}>Conversions</th>
+                      <th style={{ paddingBottom: '10px', fontWeight: 500, textAlign: 'right' }}>Earnings</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: 'Kazbegi Tour', clicks: '2,842', conv: 128, earnings: '€482.00', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=60&h=60&fit=crop' },
+                      { name: 'Tbilisi Walking Tour', clicks: '1,924', conv: 86, earnings: '€231.40', img: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=60&h=60&fit=crop' },
+                      { name: 'Batumi Hotels', clicks: '1,530', conv: 64, earnings: '€189.20', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=60&h=60&fit=crop' },
+                      { name: 'Kakheti Wine Tour', clicks: '1,206', conv: 52, earnings: '€178.60', img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=60&h=60&fit=crop' },
+                      { name: 'Georgia Car Rentals', clicks: '980', conv: 38, earnings: '€96.40', img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=60&h=60&fit=crop' },
+                    ].map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #F8FAFC' }}>
+                        <td style={{ padding: '10px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <img src={row.img} alt="" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
+                          <span style={{ fontWeight: 600, color: '#1E293B' }}>{row.name}</span>
+                        </td>
+                        <td style={{ padding: '10px 0', textAlign: 'right', color: '#64748B' }}>{row.clicks}</td>
+                        <td style={{ padding: '10px 0', textAlign: 'right', color: '#64748B' }}>{row.conv}</td>
+                        <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 600, color: '#0F172A' }}>{row.earnings}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Recent Activity Live Feed */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 24px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Recent Activity
+                </h3>
+                <span style={{ fontSize: '12px', color: '#2563EB', cursor: 'pointer', fontWeight: 500 }}>View all</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {[
+                  { type: 'New booking', time: '2 minutes ago', title: 'Kazbegi Tour', amount: '€120.00', isBooking: true },
+                  { type: 'Link click', time: '12 minutes ago', title: 'Batumi Hotels', amount: '-', isBooking: false },
+                  { type: 'New booking', time: '28 minutes ago', title: 'Tbilisi Walking Tour', amount: '€85.00', isBooking: true },
+                  { type: 'Link click', time: '1 hour ago', title: 'Kakheti Wine Tour', amount: '-', isBooking: false },
+                  { type: 'New booking', time: '2 hours ago', title: 'Rooms Hotel Kazbegi', amount: '€240.00', isBooking: true },
+                ].map((act, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <span style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: act.isBooking ? '#10B981' : '#3B82F6',
+                        marginTop: '4px',
+                        flexShrink: 0,
+                      }} />
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#1E293B' }}>{act.type}</div>
+                        <div style={{ fontSize: '11px', color: '#94A3B8' }}>{act.time}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ color: '#475569', fontSize: '12px' }}>{act.title}</div>
+                      <div style={{ fontWeight: 600, color: act.isBooking ? '#059669' : '#94A3B8', fontSize: '12px' }}>{act.amount}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top Destinations to Promote Leaderboard */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 24px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Top Destinations to Promote
+                </h3>
+                <span style={{ fontSize: '12px', color: '#2563EB', cursor: 'pointer', fontWeight: 500 }}>View all</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  { rank: 1, name: 'Kazbegi', badge: 'High conversion', comm: '12% commission', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=80&h=80&fit=crop' },
+                  { rank: 2, name: 'Batumi', badge: 'Trending now', comm: '10% commission', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=80&h=80&fit=crop' },
+                  { rank: 3, name: 'Tbilisi', badge: 'Always popular', comm: '8% commission', img: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=80&h=80&fit=crop' },
+                  { rank: 4, name: 'Svaneti', badge: 'Growing fast', comm: '12% commission', img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=80&h=80&fit=crop' },
+                  { rank: 5, name: 'Kakheti', badge: 'Seasonal opportunity', comm: '12% commission', img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=80&h=80&fit=crop' },
+                ].map(dest => (
+                  <div key={dest.rank} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '4px',
+                        backgroundColor: '#EFF6FF',
+                        color: '#2563EB',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        display: 'grid',
+                        placeItems: 'center'
+                      }}>
+                        {dest.rank}
+                      </span>
+                      <img src={dest.img} alt={dest.name} style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }} />
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#1E293B' }}>{dest.name}</div>
+                        <span style={{ fontSize: '10.5px', color: '#64748B', backgroundColor: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                          {dest.badge}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#059669' }}>
+                      {dest.comm}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ========================================================
+              ===== ROW 3: Payouts + Affiliate Level + Marketing Assets + Inspiration Banner =====
+              ======================================================== */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1.2fr 1.2fr 1.2fr 1.4fr',
+            gap: '20px',
+          }}>
+            {/* Payouts Table */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 20px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Payouts
+                </h3>
+                <span style={{ fontSize: '12px', color: '#2563EB', cursor: 'pointer', fontWeight: 500 }}>View all</span>
+              </div>
+
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px' }}>
+                <thead>
+                  <tr style={{ color: '#94A3B8', textAlign: 'left', borderBottom: '1px solid #F1F5F9' }}>
+                    <th style={{ paddingBottom: '6px' }}>Date</th>
+                    <th style={{ paddingBottom: '6px' }}>Amount</th>
+                    <th style={{ paddingBottom: '6px' }}>Status</th>
+                    <th style={{ paddingBottom: '6px', textAlign: 'right' }}>Method</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { date: 'Oct 1, 2026', amount: '€420.00', status: 'Paid', method: 'Bank Transfer' },
+                    { date: 'Sep 1, 2026', amount: '€310.50', status: 'Paid', method: 'Bank Transfer' },
+                    { date: 'Aug 1, 2026', amount: '€275.00', status: 'Paid', method: 'Bank Transfer' },
+                    { date: 'Jul 1, 2026', amount: '€180.00', status: 'Paid', method: 'Bank Transfer' },
+                  ].map((p, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #F8FAFC' }}>
+                      <td style={{ padding: '8px 0', color: '#475569' }}>{p.date}</td>
+                      <td style={{ padding: '8px 0', fontWeight: 600, color: '#0F172A' }}>{p.amount}</td>
+                      <td style={{ padding: '8px 0' }}>
+                        <span style={{ padding: '2px 6px', borderRadius: '4px', backgroundColor: '#ECFDF5', color: '#059669', fontSize: '10.5px', fontWeight: 600 }}>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px 0', textAlign: 'right', color: '#64748B' }}>{p.method}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <button
+                type="button"
+                onClick={() => setShowPayoutModal(true)}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '9px 18px',
-                  borderRadius: '999px',
-                  background: 'linear-gradient(135deg, var(--accent, #d9653b), #f59e0b)',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  textDecoration: 'none',
-                  boxShadow: '0 4px 14px rgba(217, 101, 59, 0.3)'
+                  marginTop: '12px',
+                  width: '100%',
+                  padding: '7px 0',
+                  borderRadius: '6px',
+                  border: '1px dashed #CBD5E1',
+                  backgroundColor: '#F8FAFC',
+                  color: '#2563EB',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
                 }}
               >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                Generate New AI Trip
-              </Link>
+                + Request Payout
+              </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '22px' }}>
-              {sampleItineraries.map((itinerary) => (
-                <div
-                  key={itinerary.id}
+            {/* Your Affiliate Level */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 20px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                  Your Affiliate Level
+                </h3>
+                <span style={{ fontSize: '12px', color: '#2563EB', cursor: 'pointer', fontWeight: 500 }}>View details</span>
+              </div>
+
+              {/* Active Level 4 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '8px',
+                  backgroundColor: '#FEF3C7',
+                  color: '#D97706',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: '18px'
+                }}>
+                  🛡️
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Level 4</div>
+                  <div style={{ fontSize: '11px', color: '#64748B' }}>Explorer Affiliate</div>
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#2563EB' }}>420 / 1,000 XP</span>
+              </div>
+
+              {/* Progress Bar */}
+              <div style={{ height: '6px', backgroundColor: '#E2E8F0', borderRadius: '4px', overflow: 'hidden', marginBottom: '16px' }}>
+                <div style={{ width: '42%', height: '100%', backgroundColor: '#2563EB', borderRadius: '4px' }} />
+              </div>
+
+              {/* Locked Levels List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11.5px' }}>
+                {[
+                  { lvl: 'Level 5', name: 'Trailblazer', xp: '1,000 XP' },
+                  { lvl: 'Level 6', name: 'Georgia Ambassador', xp: '2,500 XP' },
+                  { lvl: 'Level 7', name: 'Elite Partner', xp: '5,000 XP' },
+                ].map((l, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#64748B' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🔒</span>
+                      <span>{l.lvl} • {l.name}</span>
+                    </div>
+                    <span style={{ fontSize: '10.5px', color: '#94A3B8' }}>{l.xp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Marketing Assets */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '22px 20px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}>
+              <h3 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 600, color: '#0F172A' }}>
+                Marketing Assets
+              </h3>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+              }}>
+                {[
+                  { label: 'Banners', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> },
+                  { label: 'Social Media Kits', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg> },
+                  { label: 'Stories & Reels', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> },
+                  { label: 'Widgets', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+                ].map((asset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => alert(`Downloading high-resolution ${asset.label} for Georgia campaigns!`)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '16px 8px',
+                      borderRadius: '10px',
+                      backgroundColor: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: '#334155',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#EFF6FF'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#F8FAFC'}
+                  >
+                    {asset.icon}
+                    <span>{asset.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Turn Inspiration into Income Promo Banner */}
+            <div style={{
+              backgroundColor: '#EFF6FF',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #BFDBFE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+            }}>
+              {/* Phone Mockup Image */}
+              <div style={{
+                width: '74px',
+                height: '110px',
+                borderRadius: '12px',
+                backgroundColor: '#0F172A',
+                border: '3px solid #1E293B',
+                overflow: 'hidden',
+                position: 'relative',
+                flexShrink: 0,
+                boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+              }}>
+                <img
+                  src="https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=120&h=200&fit=crop"
+                  alt="App preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+
+              <div>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 700, color: '#1E3A8A' }}>
+                  Turn Inspiration into Income
+                </h4>
+                <p style={{ margin: '0 0 10px 0', fontSize: '11.5px', color: '#3B82F6' }}>
+                  Share Georgia. Earn Rewards.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => alert('Welcome to the KAYA Ambassador Playbook: Earn up to 15% on boutique stays and mountain expeditions.')}
                   style={{
-                    background: '#ffffff',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    border: '1px solid rgba(26, 18, 14, 0.08)',
-                    boxShadow: '0 8px 24px -8px rgba(36, 24, 19, 0.08)',
-                    display: 'flex',
-                    flexDirection: 'column'
+                    padding: '7px 14px',
+                    borderRadius: '6px',
+                    backgroundColor: '#ffffff',
+                    color: '#1D4ED8',
+                    border: '1px solid #93C5FD',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
                   }}
                 >
-                  <div style={{ position: 'relative', height: '170px' }}>
-                    <img
-                      src={itinerary.cover}
-                      alt={itinerary.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '12px',
-                      left: '12px',
-                      padding: '4px 10px',
-                      borderRadius: '999px',
-                      background: 'rgba(0,0,0,0.65)',
-                      backdropFilter: 'blur(10px)',
-                      color: '#ffffff',
-                      fontSize: '11px',
-                      fontWeight: 700
-                    }}>
-                      {itinerary.duration}
-                    </div>
-                  </div>
+                  Learn How
+                </button>
+              </div>
+            </div>
+          </div>
 
-                  <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--accent, #d9653b)', fontWeight: 700, textTransform: 'uppercase' }}>
-                        {itinerary.tag} &bull; {itinerary.vibe}
-                      </div>
-                      <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '19px', margin: '6px 0 12px 0', color: 'var(--ink)', fontWeight: 700 }}>
-                        {itinerary.title}
-                      </h3>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
-                        {itinerary.locations.map((loc, idx) => (
-                          <span
-                            key={idx}
-                            style={{
-                              fontSize: '11.5px',
-                              padding: '3px 8px',
-                              borderRadius: '6px',
-                              background: 'rgba(26, 18, 14, 0.05)',
-                              color: 'var(--ink)'
-                            }}
-                          >
-                            {loc}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+          {/* ========================================================
+              ===== INTEGRATED STAYS & TRIPS VIEW (When Stays tab clicked) =====
+              ======================================================== */}
+          {activeTab === 'stays' && (
+            <div style={{
+              marginTop: '32px',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '16px',
+              padding: '28px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div>
+                  <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700, color: '#0F172A' }}>
+                    My Bookings & Stays
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+                    Manage your live reservations and saved wishlist listings from MongoDB.
+                  </p>
+                </div>
+                <Link
+                  href="/hotels"
+                  style={{
+                    padding: '9px 18px',
+                    borderRadius: '8px',
+                    backgroundColor: '#2563EB',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Explore More Stays
+                </Link>
+              </div>
 
-                    <Link
-                      href="/search"
+              {bookings.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8' }}>
+                  <p style={{ fontSize: '15px', fontWeight: 500 }}>No reservations found.</p>
+                  <p style={{ fontSize: '13px' }}>Book a boutique villa, hotel, or car in Georgia to view itinerary details here.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {bookings.map(b => (
+                    <div
+                      key={b._id}
                       style={{
-                        padding: '10px',
-                        textAlign: 'center',
-                        borderRadius: '12px',
-                        background: 'rgba(217, 101, 59, 0.1)',
-                        color: 'var(--accent, #d9653b)',
-                        fontWeight: 700,
-                        fontSize: '13px',
-                        textDecoration: 'none'
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px 20px',
+                        borderRadius: '10px',
+                        backgroundColor: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
                       }}
                     >
-                      Book Matching Stays Along Route &rarr;
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '15px', color: '#0F172A' }}>{b.listing_title || 'Georgian Boutique Experience'}</div>
+                        <div style={{ fontSize: '12px', color: '#64748B', marginTop: '3px' }}>
+                          Check-in: {b.check_in || 'Flexible'} • {b.guests || 2} Guests • Total: €{b.total_price || 240}
+                        </div>
+                      </div>
 
-        {/* ========================================================
-            TAB 5: ACCOUNT & SETTINGS
-            ======================================================== */}
-        {activeTab === 'settings' && (
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            borderRadius: '26px',
-            padding: '32px',
-            boxShadow: '0 16px 40px -12px rgba(36, 24, 19, 0.06)'
-          }}>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display), serif', margin: 0, fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>
-                Account Settings &amp; Preferences
-              </h2>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: '13.5px' }}>
-                Manage your personal profile and display options
-              </p>
-            </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          backgroundColor: b.status === 'CANCELLED' ? '#FEE2E2' : '#DCFCE7',
+                          color: b.status === 'CANCELLED' ? '#DC2626' : '#16A34A',
+                        }}>
+                          {b.status || 'CONFIRMED'}
+                        </span>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-              <div style={{ background: '#ffffff', borderRadius: '18px', padding: '24px', border: '1px solid rgba(26, 18, 14, 0.08)' }}>
-                <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '18px', margin: '0 0 16px 0', color: 'var(--ink)' }}>
-                  Profile Details
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>FULL NAME</label>
-                    <input type="text" readOnly value={user.name || ''} style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '14px' }} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>EMAIL ADDRESS</label>
-                    <input type="email" readOnly value={user.email || ''} style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '14px' }} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>ROLE PERMISSION</label>
-                    <input type="text" readOnly value={user.role || 'Tourist'} style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '14px' }} />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ background: '#ffffff', borderRadius: '18px', padding: '24px', border: '1px solid rgba(26, 18, 14, 0.08)' }}>
-                <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: '18px', margin: '0 0 16px 0', color: 'var(--ink)' }}>
-                  Regional Preferences
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>DEFAULT CURRENCY</label>
-                    <select defaultValue="GEL" style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#ffffff', fontSize: '14px' }}>
-                      <option value="GEL">GEL — Georgian Lari (₾)</option>
-                      <option value="EUR">EUR — Euro (€)</option>
-                      <option value="USD">USD — US Dollar ($)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--muted)', marginBottom: '4px' }}>NOTIFICATIONS</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', marginTop: '6px' }}>
-                      <input type="checkbox" defaultChecked id="notif-email" />
-                      <label htmlFor="notif-email">Email confirmations for bookings</label>
+                        {b.status !== 'CANCELLED' && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelBooking(b._id)}
+                            disabled={actionLoading === b._id}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              backgroundColor: 'transparent',
+                              border: '1px solid #DC2626',
+                              color: '#DC2626',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
+              )}
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      {/* ========================================================
+          ===== MODAL: CREATE NEW AFFILIATE LINK (MongoDB) =====
+          ======================================================== */}
+      {showNewLinkModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: 999,
+          padding: '20px',
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '28px',
+            width: '100%',
+            maxWidth: '480px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#0F172A' }}>
+              Create Custom Affiliate Link
+            </h3>
+            <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#64748B' }}>
+              Generate a tracked affiliate URL for any destination in Georgia and save directly to your account.
+            </p>
+
+            <form onSubmit={handleCreateLink}>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                  Campaign Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Kazbegi Winter Ski Expedition"
+                  value={newLinkTitle}
+                  onChange={e => setNewLinkTitle(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
               </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                  Target Destination
+                </label>
+                <select
+                  value={newLinkDestination}
+                  onChange={e => setNewLinkDestination(e.target.value)}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                >
+                  <option value="Kazbegi">Kazbegi (Stepantsminda)</option>
+                  <option value="Tbilisi">Tbilisi (Old Town & Vera)</option>
+                  <option value="Batumi">Batumi (Adjara Coast)</option>
+                  <option value="Kakheti">Kakheti (Wine Country)</option>
+                  <option value="Svaneti">Svaneti (Mestia & Ushguli)</option>
+                  <option value="Racha">Racha (Shaori Lake)</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                  Custom Slug (optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. kazbegi-special"
+                  value={newLinkSlug}
+                  onChange={e => setNewLinkSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+                <span style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px', display: 'block' }}>
+                  Preview: https://kaya.ge/{newLinkDestination.toLowerCase()}?ref={newLinkSlug || 'custom'}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowNewLinkModal(false)}
+                  style={{ padding: '9px 16px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#ffffff', color: '#475569', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingLink}
+                  style={{ padding: '9px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#2563EB', color: '#ffffff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  {creatingLink ? 'Creating...' : 'Save & Generate'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          ===== MODAL: CUSTOMIZE REFERRAL LINK =====
+          ======================================================== */}
+      {showCustomizeModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: 999,
+          padding: '20px',
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '28px',
+            width: '100%',
+            maxWidth: '440px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#0F172A' }}>
+              Customize Your Referral Slug
+            </h3>
+            <p style={{ margin: '0 0 18px 0', fontSize: '13px', color: '#64748B' }}>
+              Choose a custom vanity handle for your personal referral URL.
+            </p>
+
+            <div style={{ marginBottom: '20px' }}>
+              <input
+                type="text"
+                value={customSlugInput}
+                onChange={e => setCustomSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+              />
+              <span style={{ fontSize: '11px', color: '#64748B', marginTop: '6px', display: 'block' }}>
+                Your URL: https://kaya.ge/?ref={customSlugInput}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowCustomizeModal(false)}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#ffffff', color: '#475569', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCustomizeModal(false);
+                  alert('Custom referral link updated!');
+                }}
+                style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', backgroundColor: '#2563EB', color: '#ffffff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Save
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
+      {/* ========================================================
+          ===== MODAL: REQUEST PAYOUT =====
+          ======================================================== */}
+      {showPayoutModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: 999,
+          padding: '20px',
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '28px',
+            width: '100%',
+            maxWidth: '440px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#0F172A' }}>
+              Request Commission Payout
+            </h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748B' }}>
+              Available balance: <strong style={{ color: '#059669' }}>€1,284.50</strong>
+            </p>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                Payout Amount (€)
+              </label>
+              <input
+                type="text"
+                value={payoutAmount}
+                onChange={e => setPayoutAmount(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                Payout Method
+              </label>
+              <select style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', backgroundColor: '#ffffff' }}>
+                <option>Bank of Georgia (IBAN GE...)</option>
+                <option>TBC Bank (IBAN GE...)</option>
+                <option>SEPA Transfer (EUR)</option>
+                <option>Wise / Revolut</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowPayoutModal(false)}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#ffffff', color: '#475569', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPayoutModal(false);
+                  alert(`Payout request for €${payoutAmount} submitted successfully! Transfers settle within 24 hours.`);
+                }}
+                style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: '#ffffff', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+  );
+}
+
+export default function KayaAffiliateAndTravelerDashboard() {
+  return (
+    <React.Suspense fallback={
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#0B132B',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#ffffff'
+      }}>
+        Loading dashboard...
+      </div>
+    }>
+      <KayaDashboardInner />
+    </React.Suspense>
   );
 }

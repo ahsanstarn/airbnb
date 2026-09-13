@@ -5,10 +5,8 @@ import { ThemeProvider } from "@/lib/theme-context";
 import { LanguageProvider } from "@/lib/lang-context";
 import SharedNav from "@/app/components/SharedNav";
 import MobileBottomNav from "@/app/components/MobileBottomNav";
-import KlaraWidget from "@/app/components/KlaraWidget";
 import MouseTilt from "@/app/components/MouseTilt";
 import SuperAdminRoleSwitcher from "@/app/components/SuperAdminRoleSwitcher";
-import CustomCursor from "@/app/components/CustomCursor";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -59,11 +57,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>
           <ThemeProvider>
-            <CustomCursor />
             <MouseTilt />
             <SharedNav />
             {children}
-            <KlaraWidget />
             <SuperAdminRoleSwitcher />
             <MobileBottomNav />
           </ThemeProvider>

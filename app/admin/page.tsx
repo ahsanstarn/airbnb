@@ -105,12 +105,13 @@ export default function ExecutiveAdminCommandCenter() {
   // Chart Metric Selection
   const [activeChartMetric, setActiveChartMetric] = useState<'users' | 'bookings' | 'revenue'>('users');
 
-  // KLARA Assistant state
-  const [klaraMessages, setKlaraMessages] = useState([
-    { role: 'klara', content: 'KAYA Executive Admin AI online. All 11 categories synced with MongoDB. How can I assist you with platform operations, moderation, or analytics today?' },
+  // AI & Automation Rules state
+  const [automationRules, setAutomationRules] = useState([
+    { id: 'rule-1', title: 'Auto-verify certified mountain guides', status: 'ACTIVE', trigger: 'License verified', action: 'Instant listing publish' },
+    { id: 'rule-2', title: 'Fraud & Velocity Shield', status: 'ACTIVE', trigger: '> 5 booking attempts / min', action: 'Challenge with SMS 2FA' },
+    { id: 'rule-3', title: 'Demand surge pricing suggestions', status: 'ACTIVE', trigger: 'Search density > 80%', action: 'Alert host of +20% pricing opportunity' },
+    { id: 'rule-4', title: 'Auto-translate new listings', status: 'ACTIVE', trigger: 'Listing created in KA/EN', action: 'Auto-generate EN/KA/RU descriptions' },
   ]);
-  const [klaraInput, setKlaraInput] = useState('');
-  const [klaraLoading, setKlaraLoading] = useState(false);
 
   // Live time ticker
   useEffect(() => {
@@ -268,32 +269,9 @@ export default function ExecutiveAdminCommandCenter() {
     }
   };
 
-  // KLARA Admin AI Query
-  const handleKlaraSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!klaraInput.trim() || klaraLoading) return;
-    const q = klaraInput.trim();
-    setKlaraInput('');
-    setKlaraMessages(prev => [...prev, { role: 'user', content: q }]);
-    setKlaraLoading(true);
-
-    setTimeout(() => {
-      const lower = q.toLowerCase();
-      let ans = '';
-      if (lower.includes('revenue') || lower.includes('gel') || lower.includes('eur')) {
-        ans = `Current Platform Revenue is ₾${stats.revenueGEL.toLocaleString()} (€${stats.revenueEUR.toLocaleString()}). Booking volume is up +22.1% week-over-week, predominantly driven by Kazbegi boutique hotels and Kutaisi 4x4 car rentals.`;
-      } else if (lower.includes('user') || lower.includes('growth')) {
-        ans = `Total Users: 248,320 with 58,420 Active this week. 48% Domestic (Georgia), 32% EU travelers (Germany, France, Poland), 12% US/UK, and 8% others.`;
-      } else if (lower.includes('system') || lower.includes('health') || lower.includes('mongodb')) {
-        ans = `All Systems Nominal. MongoDB replica set healthy (primary in EU-Frankfurt, <24ms query latency). 0 failed webhook deliveries in the last 24 hours.`;
-      } else if (lower.includes('approval') || lower.includes('moderation')) {
-        ans = `There are currently ${pendingApprovals.length} items awaiting moderation in the Approvals queue. You can approve or reject them directly with one click.`;
-      } else {
-        ans = `Telemetrics snapshot: 19 live MongoDB listings, 12 recent bookings across 5 key destinations (Tbilisi, Batumi, Kazbegi, Kutaisi, Svaneti). Let me know if you would like me to generate a revenue report or inspect specific host records.`;
-      }
-      setKlaraMessages(prev => [...prev, { role: 'klara', content: ans }]);
-      setKlaraLoading(false);
-    }, 600);
+  // AI Automation Rule Toggle
+  const toggleAutomationRule = (ruleId: string) => {
+    setAutomationRules(prev => prev.map(r => r.id === ruleId ? { ...r, status: r.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' } : r));
   };
 
   // 19 Module Navigation Items
@@ -317,8 +295,7 @@ export default function ExecutiveAdminCommandCenter() {
 
     { id: 'system-health', label: 'System Health & DB', icon: '🟢', category: 'INFRASTRUCTURE' },
     { id: 'security', label: 'Security & Audit Logs', icon: '🔒', category: 'INFRASTRUCTURE' },
-    { id: 'support', label: 'Support & Help Desk', icon: '🎧', category: 'INFRASTRUCTURE' },
-    { id: 'klara-ai', label: 'KLARA Executive AI', icon: '🤖', category: 'INFRASTRUCTURE' },
+    { id: 'ai-automation', label: 'AI & Automation', icon: '⚡', category: 'INFRASTRUCTURE' },
     { id: 'settings', label: 'Platform Settings & API', icon: '⚙️', category: 'INFRASTRUCTURE' },
   ];
 
@@ -1524,9 +1501,9 @@ export default function ExecutiveAdminCommandCenter() {
           )}
 
           {/* ===================================================================== */}
-          {/* DEDICATED MODULE: KLARA EXECUTIVE AI */}
+          {/* DEDICATED MODULE: AI & AUTOMATION STUDIO */}
           {/* ===================================================================== */}
-          {activeModule === 'klara-ai' && (
+          {activeModule === 'ai-automation' && (
             <div style={{
               backgroundColor: '#111827',
               border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -1534,90 +1511,75 @@ export default function ExecutiveAdminCommandCenter() {
               padding: '24px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
+              gap: '20px',
               minHeight: '520px',
             }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#ffffff' }}>
-                  KLARA Executive AI Intelligence
+                  Platform AI & Automation Studio
                 </h2>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#9ca3af' }}>
-                  Natural language operations assistant for platform queries, pricing adjustments, and fraud detection.
+                  Autonomous dispatch, intelligent moderation, and surge pricing automation rules.
                 </p>
               </div>
 
-              {/* Chat Canvas */}
-              <div style={{
-                flex: 1,
-                minHeight: '340px',
-                borderRadius: '14px',
-                background: '#0a0f1d',
-                border: '1px solid rgba(255,255,255,0.06)',
-                padding: '16px',
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-              }}>
-                {klaraMessages.map((msg, i) => (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                {automationRules.map(rule => (
                   <div
-                    key={i}
+                    key={rule.id}
                     style={{
-                      alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                      maxWidth: '75%',
-                      padding: '12px 16px',
-                      borderRadius: msg.role === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                      background: msg.role === 'user' ? '#2563eb' : 'rgba(255,255,255,0.06)',
-                      color: '#ffffff',
-                      fontSize: '13px',
-                      lineHeight: 1.5,
+                      padding: '20px',
+                      borderRadius: '14px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '12px',
                     }}
                   >
-                    {msg.content}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>{rule.title}</span>
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          fontWeight: 700,
+                          backgroundColor: rule.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          color: rule.status === 'ACTIVE' ? '#10b981' : '#ef4444',
+                        }}>
+                          {rule.status}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '4px' }}>
+                        Trigger: <strong style={{ color: '#E2E8F0' }}>{rule.trigger}</strong>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#94A3B8' }}>
+                        Action: <strong style={{ color: '#60A5FA' }}>{rule.action}</strong>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleAutomationRule(rule.id)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 0',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        backgroundColor: rule.status === 'ACTIVE' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                        color: rule.status === 'ACTIVE' ? '#f87171' : '#34d399',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {rule.status === 'ACTIVE' ? 'Pause Automation' : 'Activate Automation'}
+                    </button>
                   </div>
                 ))}
-                {klaraLoading && (
-                  <div style={{ alignSelf: 'flex-start', color: '#60a5fa', fontSize: '12px' }}>
-                    KLARA is querying telemetry...
-                  </div>
-                )}
               </div>
-
-              {/* Input */}
-              <form onSubmit={handleKlaraSend} style={{ display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  placeholder="Ask KLARA (e.g., 'Summarize today's revenue', 'Check database health', 'Inspect pending approvals')..."
-                  value={klaraInput}
-                  onChange={(e) => setKlaraInput(e.target.value)}
-                  style={{
-                    flex: 1,
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: '#0a0f1d',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    outline: 'none',
-                  }}
-                />
-                <button
-                  type="submit"
-                  disabled={klaraLoading || !klaraInput.trim()}
-                  style={{
-                    padding: '12px 20px',
-                    borderRadius: '10px',
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Send
-                </button>
-              </form>
             </div>
           )}
 
@@ -1666,7 +1628,7 @@ export default function ExecutiveAdminCommandCenter() {
           {/* ===================================================================== */}
           {/* FALLBACK VIEW FOR OTHER 15 MODULES */}
           {/* ===================================================================== */}
-          {!['dashboard', 'listings', 'klara-ai', 'system-health'].includes(activeModule) && (
+          {!['dashboard', 'listings', 'ai-automation', 'system-health'].includes(activeModule) && (
             <div style={{
               backgroundColor: '#111827',
               border: '1px solid rgba(255, 255, 255, 0.08)',

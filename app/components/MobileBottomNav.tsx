@@ -44,7 +44,6 @@ export default function MobileBottomNav() {
   const isHomeActive = pathname === '/';
   const isSearchActive = pathname === '/search';
   const isStaysActive = pathname.startsWith('/hotels') || pathname.startsWith('/apartments');
-  const isKlaraActive = pathname.startsWith('/klara') || pathname.startsWith('/chat');
   const isProfileActive = pathname.startsWith('/dashboard') || pathname.startsWith('/business/dashboard') || pathname.startsWith('/login');
 
   return (
@@ -95,26 +94,6 @@ export default function MobileBottomNav() {
         <span className="mobile-bottom-nav-label">{t('nav.stays', 'Stays')}</span>
       </Link>
 
-      {/* 4. KLARA AI (Special Assistant) */}
-      <Link
-        href="/klara"
-        className={`mobile-bottom-nav-item klara-ai-tab ${isKlaraActive ? 'active' : ''}`}
-        aria-label="Klara AI Georgian travel guide"
-      >
-        <span className="mobile-bottom-nav-icon klara-spark-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" width="22" height="22">
-            <path d="M12 2L14.4 8.6L21 11L14.4 13.4L12 20L9.6 13.4L3 11L9.6 8.6L12 2Z" fill={isKlaraActive ? 'url(#sparkle-grad)' : 'none'} stroke="currentColor" />
-            <defs>
-              <linearGradient id="sparkle-grad" x1="3" y1="2" x2="21" y2="20" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#d4a373" />
-                <stop offset="1" stopColor="#d9653b" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <span className="klara-badge-pip" />
-        </span>
-        <span className="mobile-bottom-nav-label">KLARA AI</span>
-      </Link>
 
       {/* 5. Profile / Account */}
       <Link
