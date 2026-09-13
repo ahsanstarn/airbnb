@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 export default function PricingPage() {
   return (
-    <div style={{ minHeight: '100vh', padding: '110px 24px 60px', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea 0%, #efe3d6 35%, #f5ece3 70%, #fdf7f0 100%)' }}>
+      <main style={{ padding: '110px 24px 60px', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: '3rem', fontWeight: 700, color: '#1a120e', marginBottom: '16px' }}>Simple, Transparent Pricing</h1>
           <p style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '1.1rem', color: 'rgba(36,23,18,.58)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.7 }}>
@@ -13,9 +13,9 @@ export default function PricingPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '64px' }}>
-          <div className="card-3d-glow" style={{ borderRadius: '28px', padding: '40px', background: 'rgba(255, 251, 246, 0.88)', border: '1px solid hsla(0,0%,100%,.45)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)', maxWidth: '400px', width: '100%', position: 'relative' }}>
-            <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 18px', borderRadius: '999px', background: 'linear-gradient(135deg, #d9653b, #b84e26)', color: '#fff', boxShadow: '0 4px 12px rgba(217,101,59,0.3)' }}>Most Popular</span>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '64px', paddingTop: '16px' }}>
+          <div className="card-3d-glow" style={{ borderRadius: '28px', padding: '44px 40px 40px', background: 'rgba(255, 251, 246, 0.88)', border: '1px solid hsla(0,0%,100%,.45)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)', maxWidth: '400px', width: '100%', position: 'relative', overflow: 'visible', transformStyle: 'preserve-3d' }}>
+            <span style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%) translateZ(30px)', zIndex: 20, fontFamily: 'var(--font-body), system-ui, sans-serif', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 20px', borderRadius: '999px', background: 'linear-gradient(135deg, #d9653b, #b84e26)', color: '#fff', boxShadow: '0 6px 16px rgba(217,101,59,0.4)', whiteSpace: 'nowrap' }}>Most Popular</span>
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <p style={{ fontFamily: 'var(--font-body), system-ui, sans-serif', color: 'rgba(36,23,18,.58)', margin: '0 0 8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>Professional Host</p>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px' }}>
@@ -60,11 +60,11 @@ export default function PricingPage() {
             ))}
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Inline footer */}
       <footer className="site-footer">
-        <div className="footer-grid">
+        <div className="footer-grid shell">
           <div className="footer-brand">
             <div className="footer-logo">
               <span className="brandmark-dot"></span>

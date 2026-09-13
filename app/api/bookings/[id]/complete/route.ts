@@ -1,29 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
 
-export async function PUT(_request: NextRequest, { params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic';
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await getAuthenticatedUser(_request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data: booking } = await supabase.from('bookings').select('*, listings!inner(business_id)').eq('id', params.id).single();
+    const db = await getDb();
+    const bookingsCol = db.collection('bookings');
+
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { $or: [{ _id: params.id }, { id: params.id }] };
+    }
+
+    const booking = await bookingsCol.findOne(query);
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
-    const { data: business } = await supabase.from('businesses').select('id').eq('user_id', user.id).single();
-    if (!business || business.id !== booking.listings.business_id) {
+    // Ensure user is the host/business of this booking or an admin
+    const isHost = booking.business_id === user._id.toString() || booking.host_id === user._id.toString();
+    const isAdmin = user.role === 'admin';
+
+    if (!isHost && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'COMPLETED', payment_status: 'COMPLETED', updated_at: new Date().toISOString() })
-      .eq('id', params.id);
+    await bookingsCol.updateOne(query, {
+      $set: {
+        status: 'completed',
+        payment_status: 'paid',
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      }
+    });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-    return NextResponse.json({ ok: true, status: 'COMPLETED' });
-  } catch {
+    return NextResponse.json({ ok: true, status: 'completed' });
+  } catch (error) {
+    console.error('Complete booking error:', error);
     return NextResponse.json({ error: 'Completion failed' }, { status: 500 });
   }
 }
+

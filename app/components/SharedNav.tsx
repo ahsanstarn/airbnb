@@ -13,7 +13,7 @@ export default function SharedNav() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { lang, setLang, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; email?: string; isSuperAdmin?: boolean } | null>(null);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
@@ -125,7 +125,13 @@ export default function SharedNav() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Link
                   className="nav-auth-link"
-                  href={currentUser.role === 'business' ? '/business/dashboard' : '/dashboard'}
+                  href={
+                    currentUser.role === 'admin'
+                      ? '/admin'
+                      : currentUser.role === 'business'
+                      ? '/business/dashboard'
+                      : '/dashboard'
+                  }
                   style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
                   <span style={{
@@ -133,13 +139,31 @@ export default function SharedNav() {
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    backgroundColor: 'var(--accent, #d9653b)'
+                    backgroundColor: currentUser.email?.toLowerCase() === 'ahsanstarn@gmail.com' ? '#f59e0b' : 'var(--accent, #d9653b)'
                   }}></span>
                   <span>
                     {currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya')
                       ? currentUser.name.split(' ')[0]
                       : t('nav.account', 'Account')}
                   </span>
+                  {currentUser.email?.toLowerCase() === 'ahsanstarn@gmail.com' && (
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        background: 'rgba(217, 101, 59, 0.2)',
+                        color: '#d9653b',
+                        border: '1px solid rgba(217, 101, 59, 0.4)',
+                        fontWeight: 700,
+                        letterSpacing: '0.02em',
+                        textTransform: 'capitalize',
+                      }}
+                      title="Superadmin Multi-Role Active"
+                    >
+                      👑 {currentUser.role}
+                    </span>
+                  )}
                 </Link>
                 <button
                   type="button"

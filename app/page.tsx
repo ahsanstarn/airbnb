@@ -53,6 +53,7 @@ const HERO_SLIDES = [
 
 const CATEGORIES = [
   { id: 'all', label: 'All Stays', icon: '✨' },
+  { id: 'favorites', label: 'Favorites', icon: '❤️' },
   { id: 'hotels', label: 'Boutique Hotels', icon: '🏨' },
   { id: 'apartments', label: 'City Apartments', icon: '🏢' },
   { id: 'guesthouses', label: 'Family Guesthouses', icon: '🏡' },
@@ -159,6 +160,8 @@ export default function Home() {
 
   const filteredListings = selectedCategory === 'all'
     ? listings
+    : selectedCategory === 'favorites'
+    ? listings.filter(l => favorites.includes(String(l._id || l.id)))
     : listings.filter(l => l.category === selectedCategory);
 
   return (
@@ -296,52 +299,78 @@ export default function Home() {
 
             {/* Listings Grid */}
             <div className="card-grid">
-              {filteredListings.slice(0, 9).map((item, idx) => {
-                const itemId = item._id || item.id || `seed-${idx}`;
-                const coverImage = (Array.isArray(item.images) && item.images[0]) || item.img || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop';
-                const isFav = favorites.includes(String(itemId));
-                const price = item.price_per_night || item.price || 180;
-                const rating = item.overall_rating || item.rating || 4.9;
+              {filteredListings.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '56px 20px', gridColumn: '1 / -1', background: 'rgba(255,251,246,0.85)', borderRadius: '24px', border: '1px dashed var(--border)', backdropFilter: 'blur(12px)' }}>
+                  <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>
+                    {selectedCategory === 'favorites' ? '❤️' : '🔍'}
+                  </span>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px', color: 'var(--ink)', fontFamily: 'var(--font-display), Georgia, serif' }}>
+                    {selectedCategory === 'favorites' ? 'No Saved Favorites Yet' : 'No stays found'}
+                  </h3>
+                  <p style={{ color: 'var(--muted)', fontSize: '14px', maxWidth: '420px', margin: '0 auto 20px', lineHeight: 1.6 }}>
+                    {selectedCategory === 'favorites'
+                      ? 'Tap the heart icon on any hotel, villa, or apartment across Kaya.ge to save your favorite Georgian stays here.'
+                      : 'Try browsing our other curated categories or searching by destination.'}
+                  </p>
+                  {selectedCategory === 'favorites' && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory('all')}
+                      className="pill-link"
+                      style={{ border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      Explore All Stays &rarr;
+                    </button>
+                  )}
+                </div>
+              ) : (
+                filteredListings.slice(0, 9).map((item, idx) => {
+                  const itemId = item._id || item.id || `seed-${idx}`;
+                  const coverImage = (Array.isArray(item.images) && item.images[0]) || item.img || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop';
+                  const isFav = favorites.includes(String(itemId));
+                  const price = item.price_per_night || item.price || 180;
+                  const rating = item.overall_rating || item.rating || 4.9;
 
-                return (
-                  <Link href={`/listing/${itemId}`} key={itemId} className="listing-card hover-lift">
-                    <div className="listing-card-media" style={{ backgroundImage: `url(${coverImage})` }}>
-                      <div className="listing-card-top">
-                        <span className="price-tag">{price} GEL {t('perNight', '/ night')}</span>
-                        <button 
-                          type="button" 
-                          className="icon-badge" 
-                          onClick={(e) => toggleFavorite(e, String(itemId))}
-                          aria-label="Save to favorites"
-                        >
-                          <svg viewBox="0 0 24 24" fill={isFav ? 'var(--accent, #d9653b)' : 'none'} stroke={isFav ? 'var(--accent, #d9653b)' : 'currentColor'} strokeWidth="2" width="16" height="16">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  return (
+                    <Link href={`/listing/${itemId}`} key={itemId} className="listing-card hover-lift">
+                      <div className="listing-card-media" style={{ backgroundImage: `url(${coverImage})` }}>
+                        <div className="listing-card-top">
+                          <span className="price-tag">{price} GEL {t('perNight', '/ night')}</span>
+                          <button 
+                            type="button" 
+                            className="icon-badge" 
+                            onClick={(e) => toggleFavorite(e, String(itemId))}
+                            aria-label="Save to favorites"
+                          >
+                            <svg viewBox="0 0 24 24" fill={isFav ? 'var(--accent, #d9653b)' : 'none'} stroke={isFav ? 'var(--accent, #d9653b)' : 'currentColor'} strokeWidth="2" width="16" height="16">
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="listing-card-body">
+                        <h3>{item.title}</h3>
+                        <div className="listing-meta">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
+                            <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"></path>
+                            <circle cx="12" cy="9" r="2.5"></circle>
                           </svg>
-                        </button>
+                          <span>{item.location || item.city}</span>
+                        </div>
+                        <div className="rating-row">
+                          <span className="rating-stars">★★★★★</span>
+                          <span>{Number(rating).toFixed(1)}</span>
+                          {item.review_count && (
+                            <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '12px' }}>
+                              ({item.review_count})
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="listing-card-body">
-                      <h3>{item.title}</h3>
-                      <div className="listing-meta">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
-                          <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"></path>
-                          <circle cx="12" cy="9" r="2.5"></circle>
-                        </svg>
-                        <span>{item.location || item.city}</span>
-                      </div>
-                      <div className="rating-row">
-                        <span className="rating-stars">★★★★★</span>
-                        <span>{Number(rating).toFixed(1)}</span>
-                        {item.review_count && (
-                          <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '12px' }}>
-                            ({item.review_count})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+                    </Link>
+                  );
+                })
+              )}
             </div>
           </section>
 
@@ -485,46 +514,46 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Footer */}
-          <footer className="footer fade-up" ref={setRevealRef(4)}>
-            <div className="footer-grid">
-              <div className="footer-brand">
-                <div className="footer-logo">
-                  <span className="brandmark-dot"></span>
-                  <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-                </div>
-                <p className="footer-tagline">{t('footerDesc')}</p>
-              </div>
-              <div className="footer-links">
-                <h4>Stays</h4>
-                <Link href="/hotels">Hotels</Link>
-                <Link href="/apartments">Apartments</Link>
-                <Link href="/search?type=guesthouses">Guesthouses</Link>
-                <Link href="/search?type=cabins">Cabins</Link>
-              </div>
-              <div className="footer-links">
-                <h4>Discover</h4>
-                <Link href="/muse">Where to go</Link>
-                <Link href="/blog">Travel blog</Link>
-                <Link href="/about">About us</Link>
-                <Link href="/careers">Careers</Link>
-              </div>
-              <div className="footer-links">
-                <h4>Platform</h4>
-                <Link href="/dashboard">{t('touristDashboard')}</Link>
-                <Link href="/business/dashboard">{t('businessDashboard')}</Link>
-                <Link href="/admin">{t('adminPanel')}</Link>
-                <Link href="/contact">Contact</Link>
-              </div>
-            </div>
-            <div className="copyright">
-              <span>© {new Date().getFullYear()} Kaya.ge — Discover Georgia</span>
-              <span>Built around the Phase 1 brief</span>
-            </div>
-          </footer>
-
         </div>
       </div>
+
+      {/* Edge-to-Edge Full Width Footer */}
+      <footer className="site-footer fade-up" ref={setRevealRef(4)}>
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <span className="brandmark-dot"></span>
+              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
+            </div>
+            <p className="footer-tagline">{t('footerDesc')}</p>
+          </div>
+          <div className="footer-links">
+            <h4>Stays</h4>
+            <Link href="/hotels">Hotels</Link>
+            <Link href="/apartments">Apartments</Link>
+            <Link href="/search?type=guesthouses">Guesthouses</Link>
+            <Link href="/search?type=cabins">Cabins</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Discover</h4>
+            <Link href="/muse">Where to go</Link>
+            <Link href="/blog">Travel blog</Link>
+            <Link href="/about">About us</Link>
+            <Link href="/careers">Careers</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Platform</h4>
+            <Link href="/dashboard">{t('touristDashboard')}</Link>
+            <Link href="/business/dashboard">{t('businessDashboard')}</Link>
+            <Link href="/admin">{t('adminPanel')}</Link>
+            <Link href="/contact">Contact</Link>
+          </div>
+        </div>
+        <div className="copyright">
+          <span>© {new Date().getFullYear()} Kaya.ge — Discover Georgia</span>
+          <span>Built around the Phase 1 brief</span>
+        </div>
+      </footer>
     </div>
   );
 }

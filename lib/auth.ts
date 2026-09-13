@@ -60,11 +60,12 @@ export async function getCurrentUser(req: NextRequest) {
 
   const db = await getDb();
   let user: any = null;
+  const projection = { password: 0, passwordHash: 0 };
   if (ObjectId.isValid(payload.userId)) {
     try {
       user = await db.collection('users').findOne(
         { _id: new ObjectId(payload.userId) },
-        { projection: { passwordHash: 0 } }
+        { projection }
       );
     } catch {
       user = null;
@@ -73,11 +74,17 @@ export async function getCurrentUser(req: NextRequest) {
   if (!user) {
     user = await db.collection('users').findOne(
       { _id: payload.userId },
-      { projection: { passwordHash: 0 } }
+      { projection }
     );
   }
 
   return user;
+}
+
+export const SUPERADMIN_EMAIL = 'ahsanstarn@gmail.com';
+
+export function isSuperAdmin(email?: string | null): boolean {
+  return email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase();
 }
 
 // Generate a unique affiliate code

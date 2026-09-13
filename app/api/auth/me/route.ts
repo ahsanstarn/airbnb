@@ -12,7 +12,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     
-    const publicUser = toPublicUser(user);
+    const isSuper = user.email?.toLowerCase() === 'ahsanstarn@gmail.com';
+    const publicUser = {
+      ...toPublicUser(user),
+      isSuperAdmin: isSuper,
+      canSwitchRoles: isSuper,
+      availableRoles: isSuper ? ['admin', 'business', 'tourist'] : [user.role || 'tourist'],
+    };
     return NextResponse.json({ user: publicUser });
   } catch (error) {
     console.error('Me error:', error);

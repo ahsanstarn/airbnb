@@ -9,6 +9,7 @@
   "nav.connect": "Общение",
   "nav.guide": "Гид",
   "nav.contact": "Контакты",
+  "nav.offers": "Предложения",
   "nav.becomeHost": "Стать хозяином",
   "nav.switchToBusiness": "Для бизнеса",
 
@@ -250,6 +251,7 @@
   "differentiators.gtTitle": "Грузинское застолье",
   "differentiators.gtDesc": "Отборные винные погреба квеври, традиционные застолья и бронирование шеф-столов.",
   "cat.all": "Все",
+  "cat.favorites": "Избранное",
   "cat.hotels": "Бутик-отели",
   "cat.apartments": "Апартаменты",
   "cat.guesthouses": "Гостевые дома",

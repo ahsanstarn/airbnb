@@ -165,8 +165,8 @@ function SearchContent() {
     },
   };
 
-  const categories = ['hotels', 'apartments', 'guesthouses', 'cabins', 'resorts', 'villas'];
-  const cities = ['Tbilisi', 'Batumi', 'Kazbegi', 'Kakheti', 'Kutaisi', 'Gori'];
+  const categories = ['hotels', 'apartments', 'houses', 'villas', 'cabins', 'guesthouses', 'cars', 'tours', 'restaurants', 'salons', 'services'];
+  const cities = ['Tbilisi', 'Batumi', 'Kazbegi', 'Kakheti', 'Kutaisi', 'Gori', 'Mestia', 'Borjomi', 'Shatili'];
 
   return (
     <div className="site-shell">
@@ -368,44 +368,44 @@ function SearchContent() {
             </div>
           )}
         </section>
-
-        {/* Footer matching homepage */}
-        <footer className="site-footer">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <div className="footer-logo">
-                <span className="brandmark-dot"></span>
-                <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
-              </div>
-              <p className="footer-tagline">Discover Georgia, your way.</p>
-            </div>
-            <div className="footer-links">
-              <h4>Stays</h4>
-              <Link href="/hotels">Hotels</Link>
-              <Link href="/apartments">Apartments</Link>
-              <Link href="/search?type=guesthouses">Guesthouses</Link>
-              <Link href="/search?type=cabins">Cabins</Link>
-            </div>
-            <div className="footer-links">
-              <h4>Discover</h4>
-              <Link href="/muse">Where to go</Link>
-              <Link href="/blog">Travel blog</Link>
-              <Link href="/about">About us</Link>
-              <Link href="/careers">Careers</Link>
-            </div>
-            <div className="footer-links">
-              <h4>Support</h4>
-              <Link href="/contact">Contact us</Link>
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-              <Link href="/resources">Resources</Link>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <span>&copy; {new Date().getFullYear()} Kaya.ge &mdash; crafted in Tbilisi</span>
-          </div>
-        </footer>
       </div>
+
+      {/* Footer matching homepage */}
+      <footer className="site-footer">
+        <div className="footer-grid shell">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <span className="brandmark-dot"></span>
+              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
+            </div>
+            <p className="footer-tagline">Discover Georgia, your way.</p>
+          </div>
+          <div className="footer-links">
+            <h4>Stays</h4>
+            <Link href="/hotels">Hotels</Link>
+            <Link href="/apartments">Apartments</Link>
+            <Link href="/search?type=guesthouses">Guesthouses</Link>
+            <Link href="/search?type=cabins">Cabins</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Discover</h4>
+            <Link href="/muse">Where to go</Link>
+            <Link href="/blog">Travel blog</Link>
+            <Link href="/about">About us</Link>
+            <Link href="/careers">Careers</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Support</h4>
+            <Link href="/contact">Contact us</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/resources">Resources</Link>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>&copy; {new Date().getFullYear()} Kaya.ge &mdash; crafted in Tbilisi</span>
+        </div>
+      </footer>
     </div>
   );
 }

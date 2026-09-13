@@ -119,6 +119,7 @@ html[data-theme=dark] {
   --ink: #f6ede5;
   --ink-soft: hsla(30, 50%, 93%, 0.74);
   --muted: hsla(30, 50%, 93%, 0.62);
+  --accent-ink: #ffffff;
   --text-primary: #f6ede5;
   --text-secondary: hsla(30, 50%, 93%, 0.74);
   --text-muted: hsla(30, 50%, 93%, 0.55);
@@ -857,19 +858,23 @@ html[data-theme=dark] .hero-search-glass {
   letter-spacing: 2px;
 }
 
-/* FOOTER STYLING - COMPREHENSIVE & ROBUST */
+/* FOOTER STYLING - COMPREHENSIVE & ROBUST (EDGE-TO-EDGE) */
 .site-footer, .footer {
   padding: 64px 0 40px;
   border-top: 1px solid var(--border);
   margin-top: 60px;
-  background: rgba(255, 252, 248, 0.45);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 252, 248, 0.75);
+  backdrop-filter: blur(16px);
   position: relative;
   z-index: 10;
   width: 100%;
+  left: 0;
+  right: 0;
+  border-radius: 0 !important;
+  box-sizing: border-box;
 }
 html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
-  background: rgba(26, 18, 14, 0.55);
+  background: rgba(26, 18, 14, 0.75);
 }
 
 .footer-grid {

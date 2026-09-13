@@ -7,6 +7,8 @@ import SharedNav from "@/app/components/SharedNav";
 import MobileBottomNav from "@/app/components/MobileBottomNav";
 import KlaraWidget from "@/app/components/KlaraWidget";
 import MouseTilt from "@/app/components/MouseTilt";
+import SuperAdminRoleSwitcher from "@/app/components/SuperAdminRoleSwitcher";
+import CustomCursor from "@/app/components/CustomCursor";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -25,6 +27,16 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "Kaya.ge — Discover Georgia",
   description: "Phase 1 foundation for Kaya.ge: curated offers, travel discovery, Muse and core platform routes.",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    shortcut: '/icon.svg',
+    apple: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 const themeScript = `(function(){try{var t=localStorage.getItem('kaya-theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();`;
@@ -40,10 +52,12 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>
           <ThemeProvider>
+            <CustomCursor />
             <MouseTilt />
             <SharedNav />
             {children}
             <KlaraWidget />
+            <SuperAdminRoleSwitcher />
             <MobileBottomNav />
           </ThemeProvider>
         </LanguageProvider>

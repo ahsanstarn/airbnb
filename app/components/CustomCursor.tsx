@@ -17,12 +17,13 @@ export default function CustomCursor() {
     // Only run on desktop/devices with mouse pointer
     if (typeof window === 'undefined') return;
     const isMobile = window.matchMedia('(max-width: 1024px)').matches;
-    if (isMobile) return;
+    const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (isMobile || hasCoarsePointer) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseCoords.current.x = e.clientX;
       mouseCoords.current.y = e.clientY;
-      if (!isVisible) setIsVisible(true);
+      setIsVisible(true);
     };
 
     const handleMouseLeave = () => {
@@ -37,7 +38,7 @@ export default function CustomCursor() {
     let animationFrameId: number;
     
     const updateCursor = () => {
-      const lerpFactor = 0.15; // Lower = smoother lag, higher = tighter snap
+      const lerpFactor = 0.18; // Lower = smoother lag, higher = tighter snap
       
       cursorCoords.current.x += (mouseCoords.current.x - cursorCoords.current.x) * lerpFactor;
       cursorCoords.current.y += (mouseCoords.current.y - cursorCoords.current.y) * lerpFactor;
@@ -82,7 +83,7 @@ export default function CustomCursor() {
       window.removeEventListener('mouseover', handleMouseOver);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isVisible]);
+  }, []);
 
   return (
     <div 
@@ -101,7 +102,6 @@ export default function CustomCursor() {
         background: isHovering ? 'rgba(255, 255, 255, 0.95)' : 'var(--accent, #b4542d)',
         opacity: isVisible ? 1 : 0,
         transition: 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s, opacity 0.25s ease',
-        transform: 'translate3d(0px, 0px, 0) translate(-50%, -50%)'
       }}
     />
   );

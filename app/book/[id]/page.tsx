@@ -22,6 +22,19 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      const cIn = sp.get('checkIn');
+      const cOut = sp.get('checkOut');
+      const g = sp.get('guests');
+      if (cIn) setCheckIn(cIn);
+      if (cOut) setCheckOut(cOut);
+      if (g) setGuestCount(Number(g) || 2);
+      if (cIn && cOut) setStep('details');
+    }
+  }, []);
+
+  useEffect(() => {
     async function loadListing() {
       try {
         const res = await fetch(`/api/listings/${params.id}`);
@@ -54,7 +67,10 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
     if (step === 'details') { setStep('payment'); return; }
     if (step === 'payment') {
       const token = localStorage.getItem('token') || localStorage.getItem('kaya_token');
-      if (!token) { router.push('/login'); return; }
+      if (!token) {
+        router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
       setLoading(true);
       setError('');
       try {
@@ -71,7 +87,7 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
         });
         if (res.ok) {
           const data = await res.json();
-          setBookingId(data.id);
+          setBookingId(data.booking?.id || data.booking?._id || data.id);
           setStep('confirmation');
         } else {
           const err = await res.json();
@@ -85,26 +101,28 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
     }
   };
 
-  const nav = null;
-
   const glass = { borderRadius: '24px', padding: '36px 32px', background: 'rgba(255,251,246,.84)', border: '1px solid hsla(0,0%,100%,.35)', backdropFilter: 'blur(24px) saturate(120%)', boxShadow: '0 40px 80px rgba(48,26,16,0.12)' };
 
   const inputStyle = { width: '100%', padding: '14px 16px', borderRadius: '16px', border: '1px solid rgba(36,23,18,.12)', background: 'hsla(0,0%,100%,.84)', fontSize: '13px', outline: 'none' };
 
   if (pageLoading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}><p style={{ color: 'rgba(36,23,18,.58)' }}>Loading listing…</p></div>;
 
-  if (error && !listing) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}>{nav}<main style={{ maxWidth: '560px', margin: '0 auto', padding: '120px 24px 60px', textAlign: 'center' }}><h2 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.5rem' }}>Listing not found</h2><p style={{ color: 'var(--muted)' }}>{error}</p><Link href="/search" style={{ display: 'inline-block', marginTop: '16px', padding: '14px 32px', borderRadius: '999px', background: '#1a120e', color: '#fff8ef', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Browse listings</Link></main></div>;
+  if (error && !listing) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}><main style={{ maxWidth: '560px', margin: '0 auto', padding: '120px 24px 60px', textAlign: 'center' }}><h2 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.5rem' }}>Listing not found</h2><p style={{ color: 'var(--muted)' }}>{error}</p><Link href="/search" style={{ display: 'inline-block', marginTop: '16px', padding: '14px 32px', borderRadius: '999px', background: '#1a120e', color: '#fff8ef', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Browse listings</Link></main></div>;
 
   if (step === 'confirmation') {
     return (
       <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}>
-        {nav}
         <main style={{ maxWidth: '560px', margin: '0 auto', padding: '120px 24px 60px' }}>
           <div style={glass}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#22c55e', display: 'grid', placeItems: 'center', margin: '0 auto 20px', fontSize: '32px', color: '#fff8ef' }}>✓</div>
               <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.8rem', fontWeight: 700, margin: '0 0 8px' }}>Booking Confirmed!</h1>
-              <p style={{ color: 'var(--muted)', fontSize: '14px', margin: '0 0 24px' }}>Your reservation at {listing?.title} is confirmed.</p>
+              <p style={{ color: 'var(--muted)', fontSize: '14px', margin: '0 0 16px' }}>Your reservation at {listing?.title} is confirmed.</p>
+              {bookingId && (
+                <div style={{ display: 'inline-block', padding: '6px 14px', borderRadius: '999px', background: 'rgba(26,18,14,.06)', fontSize: '12px', fontWeight: 700, color: 'var(--ink)', marginBottom: '20px' }}>
+                  Confirmation Code: #KAYA-{bookingId.slice(-6).toUpperCase()}
+                </div>
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '20px', borderRadius: '16px', background: 'rgba(255,252,247,.9)', border: '1px solid rgba(26,18,14,.06)', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}><span style={{ color: 'var(--muted)' }}>Check-in</span><span style={{ fontWeight: 600 }}>{checkIn}</span></div>
@@ -113,9 +131,9 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}><span style={{ color: 'var(--muted)' }}>Total charged</span><span style={{ fontWeight: 800, fontSize: '16px' }}>₾{total}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}><span style={{ color: 'var(--muted)' }}>Payment</span><span style={{ fontWeight: 600 }}>{paymentMethod === 'card' ? 'Card' : 'Cash on arrival'}</span></div>
             </div>
-            <p style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', margin: '0 0 20px' }}>A confirmation email has been sent to your email address.</p>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', margin: '0 0 20px' }}>A confirmation has been saved to your account and verified in MongoDB.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <Link href="/dashboard/bookings" style={{ flex: 1, textAlign: 'center', padding: '14px', borderRadius: '999px', background: '#1a120e', color: '#fff8ef', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>View My Bookings</Link>
+              <Link href="/dashboard" style={{ flex: 1, textAlign: 'center', padding: '14px', borderRadius: '999px', background: '#1a120e', color: '#fff8ef', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>View My Bookings</Link>
               <Link href="/search" style={{ flex: 1, textAlign: 'center', padding: '14px', borderRadius: '999px', border: '1px solid rgba(26,18,14,.1)', background: 'rgba(255,251,246,.7)', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', textDecoration: 'none' }}>Continue Exploring</Link>
             </div>
           </div>

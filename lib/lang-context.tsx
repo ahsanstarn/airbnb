@@ -33,7 +33,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const t = (key: string, fallback?: string): string => {
     const dict = translations[lang] || translations['EN'];
     if (dict && dict[key]) return dict[key];
-    if (fallback !== undefined) return fallback;
     if (dict && key.includes('.')) {
       const sub = key.split('.').pop()!;
       if (dict[sub]) return dict[sub];
@@ -41,12 +40,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     // Fallback to EN dictionary if current lang is missing key
     const enDict = translations['EN'];
     if (enDict && enDict[key]) return enDict[key];
+    if (enDict && key.includes('.')) {
+      const sub = key.split('.').pop()!;
+      if (enDict[sub]) return enDict[sub];
+    }
     return fallback !== undefined ? fallback : key;
   };
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
-      {mounted ? children : <div style={{ visibility: 'hidden' }}>{children}</div>}
+      {children}
     </LanguageContext.Provider>
   );
 }

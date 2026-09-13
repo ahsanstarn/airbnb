@@ -35,8 +35,16 @@ export default function LoginPage() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('kaya_token', data.token);
       }
+
+      let redirectUrl: string | null = null;
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        redirectUrl = urlParams.get('redirect');
+      }
       
-      if (data.user?.role === 'admin') {
+      if (redirectUrl && !redirectUrl.startsWith('//') && (redirectUrl.startsWith('/') || redirectUrl.startsWith('http'))) {
+        router.push(redirectUrl);
+      } else if (data.user?.role === 'admin') {
         router.push('/admin');
       } else if (data.user?.role === 'business') {
         router.push('/business/dashboard');

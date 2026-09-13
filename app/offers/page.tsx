@@ -241,46 +241,44 @@ export default function OffersPage() {
             )}
 
           </main>
-
-          {/* Footer */}
-          <footer className="footer" style={{ marginTop: 'auto' }}>
-            <div>
-              <h3>kaya<span style={{ opacity: 0.5 }}>.ge</span></h3>
-              <p>Discover Georgia through curated offers, services, structured platform flows and thoughtful local context.</p>
-            </div>
-            <div>
-              <h4>Product</h4>
-              <ul>
-                <li><Link href="/offers">Offers</Link></li>
-                <li><Link href="/restaurants">Restaurants</Link></li>
-                <li><Link href="/tours">Tours</Link></li>
-                <li><Link href="/guides">Muse</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4>Company</h4>
-              <ul>
-                <li><Link href="/about">About</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-                <li><Link href="/blog">Blog</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4>Platform</h4>
-              <ul>
-                <li><Link href="/dashboard">Tourist dashboard</Link></li>
-                <li><Link href="/business/dashboard">Business dashboard</Link></li>
-                <li><Link href="/admin">Admin panel</Link></li>
-              </ul>
-            </div>
-            <div className="copyright">
-              <span>© 2026 Kaya.ge — Discover Georgia</span>
-              <span>Built around the Phase 1 brief</span>
-            </div>
-          </footer>
-
         </div>
       </div>
+
+      {/* Full Width Footer */}
+      <footer className="site-footer" style={{ marginTop: 'auto' }}>
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <span className="brandmark-dot"></span>
+              <span>kaya<span style={{ opacity: 0.6 }}>.ge</span></span>
+            </div>
+            <p className="footer-tagline">Discover Georgia through curated offers, services, structured platform flows and thoughtful local context.</p>
+          </div>
+          <div className="footer-links">
+            <h4>Product</h4>
+            <Link href="/offers">Offers</Link>
+            <Link href="/restaurants">Restaurants</Link>
+            <Link href="/tours">Tours</Link>
+            <Link href="/guides">Guides</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Company</h4>
+            <Link href="/about">About</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/blog">Blog</Link>
+          </div>
+          <div className="footer-links">
+            <h4>Platform</h4>
+            <Link href="/dashboard">Tourist dashboard</Link>
+            <Link href="/business/dashboard">Business dashboard</Link>
+            <Link href="/admin">Admin panel</Link>
+          </div>
+        </div>
+        <div className="copyright">
+          <span>© 2026 Kaya.ge — Discover Georgia</span>
+          <span>Built around the Phase 1 brief</span>
+        </div>
+      </footer>
     </div>
   );
 }

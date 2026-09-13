@@ -62,18 +62,34 @@ export async function POST(req: NextRequest) {
       ]);
     }
 
-    const user = await usersCollection.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    let user = await usersCollection.findOne({ email: normalizedEmail });
+    if (!user) {
+      user = await usersCollection.findOne({ 
+        email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } 
+      });
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const isValidPassword = await comparePassword(password, user.password);
+    const userPassword = user.password || user.passwordHash;
+    if (!userPassword) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    const isValidPassword = await comparePassword(password, userPassword);
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const publicUser = toPublicUser(user);
+    const isSuper = normalizedEmail === 'ahsanstarn@gmail.com';
+    const publicUser = {
+      ...toPublicUser(user),
+      isSuperAdmin: isSuper,
+    };
+
     const token = signToken({
       userId: user._id.toString(),
       email: user.email,
@@ -90,9 +106,12 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Invalid email or password', 
+      details: process.env.NODE_ENV !== 'production' ? error?.message : undefined 
+    }, { status: 500 });
   }
 }
 

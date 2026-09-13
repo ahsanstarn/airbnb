@@ -1,30 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await getAuthenticatedUser(_request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*, listings(id, title, images, location, price_per_night)')
-      .eq('id', params.id)
-      .single();
+    const db = await getDb();
+    const bookingsCol = db.collection('bookings');
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 404 });
-
-    if (data.tourist_id !== user.id) {
-      const { data: biz } = await supabase.from('businesses').select('id').eq('user_id', user.id).single();
-      const { data: listing } = await supabase.from('listings').select('business_id').eq('id', data.listing_id).single();
-      if (!biz || !listing || biz.id !== listing.business_id) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
+    let query: any = {};
+    if (ObjectId.isValid(params.id)) {
+      query = { _id: new ObjectId(params.id) };
+    } else {
+      query = { $or: [{ _id: params.id }, { id: params.id }] };
     }
 
-    return NextResponse.json(data);
-  } catch {
+    const booking = await bookingsCol.findOne(query);
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    // Auth check: tourist themselves, or host, or admin
+    const isOwner = booking.tourist_id === user._id.toString() || booking.user_id === user._id.toString() || booking.tourist_email === user.email;
+    const isHost = booking.business_id === user._id.toString() || booking.host_id === user._id.toString();
+    const isAdmin = user.role === 'admin';
+
+    if (!isOwner && !isHost && !isAdmin) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    return NextResponse.json({
+      ...booking,
+      id: booking._id.toString(),
+      _id: booking._id.toString(),
+    });
+  } catch (error) {
+    console.error('Fetch booking by ID error:', error);
     return NextResponse.json({ error: 'Failed to fetch booking' }, { status: 500 });
   }
 }
+

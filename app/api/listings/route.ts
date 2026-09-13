@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const sort = searchParams.get('sort') || 'recommended';
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = 12;
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '12', 10), 1), 100);
     const skip = (page - 1) * limit;
 
     const conditions: any[] = [];
@@ -47,6 +47,8 @@ export async function GET(request: NextRequest) {
         $or: [
           { businessId: user._id },
           { businessId: user._id.toString() },
+          { hostId: user._id.toString() },
+          { businessEmail: user.email },
         ]
       });
     } else {
@@ -54,10 +56,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (category && category !== 'all') {
-      conditions.push({ category });
+      const singular = category.replace(/s$/, '');
+      conditions.push({
+        $or: [
+          { category: { $regex: `^${singular}`, $options: 'i' } },
+          { type: { $regex: `^${singular}`, $options: 'i' } }
+        ]
+      });
     }
 
-    if (city && !q) {
+    if (city) {
       conditions.push({
         $or: [
           { city: { $regex: city, $options: 'i' } },
@@ -118,8 +126,7 @@ export async function GET(request: NextRequest) {
     console.error('Listings search error:', error);
     return NextResponse.json({
       error: 'Failed to fetch listings',
-      details: error?.message || String(error),
-      type: error?.name || 'Error'
+      ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
     }, { status: 500 });
   }
 }
@@ -138,6 +145,10 @@ export async function POST(request: NextRequest) {
       description,
       category,
       price_per_night,
+      price,
+      price_unit,
+      duration,
+      specs,
       location,
       city,
       images,
@@ -148,8 +159,10 @@ export async function POST(request: NextRequest) {
       guests,
     } = body;
 
-    if (!title || !price_per_night || !location) {
-      return NextResponse.json({ error: 'Missing required listing fields' }, { status: 400 });
+    const finalPrice = price_per_night !== undefined ? parseFloat(price_per_night) : (price !== undefined ? parseFloat(price) : null);
+
+    if (!title || finalPrice === null || isNaN(finalPrice) || !location) {
+      return NextResponse.json({ error: 'Missing required listing fields (title, price, location)' }, { status: 400 });
     }
 
     const db = await getDb();
@@ -157,17 +170,21 @@ export async function POST(request: NextRequest) {
 
     const newListing = {
       businessId: user._id,
+      hostId: user._id.toString(),
       businessName: user.name,
       businessEmail: user.email,
       title,
       description: description || '',
       category: category || 'apartments',
       type: type || 'Entire place',
-      price_per_night: parseFloat(price_per_night),
+      price_per_night: finalPrice,
+      price_unit: price_unit || (category === 'cars' || category === 'services' ? 'day' : (category === 'salons' ? 'hour' : (category === 'tours' || category === 'restaurants' ? 'person' : 'night'))),
+      duration: duration || undefined,
+      specs: specs || undefined,
       currency: 'GEL',
       location,
       city: city || location.split(',')[0].trim(),
-      amenities: Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map((s: string) => s.trim()) : ['WiFi', 'Kitchen']),
+      amenities: Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map((s: string) => s.trim()) : ['WiFi', 'Air conditioning']),
       images: Array.isArray(images) && images.length > 0 ? images : [
         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop'
       ],

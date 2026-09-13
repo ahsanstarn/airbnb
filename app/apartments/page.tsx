@@ -31,14 +31,11 @@ export default function ApartmentsPage() {
   useEffect(() => {
     async function init() {
       try {
-        const res = await fetch('/api/listings');
+        const res = await fetch('/api/listings?category=apartments&limit=50');
         if (res.ok) {
           const data = await res.json();
-          const apts = (data.listings || []).filter(
-            (l: any) => l.category === 'apartments' || l.category === 'apartment' || l.type === 'apartments' || l.type === 'apartment'
-          );
-          if (apts.length > 0) {
-            setLiveListings(apts.map((l: any) => ({
+          if (data.listings && data.listings.length > 0) {
+            const mapped = data.listings.map((l: any) => ({
               id: l._id || l.id,
               title: l.title,
               location: l.location || l.city,
@@ -47,7 +44,10 @@ export default function ApartmentsPage() {
               img: (l.images && l.images[0]) || staticListings[0].img,
               images: l.images,
               type: l.type || l.category,
-            })));
+            }));
+            const existingTitles = new Set(mapped.map((m: any) => m.title));
+            const remaining = staticListings.filter(s => !existingTitles.has(s.title));
+            setLiveListings([...mapped, ...remaining]);
             return;
           }
         }

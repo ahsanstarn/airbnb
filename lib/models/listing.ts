@@ -7,8 +7,11 @@ export interface IListing {
   businessPhone?: string;
   title: string;
   description: string;
-  category: 'hotels' | 'apartments' | 'guesthouses' | 'cabins' | 'villas' | 'restaurants' | 'cars' | 'tours' | 'services' | 'salons' | string;
+  category: 'hotels' | 'apartments' | 'guesthouses' | 'cabins' | 'villas' | 'houses' | 'restaurants' | 'cars' | 'tours' | 'services' | 'salons' | string;
   price_per_night: number;
+  price_unit?: string; // 'night' | 'day' | 'person' | 'service' | 'hour'
+  duration?: string;
+  specs?: Record<string, any>;
   currency: string;
   location: string;
   city: string;

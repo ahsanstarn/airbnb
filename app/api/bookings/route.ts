@@ -17,16 +17,24 @@ export async function GET(request: NextRequest) {
     const bookingsCollection = db.collection('bookings');
 
     let query: any = {};
-    if (user.role === 'business') {
+    if (user.role === 'admin') {
+      // Admins view all bookings platform-wide
+      query = {};
+    } else if (user.role === 'business') {
       query.$or = [
         { business_id: user._id.toString() },
         { business_id: user._id },
+        { host_id: user._id.toString() },
+        { host_id: user._id },
       ];
     } else {
       query.$or = [
         { tourist_id: user._id.toString() },
         { tourist_id: user._id },
         { tourist_email: user.email },
+        { user_id: user._id.toString() },
+        { user_id: user._id },
+        { user_email: user.email },
       ];
     }
 
@@ -57,10 +65,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { listing_id, check_in, check_out, guest_count, payment_method } = body;
+    const { listing_id, check_in, check_out, guest_count, guests, payment_method, notes } = body;
 
     if (!listing_id || !check_in || !check_out) {
       return NextResponse.json({ error: 'Missing required dates or listing details' }, { status: 400 });
+    }
+
+    const startDate = new Date(check_in);
+    const endDate = new Date(check_out);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
     }
 
     const db = await getDb();
@@ -68,12 +83,13 @@ export async function POST(request: NextRequest) {
     const listingsCollection = db.collection('listings');
 
     // 1. Double-booking check: verify no overlapping active bookings
+    // Proper date overlap logic: start < existing_end AND end > existing_start
     const overlappingBooking = await bookingsCollection.findOne({
       listing_id: listing_id.toString(),
-      status: { $nin: ['CANCELLED', 'DECLINED'] },
+      status: { $nin: ['CANCELLED', 'DECLINED', 'cancelled', 'declined'] },
       $and: [
-        { check_in: { $lte: check_out } },
-        { check_out: { $gte: check_in } },
+        { check_in: { $lt: check_out } },
+        { check_out: { $gt: check_in } },
       ],
     });
 
@@ -96,35 +112,46 @@ export async function POST(request: NextRequest) {
     const title = listing?.title || 'Georgian Stay';
     const image = (listing?.images && listing.images[0]) || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop';
     const location = listing?.location || 'Georgia';
-    const businessId = listing?.businessId?.toString() || '';
+    const category = listing?.category || 'hotels';
+    const businessId = listing?.businessId?.toString() || listing?.hostId?.toString() || '';
+    const hostName = listing?.host || listing?.businessName || 'Host';
 
-    // Calculate nights & total
-    const startDate = new Date(check_in);
-    const endDate = new Date(check_out);
+    // Calculate duration & total
     const timeDiff = endDate.getTime() - startDate.getTime();
-    const nights = Math.max(1, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
+    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    const nights = Math.max(1, daysDiff);
     const totalPrice = nights * pricePerNight;
+
+    const finalGuestCount = parseInt(guest_count || guests || '1', 10);
 
     const now = new Date();
     const newBooking = {
       listing_id: listing_id.toString(),
       listing_title: title,
+      listing_category: category,
       listing_image: image,
       listing_location: location,
       tourist_id: user._id.toString(),
       tourist_name: user.name,
       tourist_email: user.email,
+      user_id: user._id.toString(),
+      user_name: user.name,
+      user_email: user.email,
       business_id: businessId,
+      host_id: businessId,
+      host_name: hostName,
       check_in,
       check_out,
       nights,
-      guest_count: parseInt(guest_count, 10) || 1,
+      guest_count: finalGuestCount,
+      guests: finalGuestCount,
       price_per_night: pricePerNight,
       total_price: totalPrice,
       currency: 'GEL',
-      status: 'CONFIRMED',
+      status: 'confirmed',
       payment_method: payment_method || 'cash',
-      payment_status: payment_method === 'card' ? 'PAID' : 'PENDING',
+      payment_status: payment_method === 'card' ? 'paid' : 'pending',
+      notes: notes || '',
       createdAt: now,
       updatedAt: now,
     };

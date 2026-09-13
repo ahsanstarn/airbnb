@@ -56,7 +56,10 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   };
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    const token = getToken();
+    fetch('/api/auth/me', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.user) setUserId(data.user._id || data.user.id);
@@ -86,51 +89,12 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)) : 3;
   const total = listing.price * nights;
 
-  const handleReserve = async () => {
+  const handleReserve = () => {
     if (!checkIn || !checkOut) {
       alert('Please select check-in and check-out dates.');
       return;
     }
-    
-    if (!userId) {
-      alert('Please log in to reserve this property.');
-      window.location.href = '/login';
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const token = getToken();
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          listing_id: params.id,
-          check_in: checkIn,
-          check_out: checkOut,
-          guest_count: guests,
-        }),
-      });
-
-      if (res.ok) {
-        alert('Reservation successfully confirmed! Redirecting to your dashboard...');
-        window.location.href = '/dashboard';
-      } else {
-        const data = await res.json();
-        throw new Error(data.error || 'Booking failed');
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(`Error making reservation: ${err.message}`);
-      } else {
-        alert('Error making reservation');
-      }
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = `/book/${params.id}?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guests}`;
   };
 
   return (
