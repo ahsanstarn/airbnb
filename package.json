@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:test": "node scripts/test-mongodb.mjs",
+    "db:seed": "node scripts/seed-mongodb.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.9",

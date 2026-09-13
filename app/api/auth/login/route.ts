@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
-import { comparePassword, signToken } from '@/lib/auth';
+import { comparePassword, signToken, hashPassword } from '@/lib/auth';
 import { toPublicUser } from '@/lib/models/user';
 
 export async function POST(req: NextRequest) {
@@ -13,7 +13,56 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDb();
-    const user = await db.collection('users').findOne({ email });
+    const usersCollection = db.collection('users');
+
+    // Auto-seed default accounts on clean DB setup
+    const userCount = await usersCollection.countDocuments();
+    if (userCount === 0) {
+      const now = new Date();
+      const adminHash = await hashPassword('admin123');
+      const hostHash = await hashPassword('host123');
+      const touristHash = await hashPassword('tourist123');
+      await usersCollection.insertMany([
+        {
+          name: 'Kaya Administrator',
+          email: 'admin@kaya.ge',
+          password: adminHash,
+          role: 'admin',
+          affiliateCode: 'KAYAADMIN',
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          name: 'Ahsan Admin',
+          email: 'ahsanstarn@gmail.com',
+          password: adminHash,
+          role: 'admin',
+          affiliateCode: 'KAYASTAR',
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          name: 'Dato Host',
+          email: 'host@kaya.ge',
+          password: hostHash,
+          role: 'business',
+          affiliateCode: 'HOSTDATO',
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          name: 'Elena Traveler',
+          email: 'tourist@kaya.ge',
+          password: touristHash,
+          role: 'tourist',
+          affiliateCode: 'ELENATRAVEL',
+          createdAt: now,
+          updatedAt: now,
+        },
+      ]);
+    }
+
+    const user = await usersCollection.findOne({ email });
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
