@@ -42,14 +42,15 @@ export const metadata: Metadata = {
   description: "Georgia travel platform, boutique stays, curated experiences, and business suite.",
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico' },
+      { url: '/favicon.jpg' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/kaya-logo.jpg' }
+      { url: '/icon.svg', type: 'image/svg+xml' }
     ],
-    shortcut: '/icon.svg',
+    shortcut: '/favicon.ico',
     apple: [
       { url: '/apple-icon.jpg' },
-      { url: '/icon.svg', type: 'image/svg+xml' }
+      { url: '/favicon.jpg' }
     ],
   },
 };
@@ -63,6 +64,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-icon.jpg" />
+      </head>
       <body className={`${cormorant.variable} ${manrope.variable} ${caveat.variable} ${playfair.variable} is-guest`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>

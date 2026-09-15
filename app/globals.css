@@ -1900,11 +1900,12 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
 @media (max-width: 1024px) {
   .hero-1to1-stage {
     height: auto;
-    min-height: 100vh;
+    min-height: auto;
     overflow: visible;
   }
   .hero-1to1-nav {
     padding: 16px 20px;
+    z-index: 50;
   }
   .hero-1to1-menu {
     display: none;
@@ -1912,14 +1913,14 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   .hero-1to1-content {
     flex-direction: column;
     align-items: stretch;
-    justify-content: space-between;
-    padding: 85px 20px 40px;
-    gap: 20px;
-    min-height: 100vh;
+    justify-content: flex-start;
+    padding: 125px 20px 36px;
+    gap: 24px;
+    min-height: auto;
   }
   .hero-1to1-left {
     max-width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 0;
   }
   .hero-script-title {
     font-size: clamp(2.2rem, 7.5vw, 3.4rem);
@@ -1935,60 +1936,85 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   .hero-1to1-right {
     width: 100%;
     min-width: unset;
+    display: flex;
     justify-content: flex-start;
     margin-right: 0;
-    padding: 10px 0;
+    padding: 12px 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    position: relative;
+    z-index: 10;
   }
   .hero-1to1-right::-webkit-scrollbar {
     display: none;
   }
   .hero-arc-container {
-    flex-direction: row;
-    align-items: center;
-    gap: 14px;
-    justify-content: flex-start;
-    padding: 10px 4px;
-    width: max-content;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px !important;
+    justify-content: flex-start !important;
+    padding: 8px 4px !important;
+    width: max-content !important;
   }
   .hero-arc-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
     transform: none !important;
     cursor: pointer;
     touch-action: manipulation;
+    flex-shrink: 0 !important;
   }
   .hero-arc-label {
     text-align: center;
     order: 2;
+    display: block !important;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
   }
   .hero-arc-row.active .hero-arc-label {
     opacity: 1 !important;
     transform: none !important;
   }
+  .hero-arc-circle {
+    display: block !important;
+    border-radius: 50% !important;
+    background-size: cover !important;
+    background-position: center !important;
+    flex-shrink: 0 !important;
+  }
   .hero-arc-row:not(.active) .hero-arc-circle {
-    width: 58px;
-    height: 58px;
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.6);
+    width: 62px !important;
+    height: 62px !important;
+    border: 2.5px solid rgba(255, 255, 255, 0.75) !important;
+    filter: brightness(0.9) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;
   }
   .hero-arc-row.active .hero-arc-circle {
-    width: 82px;
-    height: 82px;
-    border: 3px solid #ffffff;
-    box-shadow: 0 0 24px rgba(255, 255, 255, 0.8), 0 10px 30px rgba(0, 0, 0, 0.6);
+    width: 82px !important;
+    height: 82px !important;
+    border: 3.5px solid #ffffff !important;
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.85), 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+    filter: brightness(1.05) !important;
   }
   .hero-arc-title {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
+    white-space: nowrap !important;
   }
   .hero-arc-subtitle {
-    font-size: 10px;
-    opacity: 0.9;
+    font-size: 10px !important;
+    opacity: 0.9 !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9) !important;
+    white-space: nowrap !important;
   }
   .hero-v-dots {
     display: none;
@@ -2011,8 +2037,8 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     font-size: 12px;
   }
   .hero-1to1-content {
-    padding: 75px 16px 28px;
-    gap: 16px;
+    padding: 120px 16px 28px;
+    gap: 20px;
   }
   .hero-script-title {
     font-size: 2.1rem;
@@ -2023,21 +2049,21 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     margin-bottom: 18px;
   }
   .hero-arc-container {
-    gap: 10px;
+    gap: 12px !important;
   }
   .hero-arc-row:not(.active) .hero-arc-circle {
-    width: 52px;
-    height: 52px;
+    width: 56px !important;
+    height: 56px !important;
   }
   .hero-arc-row.active .hero-arc-circle {
-    width: 72px;
-    height: 72px;
+    width: 74px !important;
+    height: 74px !important;
   }
   .hero-arc-title {
-    font-size: 12px;
+    font-size: 12px !important;
   }
   .hero-arc-subtitle {
-    font-size: 9px;
+    font-size: 9px !important;
   }
 }
 
