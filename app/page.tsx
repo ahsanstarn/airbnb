@@ -265,17 +265,17 @@ export default function Home() {
                     tabIndex={0}
                     aria-label={`Select ${dest.title}`}
                   >
-                    {/* Title & Subtitle to the Left */}
-                    <div className="hero-arc-label">
-                      <div className="hero-arc-title">{dest.title}</div>
-                      <div className="hero-arc-subtitle">{dest.location}</div>
-                    </div>
-
                     {/* Circular Image Portal */}
                     <div
                       className="hero-arc-circle"
                       style={{ backgroundImage: `url(${dest.thumb || dest.image})` }}
                     />
+
+                    {/* Title & Subtitle */}
+                    <div className="hero-arc-label">
+                      <div className="hero-arc-title">{dest.title}</div>
+                      <div className="hero-arc-subtitle">{dest.location.split(',')[0]}</div>
+                    </div>
                   </div>
                 );
               })}
