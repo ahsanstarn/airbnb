@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/lib/lang-context';
+import { useTheme } from '@/lib/theme-context';
 
 interface DashboardHeaderProps {
   activeRole: 'tourist' | 'affiliate' | 'business' | 'admin';
@@ -13,6 +14,7 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ activeRole, user }: DashboardHeaderProps) {
   const pathname = usePathname();
   const { lang, setLang, t } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
 
   const ROLES = [
@@ -26,8 +28,8 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
     <header
       style={{
         minHeight: '64px',
-        backgroundColor: '#0B132B',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        backgroundColor: isDark ? '#0B132B' : 'rgba(255, 252, 248, 0.96)',
+        borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)',
         padding: '10px 20px',
         display: 'flex',
         alignItems: 'center',
@@ -38,12 +40,13 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
         backdropFilter: 'blur(16px)',
         flexWrap: 'wrap',
         gap: '12px',
+        transition: 'background-color 0.3s ease, border-color 0.3s ease',
       }}
     >
       {/* Brand Logo & Role Pills */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', maxWidth: '100%' }}>
         <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.5px' }}>
+          <span style={{ fontSize: '24px', fontWeight: 800, color: isDark ? '#ffffff' : '#1a120e', letterSpacing: '-0.5px' }}>
             Kaya<span style={{ color: '#c8a983' }}>.</span>
           </span>
           <span style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', backgroundColor: 'rgba(200, 169, 131, 0.15)', color: '#c8a983', padding: '2px 6px', borderRadius: '6px', fontWeight: 700 }}>
@@ -52,7 +55,7 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
         </Link>
 
         {/* Role Switcher Pills */}
-        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '3px', border: '1px solid rgba(255, 255, 255, 0.08)', overflowX: 'auto', maxWidth: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(26, 18, 14, 0.04)', borderRadius: '12px', padding: '3px', border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)', overflowX: 'auto', maxWidth: '100%' }}>
           {ROLES.map(role => {
             const isActive = activeRole === role.id || pathname === role.href;
             return (
@@ -67,7 +70,7 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
                   borderRadius: '8px',
                   fontSize: '12px',
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#0B132B' : '#94a3b8',
+                  color: isActive ? '#0B132B' : (isDark ? '#94a3b8' : '#64748b'),
                   backgroundColor: isActive ? '#c8a983' : 'transparent',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
@@ -82,8 +85,32 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
         </div>
       </div>
 
-      {/* Right User Bar & Language Switcher */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+      {/* Right Actions: Theme Toggle, Language Switcher, User Avatar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+        {/* Dark / Light Mode Toggle Button */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(26,18,14,0.05)',
+            border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(26,18,14,0.1)',
+            color: isDark ? '#fbbf24' : '#d9653b',
+            fontSize: '15px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {isDark ? '☀️' : '🌙'}
+        </button>
+
         {/* Language Selector Dropdown */}
         <div style={{ position: 'relative' }}>
           <button
@@ -93,14 +120,15 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(26,18,14,0.04)',
+              border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(26,18,14,0.1)',
               borderRadius: '20px',
               padding: '6px 12px',
-              color: '#ffffff',
+              color: isDark ? '#ffffff' : '#1a120e',
               fontSize: '12px',
               fontWeight: 700,
               cursor: 'pointer',
+              transition: 'all 0.2s ease',
             }}
           >
             <span>🌐</span>
@@ -113,29 +141,29 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
                 position: 'absolute',
                 top: 'calc(100% + 8px)',
                 right: 0,
-                backgroundColor: '#0f172a',
-                border: '1px solid rgba(255,255,255,0.15)',
+                backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(26,18,14,0.12)',
                 borderRadius: '12px',
                 padding: '6px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px',
                 zIndex: 200,
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
                 minWidth: '130px',
               }}
             >
-              <button onClick={() => { setLang('EN'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'EN' ? 700 : 400 }}>🇬🇧 English</button>
-              <button onClick={() => { setLang('KA'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'KA' ? 700 : 400 }}>🇬🇪 ქართული</button>
-              <button onClick={() => { setLang('RU'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'RU' ? 700 : 400 }}>🇷🇺 Русский</button>
+              <button onClick={() => { setLang('EN'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: isDark ? '#fff' : '#1a120e', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'EN' ? 700 : 400 }}>🇬🇧 English</button>
+              <button onClick={() => { setLang('KA'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: isDark ? '#fff' : '#1a120e', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'KA' ? 700 : 400 }}>🇬🇪 ქართული</button>
+              <button onClick={() => { setLang('RU'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: isDark ? '#fff' : '#1a120e', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'RU' ? 700 : 400 }}>🇷🇺 Русский</button>
             </div>
           )}
         </div>
 
         {/* Profile Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}>
-            {(user?.name || 'K')[0]}
+          <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', boxShadow: '0 2px 8px rgba(200, 169, 131, 0.3)' }}>
+            {(user?.name || 'K')[0].toUpperCase()}
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/lib/lang-context";
 import SharedNav from "@/app/components/SharedNav";
 import MobileBottomNav from "@/app/components/MobileBottomNav";
 import MouseTilt from "@/app/components/MouseTilt";
+import PageTransition from "@/app/components/PageTransition";
 
 
 const cormorant = Cormorant_Garamond({
@@ -68,7 +69,9 @@ export default function RootLayout({
           <ThemeProvider>
             <MouseTilt />
             <SharedNav />
-            {children}
+            <PageTransition>
+              {children}
+            </PageTransition>
 
             <MobileBottomNav />
           </ThemeProvider>

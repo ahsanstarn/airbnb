@@ -57,6 +57,7 @@ function SignupForm() {
     } catch (err: any) {
       setError(err.message);
     } finally {
+      setPassword('');
       setIsLoading(false);
     }
   };
@@ -268,10 +269,20 @@ function SignupForm() {
               opacity: isLoading ? 0.7 : 1,
               marginTop: '8px',
               boxShadow: '0 8px 24px -4px rgba(217, 101, 59, 0.4)',
-              transition: 'transform 0.2s, box-shadow 0.2s'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
             }}
           >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? (
+              <>
+                <span className="button-spinner" />
+                <span>Creating account...</span>
+              </>
+            ) : (
+              'Create Account'
+            )}
           </button>
         </form>
 

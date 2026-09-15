@@ -67,6 +67,7 @@ export default function ExecutiveAdminCommandCenter() {
 
   // Live platform stats
   const [stats, setStats] = useState({
+    listings: 48,
     users: 248320,
     activeUsers: 58420,
     businesses: 6842,
@@ -243,7 +244,7 @@ export default function ExecutiveAdminCommandCenter() {
     async function refreshTelemetry() {
       try {
         const token = getToken();
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
         const [listingsRes, statsRes, bookingsRes] = await Promise.all([
           fetch('/api/listings?limit=50').catch(() => null),
           fetch('/api/admin/stats').catch(() => null),
@@ -273,7 +274,8 @@ export default function ExecutiveAdminCommandCenter() {
       } catch {}
     }
 
-    const pollInterval = setInterval(refreshTelemetry, 30000);
+    // 8-second interval telemetry refresh
+    const pollInterval = setInterval(refreshTelemetry, 8000);
     const handleFocus = () => refreshTelemetry();
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', () => {
@@ -287,20 +289,28 @@ export default function ExecutiveAdminCommandCenter() {
   }, [isAdmin]);
 
   // Handle Approvals
-  const handleApprove = (id: string, name: string) => {
-    setPendingApprovals(prev => prev.filter(item => item.id !== id));
-    setActivityFeed(prev => [
-      { id: Date.now(), action: 'Entity Approved', detail: `Admin verified "${name}" for live production`, time: 'Just now', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>), color: '#10b981' },
-      ...prev,
-    ]);
+  const handleApprove = (id: string, name?: string) => {
+    setPendingApprovals(prev => {
+      const found = prev.find(item => item.id === id);
+      const itemName = name || found?.name || id;
+      setActivityFeed(feed => [
+        { id: Date.now(), action: 'Entity Approved', detail: `Admin verified "${itemName}" for live production`, time: 'Just now', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>), color: '#10b981' },
+        ...feed,
+      ]);
+      return prev.filter(item => item.id !== id);
+    });
   };
 
-  const handleReject = (id: string, name: string) => {
-    setPendingApprovals(prev => prev.filter(item => item.id !== id));
-    setActivityFeed(prev => [
-      { id: Date.now(), action: 'Entity Rejected', detail: `Admin declined "${name}" (compliance check)`, time: 'Just now', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>), color: '#ef4444' },
-      ...prev,
-    ]);
+  const handleReject = (id: string, name?: string) => {
+    setPendingApprovals(prev => {
+      const found = prev.find(item => item.id === id);
+      const itemName = name || found?.name || id;
+      setActivityFeed(feed => [
+        { id: Date.now(), action: 'Entity Rejected', detail: `Admin declined "${itemName}" (compliance check)`, time: 'Just now', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>), color: '#ef4444' },
+        ...feed,
+      ]);
+      return prev.filter(item => item.id !== id);
+    });
   };
 
   // Handle Add Listing
@@ -1763,7 +1773,7 @@ export default function ExecutiveAdminCommandCenter() {
           )}
 
           {activeModule === 'bookings' && (
-            <BookingsLedgerModule bookings={recentBookings} />
+            <BookingsLedgerModule bookings={bookings} />
           )}
 
           {activeModule === 'finance' && (

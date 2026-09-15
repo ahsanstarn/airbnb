@@ -449,90 +449,109 @@ export default function Home() {
           </section>
 
           {/* ========================================================
-              ===== ONLY ON KAYA — 4 DIFFERENTIATOR CARDS WITH BESPOKE SVGs =====
+              ===== KAYA CURATED ECOSYSTEM — LUXURY EDITORIAL COLLECTION =====
               ======================================================== */}
-          <section className="unique-features-section fade-up" ref={setRevealRef(1)}>
-            <div className="section-head">
+          <section className="unique-features-section fade-up" ref={setRevealRef(1)} style={{ padding: '48px 0 24px' }}>
+            <div className="section-head" style={{ marginBottom: '32px' }}>
               <div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', borderRadius: '999px', background: 'rgba(217,101,59,0.12)', color: 'var(--accent, #d9653b)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', background: 'rgba(217,101,59,0.08)', border: '1px solid rgba(217,101,59,0.22)', color: 'var(--accent, #d9653b)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '12px' }}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
                     <path d="M12 2l2.4 7.2h7.6l-6.1 4.5 2.3 7.3-6.2-4.6-6.2 4.6 2.3-7.3-6.1-4.5h7.6z" />
                   </svg>
                   {t('differentiators.badge', 'Only on Kaya.ge')}
                 </div>
-                <h2 className="section-title">{t('differentiators.title', "Georgia's All-in-One Travel Ecosystem")}</h2>
-                <p className="section-copy">{t('differentiators.desc', "Beyond ordinary bookings — experience verified hosts, deep local dining, traveler connections, and AI itineraries.")}</p>
+                <h2 className="section-title" style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 'clamp(2rem, 3.4vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 10px' }}>
+                  {t('differentiators.title', "Georgia's All-in-One Travel Ecosystem")}
+                </h2>
+                <p className="section-copy" style={{ maxWidth: '640px', fontSize: '15px', lineHeight: 1.6, color: 'var(--muted)' }}>
+                  {t('differentiators.desc', "Beyond ordinary bookings — experience verified hosts, deep local dining, Caucasian travel companions, and bespoke curated routes.")}
+                </p>
               </div>
             </div>
 
-            <div className="features-grid-4">
+            <div className="features-editorial-grid">
               {/* 1. Georgian Moment */}
-              <Link href="/georgian-moment" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 24-72h Notice</span>
-                <div className="feature-svg-box">
-                  {/* Georgian Clay Qvevri Amphora & Wine Goblet SVG */}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M8 2h8m-5 0v3m2-3v3" />
-                    <path d="M6 5h12c0 4-2 7-2 11 0 3-1.8 6-4 6s-4-3-4-6c0-4-2-7-2-11z" fill="rgba(217,101,59,0.18)" />
-                    <circle cx="12" cy="14" r="2" fill="currentColor" />
-                    <path d="M17 10a4 4 0 0 1 4 4c0 2.2-1.8 3.5-3.5 3.5" />
-                  </svg>
+              <Link href="/georgian-moment" className="editorial-feature-card hover-lift">
+                <div className="editorial-card-media">
+                  <img
+                    src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&h=540&fit=crop"
+                    alt="Georgian Wine & Qvevri Tradition"
+                    className="editorial-card-img"
+                    loading="lazy"
+                  />
+                  <span className="editorial-card-tag">Craft &amp; Tradition • 24–72h</span>
                 </div>
-                <h3>{t('differentiators.gmTitle', 'Georgian Moment')}</h3>
-                <p>{t('differentiators.gmDesc', 'Wine masterclasses, mountain horse trekking, clay pottery, folk polyphony.')}</p>
-                <span className="feature-card-link-text">{t('learnMore', 'Explore')} &rarr;</span>
+                <div className="editorial-card-body">
+                  <div className="editorial-card-kicker">Immersion</div>
+                  <h3 className="editorial-card-title">{t('differentiators.gmTitle', 'Georgian Moment')}</h3>
+                  <p className="editorial-card-desc">
+                    {t('differentiators.gmDesc', 'Short-notice masterclasses: private polyphonic singing, mountain horse trekking, and clay qvevri cellars.')}
+                  </p>
+                  <span className="editorial-card-link">{t('learnMore', 'Explore immersions')} &rarr;</span>
+                </div>
               </Link>
 
               {/* 2. Kaya Connect */}
-              <Link href="/connect" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Verified Buddy</span>
-                <div className="feature-svg-box" style={{ background: 'rgba(56, 189, 248, 0.12)', color: '#0284c7' }}>
-                  {/* Two Travelers with Waypoint Compass SVG */}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" fill="rgba(56, 189, 248, 0.2)" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    <path d="M12 11l2 2 4-4" stroke="#0284c7" strokeWidth="2" />
-                  </svg>
+              <Link href="/connect" className="editorial-feature-card hover-lift">
+                <div className="editorial-card-media">
+                  <img
+                    src="/destinations/svaneti.jpg"
+                    alt="Svaneti Mountain Guides"
+                    className="editorial-card-img"
+                    loading="lazy"
+                  />
+                  <span className="editorial-card-tag">Verified Companions</span>
                 </div>
-                <h3>{t('differentiators.connectTitle', 'Kaya Connect')}</h3>
-                <p>{t('differentiators.connectDesc', 'Match with verified travelers heading to Svaneti, Kazbegi, or Kakheti.')}</p>
-                <span className="feature-card-link-text">{t('learnMore', 'Meet travelers')} &rarr;</span>
+                <div className="editorial-card-body">
+                  <div className="editorial-card-kicker">Community &amp; Guides</div>
+                  <h3 className="editorial-card-title">{t('differentiators.connectTitle', 'Kaya Connect')}</h3>
+                  <p className="editorial-card-desc">
+                    {t('differentiators.connectDesc', 'Match with verified local guides, 4x4 alpine drivers, and travelers heading to Kazbegi, Svaneti, or Kakheti.')}
+                  </p>
+                  <span className="editorial-card-link">{t('learnMore', 'Meet companions')} &rarr;</span>
+                </div>
               </Link>
 
-              {/* 3. Trip Mood AI Planner */}
-              <Link href="/trip-planner" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><path d="M12 2v4m0 12v4M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> AI Itinerary</span>
-                <div className="feature-svg-box" style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#9333ea' }}>
-                  {/* AI Neural Sparkle Constellation SVG */}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
-                    <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
-                    <circle cx="12" cy="12" r="3.5" fill="rgba(168, 85, 247, 0.25)" />
-                    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-                  </svg>
+              {/* 3. Bespoke Itineraries */}
+              <Link href="/trip-planner" className="editorial-feature-card hover-lift">
+                <div className="editorial-card-media">
+                  <img
+                    src="/destinations/tbilisi.jpg"
+                    alt="Historic Tbilisi Architecture"
+                    className="editorial-card-img"
+                    loading="lazy"
+                  />
+                  <span className="editorial-card-tag">Bespoke Route Craft</span>
                 </div>
-                <h3>{t('differentiators.tripTitle', 'Trip Mood AI')}</h3>
-                <p>{t('differentiators.tripDesc', 'Tell us your vibe and budget — receive a tailored Georgian itinerary in 30 seconds.')}</p>
-                <span className="feature-card-link-text">{t('learnMore', 'Plan by mood')} &rarr;</span>
+                <div className="editorial-card-body">
+                  <div className="editorial-card-kicker">Curated Journey</div>
+                  <h3 className="editorial-card-title">{t('differentiators.tripTitle', 'Bespoke Itineraries')}</h3>
+                  <p className="editorial-card-desc">
+                    {t('differentiators.tripDesc', 'Handcrafted routes tailored to your travel tempo, season, and group. From hidden hamlets to wine valleys.')}
+                  </p>
+                  <span className="editorial-card-link">{t('learnMore', 'Design itinerary')} &rarr;</span>
+                </div>
               </Link>
 
               {/* 4. Georgian Table */}
-              <Link href="/georgian-table" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><ellipse cx="12" cy="7" rx="9" ry="4"/><path d="M3 7v3c0 2.2 4 4 9 4s9-1.8 9-4V7"/><path d="M5 13v7m14-7v7m-7-5v5"/></svg> Family Feasts</span>
-                <div className="feature-svg-box" style={{ background: 'rgba(234, 179, 8, 0.14)', color: '#ca8a04' }}>
-                  {/* Traditional Georgian Supra Feast Table SVG */}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
-                    <ellipse cx="12" cy="7" rx="9" ry="4" fill="rgba(234, 179, 8, 0.2)" />
-                    <path d="M3 7v3c0 2.2 4 4 9 4s9-1.8 9-4V7" />
-                    <path d="M5 13v7m14-7v7m-7-5v5" />
-                    <circle cx="12" cy="7" r="1.5" fill="currentColor" />
-                  </svg>
+              <Link href="/georgian-table" className="editorial-feature-card hover-lift">
+                <div className="editorial-card-media">
+                  <img
+                    src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=540&fit=crop"
+                    alt="Georgian Table Supra Feast"
+                    className="editorial-card-img"
+                    loading="lazy"
+                  />
+                  <span className="editorial-card-tag">Family Feasts &amp; Cellars</span>
                 </div>
-                <h3>{t('differentiators.gtTitle', 'Georgian Table')}</h3>
-                <p>{t('differentiators.gtDesc', "Curated qvevri wine cellars, traditional suphas, and chef table reservations.")}</p>
-                <span className="feature-card-link-text">{t('learnMore', 'Join a supra')} &rarr;</span>
+                <div className="editorial-card-body">
+                  <div className="editorial-card-kicker">Culinary Heritage</div>
+                  <h3 className="editorial-card-title">{t('differentiators.gtTitle', 'Georgian Table')}</h3>
+                  <p className="editorial-card-desc">
+                    {t('differentiators.gtDesc', "Reserve authentic family supras, village qvevri wine cellars, and masterclasses across 12 Georgian regions.")}
+                  </p>
+                  <span className="editorial-card-link">{t('learnMore', 'Join a supra table')} &rarr;</span>
+                </div>
               </Link>
             </div>
           </section>

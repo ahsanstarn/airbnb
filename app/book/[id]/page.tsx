@@ -144,7 +144,17 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(145deg, #f8f1ea, #efe3d6, #f5ece3, #fdf7f0)' }}>
-      {nav}
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '16px 24px', background: 'rgba(255,251,246,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(26,18,14,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link href={`/listing/${params.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--ink)', fontSize: '13px', fontWeight: 600 }}>
+          ← Back to listing
+        </Link>
+        <Link href="/" style={{ fontFamily: 'var(--font-display), serif', fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)', textDecoration: 'none', letterSpacing: '-0.02em' }}>
+          KAYA <span style={{ fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted)' }}>GEORGIA</span>
+        </Link>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#16a34a', fontWeight: 600, background: 'rgba(34,197,94,0.08)', padding: '6px 12px', borderRadius: '999px' }}>
+          <span>🔒</span> Secure Booking
+        </div>
+      </header>
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '120px 24px 60px' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '32px' }}>
           {['dates', 'details', 'payment'].map((s, i) => (

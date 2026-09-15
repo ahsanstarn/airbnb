@@ -211,10 +211,8 @@ function ResetPasswordForm() {
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
-                  <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12" />
-                </svg>
-                <span>Updating...</span>
+                <span className="button-spinner" />
+                <span>Updating Password...</span>
               </>
             ) : (
               <>

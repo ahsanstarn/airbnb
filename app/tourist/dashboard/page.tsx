@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardHeader from '@/app/components/DashboardHeader';
+import { useTheme } from '@/lib/theme-context';
 
 type TouristTab = 'overview' | 'bookings' | 'wishlist' | 'itinerary' | 'reviews' | 'messages' | 'profile';
 
@@ -73,6 +74,7 @@ const INITIAL_BOOKINGS: BookingItem[] = [
 
 export default function TouristDashboard() {
   const router = useRouter();
+  const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState<TouristTab>('overview');
   const [user, setUser] = useState<any>(null);
   const [bookings, setBookings] = useState<BookingItem[]>(INITIAL_BOOKINGS);
@@ -82,6 +84,11 @@ export default function TouristDashboard() {
   const [selectedVoucher, setSelectedVoucher] = useState<BookingItem | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Real-time upcoming stay dynamic derivation
+  const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED');
+  const upcomingBooking = confirmedBookings.find(b => b.check_in && new Date(b.check_in) >= new Date()) || confirmedBookings[0] || bookings[0];
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Traveler');
 
   // AI Itinerary state
   const [selectedRegion, setSelectedRegion] = useState('Kazbegi & Caucasus');
@@ -104,32 +111,60 @@ export default function TouristDashboard() {
   const [reviewText, setReviewText] = useState('');
 
   useEffect(() => {
+    let isMounted = true;
     async function loadUserData() {
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
-        } else {
-          // Demo traveler fallback
-          setUser({ name: 'Elena Traveler', email: 'elena@traveler.ge', role: 'tourist', points: 480 });
+          if (isMounted) setUser(data.user);
         }
 
         // Fetch live bookings
         const bRes = await fetch('/api/bookings');
         if (bRes.ok) {
           const bData = await bRes.json();
-          if (Array.isArray(bData) && bData.length > 0) {
+          if (isMounted && Array.isArray(bData) && bData.length > 0) {
             setBookings(bData);
           }
         }
       } catch (e) {
         console.error('Data load error:', e);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
     loadUserData();
+
+    // Real-time live polling (every 8s) & on tab focus
+    const interval = setInterval(() => {
+      fetch('/api/bookings')
+        .then(r => r.ok ? r.json() : null)
+        .then(bData => {
+          if (isMounted && Array.isArray(bData) && bData.length > 0) {
+            setBookings(bData);
+          }
+        })
+        .catch(() => {});
+    }, 8000);
+
+    const onFocus = () => {
+      fetch('/api/bookings')
+        .then(r => r.ok ? r.json() : null)
+        .then(bData => {
+          if (isMounted && Array.isArray(bData) && bData.length > 0) {
+            setBookings(bData);
+          }
+        })
+        .catch(() => {});
+    };
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
   }, []);
 
   const triggerToast = (msg: string) => {
@@ -187,7 +222,7 @@ export default function TouristDashboard() {
   };
 
   return (
-    <div style={{ backgroundColor: '#0B132B', color: '#ffffff', minHeight: '100vh', fontFamily: 'var(--font-body, system-ui, sans-serif)' }}>
+    <div style={{ backgroundColor: isDark ? '#0B132B' : 'var(--surface, #fbf7f2)', color: isDark ? '#ffffff' : 'var(--ink, #1a120e)', minHeight: '100vh', fontFamily: 'var(--font-body, system-ui, sans-serif)', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       {/* Toast Alert */}
       {toastMessage && (
         <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 9999, backgroundColor: '#10b981', color: '#fff', padding: '14px 22px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -208,11 +243,11 @@ export default function TouristDashboard() {
         </button>
 
         {/* Unified Sidebar */}
-        <aside style={{ width: '270px', backgroundColor: 'rgba(11, 19, 43, 0.95)', borderRight: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
+        <aside style={{ width: '270px', backgroundColor: isDark ? 'rgba(11, 19, 43, 0.95)' : '#ffffff', borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
-            <div style={{ padding: '0 12px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '20px' }}>
+            <div style={{ padding: '0 12px 20px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)', marginBottom: '20px' }}>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#c8a983', fontWeight: 700, marginBottom: '4px' }}>KAYA Traveler Portal</div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>Tourist Studio</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: isDark ? '#fff' : 'var(--ink)' }}>Tourist Studio</div>
             </div>
 
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -239,7 +274,7 @@ export default function TouristDashboard() {
                       borderRadius: '10px',
                       border: 'none',
                       backgroundColor: isActive ? 'rgba(200, 169, 131, 0.15)' : 'transparent',
-                      color: isActive ? '#c8a983' : '#94a3b8',
+                      color: isActive ? '#c8a983' : (isDark ? '#94a3b8' : '#64748b'),
                       fontWeight: isActive ? 600 : 500,
                       fontSize: '14px',
                       cursor: 'pointer',
@@ -252,7 +287,7 @@ export default function TouristDashboard() {
                       <span>{item.label}</span>
                     </div>
                     {item.badge !== undefined && (
-                      <span style={{ backgroundColor: isActive ? '#c8a983' : 'rgba(255, 255, 255, 0.1)', color: isActive ? '#0B132B' : '#94a3b8', fontSize: '11px', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+                      <span style={{ backgroundColor: isActive ? '#c8a983' : (isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 18, 14, 0.08)'), color: isActive ? '#0B132B' : (isDark ? '#94a3b8' : '#64748b'), fontSize: '11px', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
                         {item.badge}
                       </span>
                     )}
@@ -263,14 +298,14 @@ export default function TouristDashboard() {
           </div>
 
           {/* Sidebar Footer User Card */}
-          <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.04)', borderRadius: '14px', padding: '14px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(26, 18, 14, 0.03)', borderRadius: '14px', padding: '14px', border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
-                {(user?.name || 'Elena')[0]}
+                {displayName[0]?.toUpperCase()}
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff' }}>{user?.name || 'Elena Traveler'}</div>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>Explorer • 480 Points</div>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: isDark ? '#fff' : 'var(--ink)' }}>{displayName}</div>
+                <div style={{ fontSize: '12px', color: isDark ? '#94a3b8' : 'var(--muted)' }}>Explorer • {user?.points ?? 480} Points</div>
               </div>
             </div>
             <Link href="/" style={{ display: 'block', textAlign: 'center', fontSize: '12px', color: '#c8a983', textDecoration: 'none', padding: '6px', borderRadius: '6px', backgroundColor: 'rgba(200, 169, 131, 0.1)' }}>
@@ -285,21 +320,30 @@ export default function TouristDashboard() {
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
               {/* Caucasus Welcome Hero */}
-              <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', padding: '40px', background: 'linear-gradient(135deg, rgba(11, 19, 43, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&h=600&fit=crop) center/cover', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)' }}>
+              <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', padding: '40px', background: 'linear-gradient(135deg, rgba(11, 19, 43, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&h=600&fit=crop) center/cover', border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(200, 169, 131, 0.3)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
                 <div style={{ maxWidth: '650px' }}>
-                  <span style={{ backgroundColor: 'rgba(200, 169, 131, 0.2)', color: '#c8a983', border: '1px solid rgba(200, 169, 131, 0.4)', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    🌄 Next Adventure Confirmed
-                  </span>
-                  <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '16px 0 12px', color: '#ffffff', lineHeight: '1.2' }}>
-                    Welcome back, {user?.name || 'Elena'}!
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                    <span style={{ backgroundColor: 'rgba(200, 169, 131, 0.2)', color: '#c8a983', border: '1px solid rgba(200, 169, 131, 0.4)', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      🌄 {upcomingBooking ? 'Next Adventure Confirmed' : 'Discover Sakartvelo'}
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700 }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} /> Live Real-Time Sync
+                    </span>
+                  </div>
+                  <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '0 0 12px', color: '#ffffff', lineHeight: '1.2' }}>
+                    Welcome back, {displayName}!
                   </h1>
                   <p style={{ fontSize: '16px', color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 24px' }}>
-                    Your stay at <strong style={{ color: '#fff' }}>Rooms Hotel Kazbegi</strong> is in <span style={{ color: '#c8a983', fontWeight: 700 }}>4 Days</span> (Oct 20, 2026). Get ready for breathtaking Mount Kazbek views!
+                    {upcomingBooking ? (
+                      <>Your stay at <strong style={{ color: '#fff' }}>{upcomingBooking.listing_title || 'Georgian Boutique Experience'}</strong> in <span style={{ color: '#c8a983', fontWeight: 700 }}>{upcomingBooking.city || 'Georgia'}</span> is confirmed ({upcomingBooking.check_in || 'Upcoming'}). Get ready for breathtaking Caucasus views!</>
+                    ) : (
+                      <>You have no active stays scheduled yet. Ready to experience the high peaks of Kazbegi, ancient wine cellars of Kakheti, and cobblestones of Old Tbilisi?</>
+                    )}
                   </p>
 
                   <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                     <button onClick={() => setActiveTab('bookings')} style={{ padding: '12px 24px', borderRadius: '12px', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '14px' }}>
-                      View Booking Details
+                      View Booking Details ({bookings.length})
                     </button>
                     <button onClick={() => setActiveTab('itinerary')} style={{ padding: '12px 24px', borderRadius: '12px', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', fontWeight: 600, border: '1px solid rgba(255, 255, 255, 0.2)', cursor: 'pointer', fontSize: '14px', backdropFilter: 'blur(8px)' }}>
                       AI Trip Itinerary →
@@ -311,17 +355,17 @@ export default function TouristDashboard() {
               {/* 4 Stat Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
                 {[
-                  { label: 'Upcoming Stays', val: bookings.filter(b => b.status === 'CONFIRMED').length, sub: 'Next: Oct 20 in Kazbegi', icon: '🏨', color: '#38bdf8' },
+                  { label: 'Upcoming Stays', val: bookings.filter(b => b.status === 'CONFIRMED').length, sub: upcomingBooking ? `Next: ${upcomingBooking.check_in || 'Upcoming'} (${upcomingBooking.city || 'Georgia'})` : 'No active stay', icon: '🏨', color: '#38bdf8' },
                   { label: 'Saved Wishlist', val: wishlist.length, sub: 'Boutique stays & tours', icon: '❤️', color: '#f43f5e' },
                   { label: 'KAYA Travel Credits', val: '€180.00', sub: 'Ready for next booking', icon: '🪙', color: '#c8a983' },
                   { label: 'Georgia Reviews', val: '3 Posted', sub: '5.0★ Average rating', icon: '⭐', color: '#10b981' },
                 ].map((stat, idx) => (
-                  <div key={idx} style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '18px', padding: '20px', backdropFilter: 'blur(12px)' }}>
+                  <div key={idx} style={{ backgroundColor: isDark ? 'rgba(15, 23, 42, 0.75)' : '#ffffff', border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)', borderRadius: '18px', padding: '20px', backdropFilter: 'blur(12px)', boxShadow: isDark ? 'none' : '0 4px 16px rgba(0,0,0,0.04)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 500 }}>{stat.label}</span>
+                      <span style={{ fontSize: '13px', color: isDark ? '#94a3b8' : 'var(--muted)', fontWeight: 500 }}>{stat.label}</span>
                       <span style={{ fontSize: '22px' }}>{stat.icon}</span>
                     </div>
-                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>{stat.val}</div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: isDark ? '#fff' : 'var(--ink)', marginBottom: '4px' }}>{stat.val}</div>
                     <div style={{ fontSize: '12px', color: stat.color, fontWeight: 500 }}>{stat.sub}</div>
                   </div>
                 ))}
@@ -529,7 +573,7 @@ export default function TouristDashboard() {
           {activeTab === 'messages' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '600px' }}>
               <div>
-                <h2 style={{ fontSize: '24px', fontWeight 800, color: '#fff', margin: 0 }}>Host & Concierge Messages</h2>
+                <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', margin: 0 }}>Host & Concierge Messages</h2>
                 <p style={{ fontSize: '14px', color: '#94a3b8', margin: '4px 0 0' }}>Direct communication with your hosts and KAYA Georgia travel team</p>
               </div>
 

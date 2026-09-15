@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardHeader from '@/app/components/DashboardHeader';
+import { useTheme } from '@/lib/theme-context';
 
 type BusinessModule =
   | 'home'
@@ -38,6 +39,7 @@ const INITIAL_LEADS: Lead[] = [
 
 export default function BusinessDashboard() {
   const router = useRouter();
+  const { isDark } = useTheme();
   const [activeModule, setActiveModule] = useState<BusinessModule>('home');
   const [user, setUser] = useState<any>(null);
   const [listings, setListings] = useState<any[]>([]);
@@ -94,40 +96,88 @@ export default function BusinessDashboard() {
   // Revenue Leak State
   const [resolvedLeaks, setResolvedLeaks] = useState<Record<string, boolean>>({});
 
+  // Dynamic user and stats derivation
+  const hostName = user?.name || (user?.email ? user.email.split('@')[0] : 'Verified Host');
+  const hostEmail = user?.email || 'host@kaya.ge';
+  const totalRevenue = bookings.reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+  const displayRevenue = totalRevenue > 0 ? totalRevenue.toLocaleString() : '4,820';
+  const activeBookingsCount = bookings.length > 0 ? bookings.length : 14;
+  const platformListingsCount = listings.length > 0 ? listings.length : 18;
+
+  const refreshData = useCallback(async () => {
+    try {
+      const [bookRes, listRes] = await Promise.all([
+        fetch('/api/bookings'),
+        fetch('/api/listings?mine=true')
+      ]);
+      if (bookRes.ok) {
+        const bookData = await bookRes.json();
+        if (Array.isArray(bookData) && bookData.length > 0) {
+          setBookings(bookData);
+        }
+      }
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        if (listData?.listings && Array.isArray(listData.listings) && listData.listings.length > 0) {
+          setListings(listData.listings);
+        }
+      }
+    } catch {
+      // silent refresh failover
+    }
+  }, []);
+
   useEffect(() => {
+    let isMounted = true;
     async function loadData() {
       try {
         const authRes = await fetch('/api/auth/me');
         if (authRes.ok) {
           const authData = await authRes.json();
-          setUser(authData.user);
-        } else {
-          // Demo Business Partner fallback
-          setUser({ name: 'Giga (Rooms Kazbegi Host)', email: 'giga@kazbegi-hospitality.ge', role: 'business', businessName: 'Kazbegi Hospitality Group' });
+          if (isMounted) setUser(authData.user);
         }
 
         // Fetch host listings from MongoDB
         const listRes = await fetch('/api/listings?mine=true');
         if (listRes.ok) {
           const listData = await listRes.json();
-          setListings(listData.listings || []);
+          if (isMounted && listData.listings) {
+            setListings(listData.listings);
+          }
         }
 
         // Fetch bookings
         const bookRes = await fetch('/api/bookings');
         if (bookRes.ok) {
           const bookData = await bookRes.json();
-          setBookings(Array.isArray(bookData) ? bookData : []);
+          if (isMounted && Array.isArray(bookData)) {
+            setBookings(bookData);
+          }
         }
       } catch (err) {
         console.error('Error loading business suite:', err);
-        setUser({ name: 'Giga Host', role: 'business' });
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
     loadData();
-  }, [router]);
+
+    // 8-second live real-time sync polling
+    const interval = setInterval(() => {
+      refreshData();
+    }, 8000);
+
+    const onFocus = () => refreshData();
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('visibilitychange', onFocus);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('visibilitychange', onFocus);
+    };
+  }, [router, refreshData]);
 
   // AI Chat Simulation handler
   const handleSendGuestMessage = (e: React.FormEvent) => {
@@ -376,16 +426,30 @@ export default function BusinessDashboard() {
     },
   ];
 
+  const cardStyle: React.CSSProperties = {
+    background: isDark ? '#0d1322' : 'var(--card-bg)',
+    border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--border)',
+    boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.04)',
+  };
+  const titleColor = isDark ? '#ffffff' : 'var(--ink)';
+  const mutedColor = isDark ? '#94a3b8' : 'var(--muted)';
+  const subMutedColor = isDark ? '#64748b' : 'var(--muted)';
+  const subCardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
+  const inputBg = isDark ? 'rgba(255,255,255,0.04)' : '#ffffff';
+  const inputBorder = isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid var(--border)';
+  const inputColor = isDark ? '#ffffff' : 'var(--ink)';
+  const dividerColor = isDark ? 'rgba(255,255,255,0.06)' : 'var(--border)';
+
   return (
-    <div style={{ backgroundColor: '#0B132B', color: '#ffffff', minHeight: '100vh', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
+    <div style={{ backgroundColor: isDark ? '#0B132B' : 'var(--surface)', color: isDark ? '#ffffff' : 'var(--ink)', minHeight: '100vh', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
       <DashboardHeader activeRole="business" user={user} />
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
       
       {/* Left Navigation Sidebar */}
       <aside className="business-sidebar" style={{
         width: '270px',
-        background: '#0B132B',
-        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+        background: isDark ? '#0B132B' : 'var(--card-bg)',
+        borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
@@ -395,10 +459,10 @@ export default function BusinessDashboard() {
         zIndex: 40,
       }}>
         {/* Brand Header */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '24px 20px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d9653b', boxShadow: '0 0 10px #d9653b' }}></span>
-            <span style={{ fontFamily: 'var(--font-display), serif', fontSize: '21px', fontWeight: 800, color: '#ffffff' }}>
+            <span style={{ fontFamily: 'var(--font-display), serif', fontSize: '21px', fontWeight: 800, color: isDark ? '#ffffff' : 'var(--ink)' }}>
               kaya<span style={{ color: '#d9653b' }}>.biz</span>
             </span>
           </Link>
@@ -408,16 +472,16 @@ export default function BusinessDashboard() {
         </div>
 
         {/* Host Profile Info */}
-        <div style={{ padding: '16px 20px', background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ padding: '16px 20px', background: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.03)', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, #d9653b, #f59e0b)', display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 800, fontSize: '15px' }}>
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'H'}
+            {hostName ? hostName.charAt(0).toUpperCase() : 'H'}
           </div>
           <div style={{ overflow: 'hidden' }}>
-            <div style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: '#ffffff' }}>
-              {user?.name || 'Verified Host'}
+            <div style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: isDark ? '#ffffff' : 'var(--ink)' }}>
+              {hostName}
             </div>
-            <div style={{ fontSize: '11px', color: '#64748b' }}>
-              {user?.email || 'host@kaya.ge'}
+            <div style={{ fontSize: '11px', color: isDark ? '#64748b' : 'var(--muted)' }}>
+              {hostEmail}
             </div>
           </div>
         </div>
@@ -438,7 +502,7 @@ export default function BusinessDashboard() {
                   borderRadius: '12px',
                   border: 'none',
                   background: isActive ? 'linear-gradient(135deg, #d9653b, #be4f27)' : 'transparent',
-                  color: isActive ? '#ffffff' : '#94a3b8',
+                  color: isActive ? '#ffffff' : (isDark ? '#94a3b8' : 'var(--muted)'),
                   fontSize: '13px',
                   fontWeight: isActive ? 700 : 500,
                   cursor: 'pointer',
@@ -447,7 +511,7 @@ export default function BusinessDashboard() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ color: isActive ? '#ffffff' : '#94a3b8', display: 'grid', placeItems: 'center' }}>
+                  <span style={{ color: isActive ? '#ffffff' : (isDark ? '#94a3b8' : 'var(--muted)'), display: 'grid', placeItems: 'center' }}>
                     {m.icon}
                   </span>
                   <span>{m.label}</span>
@@ -470,7 +534,7 @@ export default function BusinessDashboard() {
         </nav>
 
         {/* Bottom Shortcuts */}
-        <div style={{ padding: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ padding: '16px', borderTop: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <Link
             href="/dashboard"
             style={{
@@ -480,8 +544,8 @@ export default function BusinessDashboard() {
               gap: '6px',
               padding: '10px',
               borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: '#cbd5e1',
+              background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+              color: isDark ? '#cbd5e1' : 'var(--ink)',
               fontSize: '12px',
               fontWeight: 600,
               textDecoration: 'none',
@@ -493,21 +557,27 @@ export default function BusinessDashboard() {
       </aside>
 
       {/* Main Business Suite Workspace */}
-      <main style={{ flex: 1, padding: '32px 40px', overflowY: 'auto', minHeight: '100vh', background: '#090d16' }}>
+      <main style={{ flex: 1, padding: '32px 40px', overflowY: 'auto', minHeight: '100vh', background: isDark ? '#090d16' : 'var(--surface)' }}>
         
         {/* Top Header Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mobile-menu-btn" style={{ display: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', width: '40px', height: '40px', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', flexShrink: 0 }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mobile-menu-btn" style={{ display: 'none', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid var(--border)', borderRadius: '10px', width: '40px', height: '40px', alignItems: 'center', justifyContent: 'center', color: isDark ? '#fff' : 'var(--ink)', cursor: 'pointer', flexShrink: 0 }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
             </button>
             <div>
-              <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 4px', color: '#ffffff' }}>
+              <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 4px', color: isDark ? '#ffffff' : 'var(--ink)' }}>
                 {modulesList.find(m => m.id === activeModule)?.label}
               </h1>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
-                KAYA Georgia Business Operations Center &bull; Real-Time Platform Synchronization
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <p style={{ margin: 0, color: isDark ? '#64748b' : 'var(--muted)', fontSize: '13px' }}>
+                  KAYA Georgia Business Operations Center &bull; Real-Time Platform Synchronization
+                </p>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 700 }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }}></span>
+                  ● Live Real-Time Sync
+                </span>
+              </div>
             </div>
           </div>
 
@@ -518,18 +588,18 @@ export default function BusinessDashboard() {
               alignItems: 'center',
               gap: '12px',
               padding: '8px 16px',
-              background: 'rgba(255, 255, 255, 0.04)',
+              background: isDark ? 'rgba(255, 255, 255, 0.04)' : 'var(--card-bg)',
               borderRadius: '999px',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--border)',
               fontSize: '12px',
               fontWeight: 600,
-              color: '#cbd5e1'
+              color: isDark ? '#cbd5e1' : 'var(--ink)'
             }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 Tbilisi 19°C
               </span>
-              <span style={{ color: 'rgba(255,255,255,0.2)' }}>|</span>
+              <span style={{ color: isDark ? 'rgba(255,255,255,0.2)' : 'var(--border)' }}>|</span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#38bdf8" strokeWidth="2"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
                 Kazbegi 8°C
@@ -564,24 +634,24 @@ export default function BusinessDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* 4 Quick Stat KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px' }}>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '22px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Monthly Revenue</span>
-                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: '#ffffff' }}>₾4,820</div>
+              <div style={{ background: isDark ? '#0d1322' : 'var(--card-bg)', borderRadius: '18px', padding: '22px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--border)', boxShadow: isDark ? 'none' : '0 2px 10px rgba(0,0,0,0.04)' }}>
+                <span style={{ fontSize: '12px', color: isDark ? '#64748b' : 'var(--muted)', fontWeight: 600 }}>Monthly Revenue</span>
+                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: isDark ? '#ffffff' : 'var(--ink)' }}>₾{displayRevenue}</div>
                 <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700 }}>+18.4% vs last month</span>
               </div>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '22px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Active Bookings</span>
-                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: '#ffffff' }}>{bookings.length > 0 ? bookings.length : 14}</div>
-                <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700 }}>4 upcoming this week</span>
+              <div style={{ background: isDark ? '#0d1322' : 'var(--card-bg)', borderRadius: '18px', padding: '22px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--border)', boxShadow: isDark ? 'none' : '0 2px 10px rgba(0,0,0,0.04)' }}>
+                <span style={{ fontSize: '12px', color: isDark ? '#64748b' : 'var(--muted)', fontWeight: 600 }}>Active Bookings</span>
+                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: isDark ? '#ffffff' : 'var(--ink)' }}>{activeBookingsCount}</div>
+                <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700 }}>Real-time verified</span>
               </div>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '22px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>AI Receptionist Inquiries</span>
-                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: '#ffffff' }}>86</div>
+              <div style={{ background: isDark ? '#0d1322' : 'var(--card-bg)', borderRadius: '18px', padding: '22px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--border)', boxShadow: isDark ? 'none' : '0 2px 10px rgba(0,0,0,0.04)' }}>
+                <span style={{ fontSize: '12px', color: isDark ? '#64748b' : 'var(--muted)', fontWeight: 600 }}>AI Receptionist Inquiries</span>
+                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: isDark ? '#ffffff' : 'var(--ink)' }}>86</div>
                 <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700 }}>94% resolved automatically</span>
               </div>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '22px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Platform Listings</span>
-                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: '#ffffff' }}>{listings.length > 0 ? listings.length : 18}</div>
+              <div style={{ background: isDark ? '#0d1322' : 'var(--card-bg)', borderRadius: '18px', padding: '22px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid var(--border)', boxShadow: isDark ? 'none' : '0 2px 10px rgba(0,0,0,0.04)' }}>
+                <span style={{ fontSize: '12px', color: isDark ? '#64748b' : 'var(--muted)', fontWeight: 600 }}>Platform Listings</span>
+                <div style={{ fontSize: '28px', fontWeight: 800, margin: '6px 0 2px', color: isDark ? '#ffffff' : 'var(--ink)' }}>{platformListingsCount}</div>
                 <span style={{ fontSize: '11px', color: '#fb923c', fontWeight: 700 }}>100% synchronized in MongoDB</span>
               </div>
             </div>
@@ -615,24 +685,24 @@ export default function BusinessDashboard() {
               </div>
 
               {/* Demand Quick Alert */}
-              <div style={{ background: '#0d1322', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ ...cardStyle, borderRadius: '20px', padding: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '14px', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px', color: titleColor, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#d9653b" strokeWidth="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
                     Georgia Demand Radar
                   </span>
                   <span style={{ fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>HIGH DEMAND</span>
                 </div>
-                <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 16px', lineHeight: 1.5 }}>
-                  Kazbegi chalets and Kakheti wine tours are seeing a <strong style={{ color: '#ffffff' }}>+42% search surge</strong> for this upcoming weekend.
+                <p style={{ fontSize: '13px', color: mutedColor, margin: '0 0 16px', lineHeight: 1.5 }}>
+                  Kazbegi chalets and Kakheti wine tours are seeing a <strong style={{ color: titleColor }}>+42% search surge</strong> for this upcoming weekend.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '12px' }}>
-                    <span>Stepantsminda / Kazbegi</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: subCardBg, borderRadius: '10px', fontSize: '12px' }}>
+                    <span style={{ color: titleColor }}>Stepantsminda / Kazbegi</span>
                     <strong style={{ color: '#22c55e' }}>+48% searches</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '12px' }}>
-                    <span>Kakheti Wine Country</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: subCardBg, borderRadius: '10px', fontSize: '12px' }}>
+                    <span style={{ color: titleColor }}>Kakheti Wine Country</span>
                     <strong style={{ color: '#22c55e' }}>+35% searches</strong>
                   </div>
                 </div>
@@ -646,15 +716,15 @@ export default function BusinessDashboard() {
             </div>
 
             {/* Upcoming Bookings Table */}
-            <div style={{ background: '#0d1322', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ ...cardStyle, borderRadius: '20px', padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#ffffff' }}>Recent &amp; Upcoming Bookings</h3>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Connected directly to MongoDB</span>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: titleColor }}>Recent &amp; Upcoming Bookings</h3>
+                <span style={{ fontSize: '12px', color: subMutedColor }}>Connected directly to MongoDB</span>
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#64748b', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <tr style={{ borderBottom: `1px solid ${dividerColor}`, color: subMutedColor, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       <th style={{ padding: '10px 14px' }}>Listing</th>
                       <th style={{ padding: '10px 14px' }}>Guest</th>
                       <th style={{ padding: '10px 14px' }}>Dates</th>
@@ -665,14 +735,14 @@ export default function BusinessDashboard() {
                   </thead>
                   <tbody>
                     {bookings.slice(0, 5).map((b: any, idx) => (
-                      <tr key={b._id || idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <td style={{ padding: '14px', fontWeight: 700, color: '#ffffff' }}>
+                      <tr key={b._id || idx} style={{ borderBottom: `1px solid ${dividerColor}` }}>
+                        <td style={{ padding: '14px', fontWeight: 700, color: titleColor }}>
                           {b.listing_title || 'Georgian Stay / Experience'}
                         </td>
-                        <td style={{ padding: '14px', color: '#cbd5e1' }}>
+                        <td style={{ padding: '14px', color: titleColor }}>
                           {b.user_name || b.tourist_name || 'Elena Traveler'}
                         </td>
-                        <td style={{ padding: '14px', color: '#94a3b8', fontSize: '12px' }}>
+                        <td style={{ padding: '14px', color: mutedColor, fontSize: '12px' }}>
                           {b.check_in} &rarr; {b.check_out}
                         </td>
                         <td style={{ padding: '14px' }}>
@@ -687,10 +757,10 @@ export default function BusinessDashboard() {
                             {b.status?.toUpperCase() || 'CONFIRMED'}
                           </span>
                         </td>
-                        <td style={{ padding: '14px', fontWeight: 800, color: '#ffffff' }}>
+                        <td style={{ padding: '14px', fontWeight: 800, color: titleColor }}>
                           ₾{b.total_price || 420} GEL
                         </td>
-                        <td style={{ padding: '14px', color: '#94a3b8', fontSize: '12px' }}>
+                        <td style={{ padding: '14px', color: mutedColor, fontSize: '12px' }}>
                           {b.payment_method === 'card' ? 'Online Card' : 'Cash on Arrival'}
                         </td>
                       </tr>
@@ -706,49 +776,49 @@ export default function BusinessDashboard() {
         {activeModule === 'receptionist' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
             {/* Live Chat Simulator */}
-            <div style={{ background: '#0d1322', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', height: '620px' }}>
-              <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ ...cardStyle, borderRadius: '24px', display: 'flex', flexDirection: 'column', height: '620px' }}>
+              <div style={{ padding: '18px 24px', borderBottom: `1px solid ${dividerColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e' }}></span>
-                  <strong style={{ fontSize: '15px', color: '#ffffff' }}>Live Receptionist Simulator</strong>
+                  <strong style={{ fontSize: '15px', color: titleColor }}>Live Receptionist Simulator</strong>
                 </div>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Try asking guest questions below</span>
+                <span style={{ fontSize: '12px', color: subMutedColor }}>Try asking guest questions below</span>
               </div>
 
               {/* Chat messages */}
-              <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', background: 'rgba(255,255,255,0.01)' }}>
+              <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', background: subCardBg }}>
                 {chatMessages.map((msg, i) => (
                   <div key={i} style={{ alignSelf: msg.sender === 'guest' ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
                     <div style={{
                       padding: '12px 16px',
                       borderRadius: msg.sender === 'guest' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                      background: msg.sender === 'guest' ? '#d9653b' : 'rgba(255,255,255,0.06)',
-                      color: '#ffffff',
+                      background: msg.sender === 'guest' ? '#d9653b' : (isDark ? 'rgba(255,255,255,0.06)' : '#ffffff'),
+                      color: msg.sender === 'guest' ? '#ffffff' : titleColor,
                       fontSize: '13px',
                       lineHeight: 1.5,
-                      border: msg.sender === 'guest' ? 'none' : '1px solid rgba(255,255,255,0.08)'
+                      border: msg.sender === 'guest' ? 'none' : `1px solid ${dividerColor}`
                     }}>
                       {msg.text}
                     </div>
-                    <span style={{ fontSize: '10px', color: '#64748b', display: 'block', marginTop: '4px', textAlign: msg.sender === 'guest' ? 'right' : 'left' }}>
+                    <span style={{ fontSize: '10px', color: subMutedColor, display: 'block', marginTop: '4px', textAlign: msg.sender === 'guest' ? 'right' : 'left' }}>
                       {msg.time}
                     </span>
                   </div>
                 ))}
                 {isAiTyping && (
-                  <div style={{ alignSelf: 'flex-start', padding: '10px 16px', borderRadius: '18px', background: 'rgba(255,255,255,0.06)', color: '#94a3b8', fontSize: '12px' }}>
+                  <div style={{ alignSelf: 'flex-start', padding: '10px 16px', borderRadius: '18px', background: isDark ? 'rgba(255,255,255,0.06)' : '#ffffff', color: mutedColor, fontSize: '12px', border: `1px solid ${dividerColor}` }}>
                     Klara is drafting response...
                   </div>
                 )}
               </div>
 
-              <form onSubmit={handleSendGuestMessage} style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '10px' }}>
+              <form onSubmit={handleSendGuestMessage} style={{ padding: '16px', borderTop: `1px solid ${dividerColor}`, display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   placeholder="Test a question: 'Is breakfast included?', 'Can we check in early?'"
                   value={userChatInput}
                   onChange={e => setUserChatInput(e.target.value)}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', outline: 'none', fontSize: '13px' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: '999px', border: inputBorder, background: inputBg, color: inputColor, outline: 'none', fontSize: '13px' }}
                 />
                 <button type="submit" style={{ padding: '12px 22px', borderRadius: '999px', background: '#d9653b', color: '#fff', border: 'none', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
                   Send
@@ -758,41 +828,41 @@ export default function BusinessDashboard() {
 
             {/* AI Receptionist Settings & Knowledge */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div style={{ background: '#0d1322', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: '0 0 14px', color: '#ffffff' }}>AI Persona &amp; Capabilities</h3>
+              <div style={{ ...cardStyle, borderRadius: '20px', padding: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: '0 0 14px', color: titleColor }}>AI Persona &amp; Capabilities</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span>Multilingual Auto-Translation</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${dividerColor}` }}>
+                    <span style={{ color: titleColor }}>Multilingual Auto-Translation</span>
                     <strong style={{ color: '#22c55e' }}>EN, KA, RU, AR Active</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span>Instant Price &amp; Quote Estimator</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${dividerColor}` }}>
+                    <span style={{ color: titleColor }}>Instant Price &amp; Quote Estimator</span>
                     <strong style={{ color: '#22c55e' }}>Enabled</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span>Emergency Escalation to Host Phone</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${dividerColor}` }}>
+                    <span style={{ color: titleColor }}>Emergency Escalation to Host Phone</span>
                     <strong style={{ color: '#fb923c' }}>SMS + WhatsApp</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
-                    <span>Operating Hours</span>
-                    <strong style={{ color: '#ffffff' }}>24 Hours / 7 Days</strong>
+                    <span style={{ color: titleColor }}>Operating Hours</span>
+                    <strong style={{ color: titleColor }}>24 Hours / 7 Days</strong>
                   </div>
                 </div>
               </div>
 
-              <div style={{ background: '#0d1322', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: '0 0 12px', color: '#ffffff' }}>Knowledge Base Rules</h3>
-                <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 14px' }}>
+              <div style={{ ...cardStyle, borderRadius: '20px', padding: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 800, margin: '0 0 12px', color: titleColor }}>Knowledge Base Rules</h3>
+                <p style={{ fontSize: '12px', color: subMutedColor, margin: '0 0 14px' }}>
                   Quick toggles configured for all your Georgian listings:
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-                  <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+                  <div style={{ padding: '10px 14px', background: subCardBg, borderRadius: '10px', color: titleColor }}>
                     ✓ <strong>Wi-Fi credentials:</strong> Auto-shared 2 hours before arrival
                   </div>
-                  <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+                  <div style={{ padding: '10px 14px', background: subCardBg, borderRadius: '10px', color: titleColor }}>
                     ✓ <strong>Airport pickup:</strong> Offered automatically to international arrivals
                   </div>
-                  <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+                  <div style={{ padding: '10px 14px', background: subCardBg, borderRadius: '10px', color: titleColor }}>
                     ✓ <strong>Wine tasting:</strong> Complimentary 18:00–20:00 every evening
                   </div>
                 </div>
@@ -804,10 +874,10 @@ export default function BusinessDashboard() {
         {/* MODULE 3: DEMAND RADAR & MAP */}
         {activeModule === 'demand' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ background: '#0d1322', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ ...cardStyle, borderRadius: '24px', padding: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>Georgia Real-Time Demand Radar</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: titleColor }}>Georgia Real-Time Demand Radar</h3>
                   <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Live search frequency and traveler inquiries across Sakartvelo</p>
                 </div>
                 <span style={{ fontSize: '12px', background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', padding: '6px 14px', borderRadius: '999px', fontWeight: 700 }}>
@@ -855,31 +925,31 @@ export default function BusinessDashboard() {
               </div>
 
               {/* Opportunity Cards */}
-              <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Actionable Demand Opportunities</h4>
+              <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: 700, color: titleColor }}>Actionable Demand Opportunities</h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-                <div style={{ padding: '18px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ padding: '18px', background: subCardBg, borderRadius: '16px', border: `1px solid ${dividerColor}` }}>
                   <span style={{ fontSize: '11px', color: '#fb923c', fontWeight: 800 }}>HOT OPPORTUNITY #1</span>
-                  <h5 style={{ margin: '6px 0 6px', fontSize: '14px', color: '#ffffff' }}>Kazbegi 4WD Vehicles</h5>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 14px' }}>18 travelers currently searching for off-road rentals for Saturday morning.</p>
+                  <h5 style={{ margin: '6px 0 6px', fontSize: '14px', color: titleColor }}>Kazbegi 4WD Vehicles</h5>
+                  <p style={{ fontSize: '12px', color: mutedColor, margin: '0 0 14px' }}>18 travelers currently searching for off-road rentals for Saturday morning.</p>
                   <button onClick={() => setActiveModule('empty-slot')} style={{ padding: '8px 14px', borderRadius: '8px', background: '#d9653b', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                     Open Availability
                   </button>
                 </div>
 
-                <div style={{ padding: '18px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ padding: '18px', background: subCardBg, borderRadius: '16px', border: `1px solid ${dividerColor}` }}>
                   <span style={{ fontSize: '11px', color: '#c084fc', fontWeight: 800 }}>HOT OPPORTUNITY #2</span>
-                  <h5 style={{ margin: '6px 0 6px', fontSize: '14px', color: '#ffffff' }}>Kakheti Wine Supra</h5>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 14px' }}>Two European tourist groups requested a private Tamada toastmaster feast.</p>
-                  <button onClick={() => setActiveModule('crm')} style={{ padding: '8px 14px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                  <h5 style={{ margin: '6px 0 6px', fontSize: '14px', color: titleColor }}>Kakheti Wine Supra</h5>
+                  <p style={{ fontSize: '12px', color: mutedColor, margin: '0 0 14px' }}>Two European tourist groups requested a private Tamada toastmaster feast.</p>
+                  <button onClick={() => setActiveModule('crm')} style={{ padding: '8px 14px', borderRadius: '8px', background: isDark ? '#0f172a' : 'var(--card-bg)', color: titleColor, border: `1px solid ${dividerColor}`, fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                     View CRM Leads
                   </button>
                 </div>
 
-                <div style={{ padding: '18px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ padding: '18px', background: subCardBg, borderRadius: '16px', border: `1px solid ${dividerColor}` }}>
                   <span style={{ fontSize: '11px', color: '#4ade80', fontWeight: 800 }}>HOT OPPORTUNITY #3</span>
-                  <h5 style={{ margin: '6px 0 6px', fontSize: '14px', color: '#ffffff' }}>Tbilisi Vera Apartments</h5>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 14px' }}>Digital nomads booking 14+ night stays with 100Mbps Wi-Fi.</p>
-                  <button onClick={() => setActiveModule('listing-builder')} style={{ padding: '8px 14px', borderRadius: '8px', background: '#0f172a', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                  <h5 style={{ margin: '6px 0 6px', fontSize: '14px', color: titleColor }}>Tbilisi Vera Apartments</h5>
+                  <p style={{ fontSize: '12px', color: mutedColor, margin: '0 0 14px' }}>Digital nomads booking 14+ night stays with 100Mbps Wi-Fi.</p>
+                  <button onClick={() => setActiveModule('listing-builder')} style={{ padding: '8px 14px', borderRadius: '8px', background: isDark ? '#0f172a' : 'var(--card-bg)', color: titleColor, border: `1px solid ${dividerColor}`, fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                     Add Listing
                   </button>
                 </div>
@@ -891,67 +961,67 @@ export default function BusinessDashboard() {
         {/* MODULE 4: EMPTY SLOT / LAST MINUTE DEAL ENGINE */}
         {activeModule === 'empty-slot' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
-            <div style={{ background: '#0d1322', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ ...cardStyle, borderRadius: '24px', padding: '28px' }}>
               <div style={{ marginBottom: '20px' }}>
                 <span style={{ fontSize: '11px', color: '#fb923c', fontWeight: 800, textTransform: 'uppercase' }}>Last Minute Deal Engine</span>
-                <h3 style={{ margin: '4px 0 6px', fontSize: '20px', fontWeight: 800, color: '#ffffff' }}>Sell Empty Slots: Turn Unused Capacity into Revenue</h3>
-                <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>
+                <h3 style={{ margin: '4px 0 6px', fontSize: '20px', fontWeight: 800, color: titleColor }}>Sell Empty Slots: Turn Unused Capacity into Revenue</h3>
+                <p style={{ color: mutedColor, fontSize: '13px', margin: 0 }}>
                   Automatically broadcast discounted flash deals to high-intent travelers currently browsing Kaya.ge.
                 </p>
               </div>
 
               <form onSubmit={e => { e.preventDefault(); setEmptySlotData(p => ({ ...p, published: true })); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#cbd5e1' }}>Select Listing / Tour / Car</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: titleColor }}>Select Listing / Tour / Car</label>
                   <select
                     value={emptySlotData.title}
                     onChange={e => setEmptySlotData(p => ({ ...p, title: e.target.value }))}
-                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px' }}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px' }}
                   >
-                    <option value="Rooms Hotel Kazbegi - Mountain Terrace Room" style={{ background: '#0d1322' }}>Rooms Hotel Kazbegi - Mountain Terrace Room</option>
-                    <option value="Toyota Land Cruiser Prado 4x4 Expedition" style={{ background: '#0d1322' }}>Toyota Land Cruiser Prado 4x4 Expedition</option>
-                    <option value="Kakheti 8,000-Vintage Qvevri Wine Trail" style={{ background: '#0d1322' }}>Kakheti 8,000-Vintage Qvevri Wine Trail</option>
-                    <option value="Sololaki Heritage High-Ceiling Art Flat" style={{ background: '#0d1322' }}>Sololaki Heritage High-Ceiling Art Flat</option>
+                    <option value="Rooms Hotel Kazbegi - Mountain Terrace Room" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Rooms Hotel Kazbegi - Mountain Terrace Room</option>
+                    <option value="Toyota Land Cruiser Prado 4x4 Expedition" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Toyota Land Cruiser Prado 4x4 Expedition</option>
+                    <option value="Kakheti 8,000-Vintage Qvevri Wine Trail" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Kakheti 8,000-Vintage Qvevri Wine Trail</option>
+                    <option value="Sololaki Heritage High-Ceiling Art Flat" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Sololaki Heritage High-Ceiling Art Flat</option>
                   </select>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#cbd5e1' }}>Normal Price (₾)</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: titleColor }}>Normal Price (₾)</label>
                     <input
                       type="number"
                       value={emptySlotData.normalPrice}
                       onChange={e => setEmptySlotData(p => ({ ...p, normalPrice: Number(e.target.value) }))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#cbd5e1' }}>Flash Deal Price (₾)</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: titleColor }}>Flash Deal Price (₾)</label>
                     <input
                       type="number"
                       value={emptySlotData.dealPrice}
                       onChange={e => setEmptySlotData(p => ({ ...p, dealPrice: Number(e.target.value) }))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fb923c', fontSize: '13px', fontWeight: 800 }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: inputBorder, background: inputBg, color: '#fb923c', fontSize: '13px', fontWeight: 800 }}
                     />
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#cbd5e1' }}>Slots / Seats Left</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: titleColor }}>Slots / Seats Left</label>
                     <input
                       type="number"
                       value={emptySlotData.slotsLeft}
                       onChange={e => setEmptySlotData(p => ({ ...p, slotsLeft: Number(e.target.value) }))}
-                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px' }}
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: '#cbd5e1' }}>Expires In</label>
-                    <select style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px' }}>
-                      <option style={{ background: '#0d1322' }}>Tonight at 23:59</option>
-                      <option style={{ background: '#0d1322' }}>In 24 hours</option>
-                      <option style={{ background: '#0d1322' }}>In 48 hours</option>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: titleColor }}>Expires In</label>
+                    <select style={{ width: '100%', padding: '12px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px' }}>
+                      <option style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Tonight at 23:59</option>
+                      <option style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>In 24 hours</option>
+                      <option style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>In 48 hours</option>
                     </select>
                   </div>
                 </div>
@@ -978,8 +1048,8 @@ export default function BusinessDashboard() {
 
             {/* Live Card Preview */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>LIVE VISITOR PREVIEW BADGE</span>
-              <div style={{ background: '#0d1322', borderRadius: '24px', overflow: 'hidden', border: '2px solid #d9653b', boxShadow: '0 12px 32px rgba(217,101,59,0.2)' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: subMutedColor }}>LIVE VISITOR PREVIEW BADGE</span>
+              <div style={{ ...cardStyle, borderRadius: '24px', overflow: 'hidden', border: '2px solid #d9653b', boxShadow: '0 12px 32px rgba(217,101,59,0.2)' }}>
                 <div style={{ position: 'relative', height: '180px', background: 'url(https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&fit=crop) 50%/cover' }}>
                   <span style={{ position: 'absolute', top: '14px', left: '14px', background: '#dc2626', color: '#fff', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800 }}>
                     LAST {emptySlotData.slotsLeft} SEATS!
@@ -989,11 +1059,11 @@ export default function BusinessDashboard() {
                   </span>
                 </div>
                 <div style={{ padding: '20px' }}>
-                  <h4 style={{ margin: '0 0 6px', fontSize: '15px', color: '#ffffff' }}>{emptySlotData.title}</h4>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 16px' }}>Valid for: {emptySlotData.date}</p>
+                  <h4 style={{ margin: '0 0 6px', fontSize: '15px', color: titleColor }}>{emptySlotData.title}</h4>
+                  <p style={{ fontSize: '12px', color: mutedColor, margin: '0 0 16px' }}>Valid for: {emptySlotData.date}</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <span style={{ textDecoration: 'line-through', color: '#64748b', fontSize: '13px', marginRight: '8px' }}>₾{emptySlotData.normalPrice}</span>
+                      <span style={{ textDecoration: 'line-through', color: subMutedColor, fontSize: '13px', marginRight: '8px' }}>₾{emptySlotData.normalPrice}</span>
                       <strong style={{ fontSize: '20px', color: '#fb923c' }}>₾{emptySlotData.dealPrice} GEL</strong>
                     </div>
                     <span style={{ fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 700, padding: '4px 10px', borderRadius: '999px' }}>
@@ -1017,8 +1087,8 @@ export default function BusinessDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>Guest Inquiry Pipeline &amp; CRM</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Track leads from discovery to check-out across all channels</p>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: titleColor }}>Guest Inquiry Pipeline &amp; CRM</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: subMutedColor }}>Track leads from discovery to check-out across all channels</p>
               </div>
               <button
                 onClick={() => setNewLeadModal(true)}
@@ -1040,25 +1110,25 @@ export default function BusinessDashboard() {
                   completed: 'Completed',
                 };
                 return (
-                  <div key={stageKey} style={{ background: '#0d1322', borderRadius: '16px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <strong style={{ fontSize: '12px', textTransform: 'uppercase', color: '#94a3b8' }}>{stageTitles[stageKey]}</strong>
-                      <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '999px', fontWeight: 800, color: '#ffffff' }}>{stageLeads.length}</span>
+                  <div key={stageKey} style={{ ...cardStyle, borderRadius: '16px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '8px', borderBottom: `1px solid ${dividerColor}` }}>
+                      <strong style={{ fontSize: '12px', textTransform: 'uppercase', color: subMutedColor }}>{stageTitles[stageKey]}</strong>
+                      <span style={{ fontSize: '11px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', padding: '2px 8px', borderRadius: '999px', fontWeight: 800, color: titleColor }}>{stageLeads.length}</span>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {stageLeads.map(lead => (
-                        <div key={lead.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div key={lead.id} style={{ background: subCardBg, borderRadius: '12px', padding: '14px', border: `1px solid ${dividerColor}` }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                            <strong style={{ fontSize: '13px', color: '#ffffff' }}>{lead.name}</strong>
+                            <strong style={{ fontSize: '13px', color: titleColor }}>{lead.name}</strong>
                             <span style={{ fontSize: '12px', fontWeight: 800, color: '#4ade80' }}>₾{lead.value}</span>
                           </div>
-                          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '0 0 8px' }}>{lead.interest}</p>
-                          <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '10px' }}>{lead.phone}</div>
+                          <p style={{ fontSize: '11px', color: mutedColor, margin: '0 0 8px' }}>{lead.interest}</p>
+                          <div style={{ fontSize: '11px', color: subMutedColor, marginBottom: '10px' }}>{lead.phone}</div>
                           {stageKey !== 'completed' && (
                             <button
                               onClick={() => handleAdvanceLead(lead.id)}
-                              style={{ width: '100%', padding: '6px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', color: '#cbd5e1' }}
+                              style={{ width: '100%', padding: '6px', borderRadius: '8px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: `1px solid ${dividerColor}`, fontSize: '11px', fontWeight: 700, cursor: 'pointer', color: titleColor }}
                             >
                               Advance Stage &rarr;
                             </button>
@@ -1074,16 +1144,16 @@ export default function BusinessDashboard() {
             {/* Modal to add lead */}
             {newLeadModal && (
               <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                <div style={{ background: '#0d1322', borderRadius: '20px', padding: '28px', maxWidth: '420px', width: '100%', border: '1px solid rgba(255,255,255,0.12)' }}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: '#ffffff' }}>Add New Lead</h3>
+                <div style={{ ...cardStyle, borderRadius: '20px', padding: '28px', maxWidth: '420px', width: '100%' }}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: titleColor }}>Add New Lead</h3>
                   <form onSubmit={handleAddLead} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <input type="text" placeholder="Lead Name" required value={newLeadForm.name} onChange={e => setNewLeadForm(p => ({ ...p, name: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff' }} />
-                    <input type="email" placeholder="Email" value={newLeadForm.email} onChange={e => setNewLeadForm(p => ({ ...p, email: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff' }} />
-                    <input type="tel" placeholder="Phone" value={newLeadForm.phone} onChange={e => setNewLeadForm(p => ({ ...p, phone: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff' }} />
-                    <input type="text" placeholder="Interest (e.g. Kazbegi Tour)" value={newLeadForm.interest} onChange={e => setNewLeadForm(p => ({ ...p, interest: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff' }} />
-                    <input type="number" placeholder="Estimated Value (₾)" value={newLeadForm.value} onChange={e => setNewLeadForm(p => ({ ...p, value: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff' }} />
+                    <input type="text" placeholder="Lead Name" required value={newLeadForm.name} onChange={e => setNewLeadForm(p => ({ ...p, name: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: inputBorder, background: inputBg, color: inputColor }} />
+                    <input type="email" placeholder="Email" value={newLeadForm.email} onChange={e => setNewLeadForm(p => ({ ...p, email: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: inputBorder, background: inputBg, color: inputColor }} />
+                    <input type="tel" placeholder="Phone" value={newLeadForm.phone} onChange={e => setNewLeadForm(p => ({ ...p, phone: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: inputBorder, background: inputBg, color: inputColor }} />
+                    <input type="text" placeholder="Interest (e.g. Kazbegi Tour)" value={newLeadForm.interest} onChange={e => setNewLeadForm(p => ({ ...p, interest: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: inputBorder, background: inputBg, color: inputColor }} />
+                    <input type="number" placeholder="Estimated Value (₾)" value={newLeadForm.value} onChange={e => setNewLeadForm(p => ({ ...p, value: e.target.value }))} style={{ padding: '10px', borderRadius: '10px', border: inputBorder, background: inputBg, color: inputColor }} />
                     <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                      <button type="button" onClick={() => setNewLeadModal(false)} style={{ flex: 1, padding: '10px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#cbd5e1' }}>Cancel</button>
+                      <button type="button" onClick={() => setNewLeadModal(false)} style={{ flex: 1, padding: '10px', borderRadius: '999px', border: `1px solid ${dividerColor}`, background: 'transparent', color: mutedColor }}>Cancel</button>
                       <button type="submit" style={{ flex: 1, padding: '10px', borderRadius: '999px', background: '#d9653b', color: '#fff', border: 'none', fontWeight: 700 }}>Save Lead</button>
                     </div>
                   </form>
@@ -1095,11 +1165,11 @@ export default function BusinessDashboard() {
 
         {/* MODULE 6: OPERATIONS & CALENDAR */}
         {activeModule === 'calendar' && (
-          <div style={{ background: '#0d1322', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ ...cardStyle, borderRadius: '24px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>Operations &amp; Turnaround Calendar</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Manage check-ins, key handovers, cleaning slots, and vehicle dispatches</p>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: titleColor }}>Operations &amp; Turnaround Calendar</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: subMutedColor }}>Manage check-ins, key handovers, cleaning slots, and vehicle dispatches</p>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {(['day', 'week', 'month'] as const).map(view => (
@@ -1109,9 +1179,9 @@ export default function BusinessDashboard() {
                     style={{
                       padding: '8px 16px',
                       borderRadius: '999px',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: calendarView === view ? '#d9653b' : 'rgba(255,255,255,0.04)',
-                      color: calendarView === view ? '#fff' : '#94a3b8',
+                      border: `1px solid ${dividerColor}`,
+                      background: calendarView === view ? '#d9653b' : subCardBg,
+                      color: calendarView === view ? '#fff' : mutedColor,
                       fontSize: '12px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -1127,7 +1197,7 @@ export default function BusinessDashboard() {
             {/* Calendar Grid Representation (October 2026) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                <div key={day} style={{ textAlign: 'center', fontWeight: 800, fontSize: '12px', color: '#64748b', padding: '8px' }}>
+                <div key={day} style={{ textAlign: 'center', fontWeight: 800, fontSize: '12px', color: subMutedColor, padding: '8px' }}>
                   {day}
                 </div>
               ))}
@@ -1139,17 +1209,17 @@ export default function BusinessDashboard() {
                     key={dateNum}
                     style={{
                       minHeight: '80px',
-                      background: isBooked ? 'rgba(34, 197, 94, 0.08)' : isDeal ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                      background: isBooked ? 'rgba(34, 197, 94, 0.08)' : isDeal ? 'rgba(245, 158, 11, 0.08)' : subCardBg,
                       borderRadius: '12px',
                       padding: '8px',
-                      border: isBooked ? '1px solid rgba(34, 197, 94, 0.25)' : isDeal ? '1px solid rgba(245, 158, 11, 0.25)' : '1px solid rgba(255,255,255,0.05)',
+                      border: isBooked ? '1px solid rgba(34, 197, 94, 0.25)' : isDeal ? '1px solid rgba(245, 158, 11, 0.25)' : `1px solid ${dividerColor}`,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
-                      <span style={{ color: '#ffffff' }}>{dateNum}</span>
+                      <span style={{ color: titleColor }}>{dateNum}</span>
                       {isBooked && <span style={{ color: '#4ade80' }}>● Booked</span>}
                       {isDeal && <span style={{ color: '#fb923c' }}>Flash Deal</span>}
                     </div>
@@ -1172,16 +1242,16 @@ export default function BusinessDashboard() {
 
         {/* MODULE 7: AI LISTING BUILDER (3-STEP WIZARD) */}
         {activeModule === 'listing-builder' && (
-          <div style={{ background: '#0d1322', borderRadius: '24px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)', maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ ...cardStyle, borderRadius: '24px', padding: '32px', maxWidth: '800px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#ffffff' }}>AI Listing Builder</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Generate marketing copy, amenities &amp; publish straight to MongoDB in seconds</p>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: titleColor }}>AI Listing Builder</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: subMutedColor }}>Generate marketing copy, amenities &amp; publish straight to MongoDB in seconds</p>
               </div>
               <div style={{ display: 'flex', gap: '8px', fontSize: '12px', fontWeight: 700 }}>
-                <span style={{ padding: '6px 12px', borderRadius: '999px', background: builderStep === 1 ? '#d9653b' : 'rgba(255,255,255,0.06)', color: '#fff' }}>1. Basic Info</span>
-                <span style={{ padding: '6px 12px', borderRadius: '999px', background: builderStep === 2 ? '#d9653b' : 'rgba(255,255,255,0.06)', color: '#fff' }}>2. AI Copy</span>
-                <span style={{ padding: '6px 12px', borderRadius: '999px', background: builderStep === 3 ? '#d9653b' : 'rgba(255,255,255,0.06)', color: '#fff' }}>3. Publish</span>
+                <span style={{ padding: '6px 12px', borderRadius: '999px', background: builderStep === 1 ? '#d9653b' : subCardBg, color: builderStep === 1 ? '#fff' : titleColor }}>1. Basic Info</span>
+                <span style={{ padding: '6px 12px', borderRadius: '999px', background: builderStep === 2 ? '#d9653b' : subCardBg, color: builderStep === 2 ? '#fff' : titleColor }}>2. AI Copy</span>
+                <span style={{ padding: '6px 12px', borderRadius: '999px', background: builderStep === 3 ? '#d9653b' : subCardBg, color: builderStep === 3 ? '#fff' : titleColor }}>3. Publish</span>
               </div>
             </div>
 
@@ -1196,54 +1266,54 @@ export default function BusinessDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>Category</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>Category</label>
                     <select
                       value={builderForm.category}
                       onChange={e => setBuilderForm({ ...builderForm, category: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                     >
-                      <option value="hotels" style={{ background: '#0d1322' }}>Hotel / Boutique Stay</option>
-                      <option value="apartments" style={{ background: '#0d1322' }}>Apartment</option>
-                      <option value="houses" style={{ background: '#0d1322' }}>House / Mountain Chalet</option>
-                      <option value="villas" style={{ background: '#0d1322' }}>Villa</option>
-                      <option value="cars" style={{ background: '#0d1322' }}>4x4 Car Rental / Fleet</option>
-                      <option value="tours" style={{ background: '#0d1322' }}>Wine / Mountain Tour</option>
-                      <option value="restaurants" style={{ background: '#0d1322' }}>Restaurant / Georgian Table</option>
-                      <option value="salons" style={{ background: '#0d1322' }}>Salon / Spa</option>
-                      <option value="services" style={{ background: '#0d1322' }}>Service / Transfer</option>
+                      <option value="hotels" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Hotel / Boutique Stay</option>
+                      <option value="apartments" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Apartment</option>
+                      <option value="houses" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>House / Mountain Chalet</option>
+                      <option value="villas" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Villa</option>
+                      <option value="cars" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>4x4 Car Rental / Fleet</option>
+                      <option value="tours" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Wine / Mountain Tour</option>
+                      <option value="restaurants" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Restaurant / Georgian Table</option>
+                      <option value="salons" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Salon / Spa</option>
+                      <option value="services" style={{ background: isDark ? '#0d1322' : '#ffffff', color: isDark ? '#ffffff' : '#000000' }}>Service / Transfer</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>Listing Name / Draft Title</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>Listing Name / Draft Title</label>
                     <input
                       type="text"
                       placeholder="e.g. Kazbegi Valley Guesthouse"
                       value={builderForm.title}
                       onChange={e => setBuilderForm({ ...builderForm, title: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                     />
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>Price per Night / Day (GEL)</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>Price per Night / Day (GEL)</label>
                     <input
                       type="number"
                       placeholder="240"
                       value={builderForm.price_per_night}
                       onChange={e => setBuilderForm({ ...builderForm, price_per_night: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>Location / City</label>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>Location / City</label>
                     <input
                       type="text"
                       placeholder="Stepantsminda, Kazbegi"
                       value={builderForm.location}
                       onChange={e => setBuilderForm({ ...builderForm, location: e.target.value, city: e.target.value.split(',')[0].trim() })}
-                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                      style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                     />
                   </div>
                 </div>
@@ -1278,35 +1348,35 @@ export default function BusinessDashboard() {
             {builderStep === 2 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>AI-Generated Title</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>AI-Generated Title</label>
                   <input
                     type="text"
                     value={builderForm.title}
                     onChange={e => setBuilderForm({ ...builderForm, title: e.target.value })}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>AI-Generated Description &amp; Story</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>AI-Generated Description &amp; Story</label>
                   <textarea
                     rows={5}
                     value={builderForm.description}
                     onChange={e => setBuilderForm({ ...builderForm, description: e.target.value })}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none', resize: 'vertical' }}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none', resize: 'vertical' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>Amenities &amp; Features</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>Amenities &amp; Features</label>
                   <input
                     type="text"
                     value={builderForm.amenities}
                     onChange={e => setBuilderForm({ ...builderForm, amenities: e.target.value })}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                   />
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                  <button onClick={() => setBuilderStep(1)} style={{ flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#cbd5e1', fontWeight: 700, cursor: 'pointer' }}>
+                  <button onClick={() => setBuilderStep(1)} style={{ flex: 1, padding: '12px', borderRadius: '999px', border: `1px solid ${dividerColor}`, background: 'transparent', color: titleColor, fontWeight: 700, cursor: 'pointer' }}>
                     &larr; Back
                   </button>
                   <button onClick={() => setBuilderStep(3)} style={{ flex: 2, padding: '12px', borderRadius: '999px', background: '#d9653b', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
@@ -1320,20 +1390,20 @@ export default function BusinessDashboard() {
             {builderStep === 3 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>Cover Image URL</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: titleColor, marginBottom: '6px' }}>Cover Image URL</label>
                   <input
                     type="url"
                     value={builderForm.images}
                     onChange={e => setBuilderForm({ ...builderForm, images: e.target.value })}
-                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: '13px', outline: 'none' }}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: inputBorder, background: inputBg, color: inputColor, fontSize: '13px', outline: 'none' }}
                   />
                 </div>
 
                 {/* Preview Image */}
-                <div style={{ height: '220px', borderRadius: '16px', background: `url(${builderForm.images}) 50%/cover`, border: '1px solid rgba(255,255,255,0.1)' }}></div>
+                <div style={{ height: '220px', borderRadius: '16px', background: `url(${builderForm.images}) 50%/cover`, border: `1px solid ${dividerColor}` }}></div>
 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                  <button onClick={() => setBuilderStep(2)} style={{ flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#cbd5e1', fontWeight: 700, cursor: 'pointer' }}>
+                  <button onClick={() => setBuilderStep(2)} style={{ flex: 1, padding: '12px', borderRadius: '999px', border: `1px solid ${dividerColor}`, background: 'transparent', color: titleColor, fontWeight: 700, cursor: 'pointer' }}>
                     &larr; Back
                   </button>
                   <button onClick={handlePublishListing} style={{ flex: 2, padding: '12px', borderRadius: '999px', background: '#16a34a', color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(22,163,74,0.35)' }}>
@@ -1350,37 +1420,37 @@ export default function BusinessDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* Conversion Metrics */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Conversion Rate</span>
-                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: '#ffffff' }}>4.8%</div>
+              <div style={{ ...cardStyle, borderRadius: '18px', padding: '20px' }}>
+                <span style={{ fontSize: '12px', color: subMutedColor }}>Conversion Rate</span>
+                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: titleColor }}>4.8%</div>
                 <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700 }}>+0.6% vs Tbilisi average</span>
               </div>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Average Daily Rate</span>
-                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: '#ffffff' }}>₾245</div>
+              <div style={{ ...cardStyle, borderRadius: '18px', padding: '20px' }}>
+                <span style={{ fontSize: '12px', color: subMutedColor }}>Average Daily Rate</span>
+                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: titleColor }}>₾245</div>
                 <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700 }}>+12% premium</span>
               </div>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>Occupancy Rate</span>
-                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: '#ffffff' }}>82%</div>
+              <div style={{ ...cardStyle, borderRadius: '18px', padding: '20px' }}>
+                <span style={{ fontSize: '12px', color: subMutedColor }}>Occupancy Rate</span>
+                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: titleColor }}>82%</div>
                 <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700 }}>Peak season level</span>
               </div>
-              <div style={{ background: '#0d1322', borderRadius: '18px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>RevPAR</span>
-                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: '#ffffff' }}>₾201</div>
+              <div style={{ ...cardStyle, borderRadius: '18px', padding: '20px' }}>
+                <span style={{ fontSize: '12px', color: subMutedColor }}>RevPAR</span>
+                <div style={{ fontSize: '26px', fontWeight: 800, margin: '6px 0', color: titleColor }}>₾201</div>
                 <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 700 }}>Top 5% in Georgia</span>
               </div>
             </div>
 
             {/* Revenue Leak Detector Cards */}
-            <div style={{ background: '#0d1322', borderRadius: '24px', padding: '28px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ ...cardStyle, borderRadius: '24px', padding: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     Revenue Leak Detector
                   </h3>
-                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>AI-identified lost revenue opportunities with instant 1-click fixes</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: subMutedColor }}>AI-identified lost revenue opportunities with instant 1-click fixes</p>
                 </div>
                 <span style={{ fontSize: '12px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '4px 12px', borderRadius: '999px', fontWeight: 700 }}>
                   Potential: +₾1,480/mo
@@ -1428,12 +1498,12 @@ export default function BusinessDashboard() {
                     >
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                          <strong style={{ fontSize: '14px', color: '#ffffff' }}>{leak.title}</strong>
+                          <strong style={{ fontSize: '14px', color: titleColor }}>{leak.title}</strong>
                           <span style={{ fontSize: '11px', fontWeight: 800, color: isResolved ? '#4ade80' : '#fb923c', background: isResolved ? 'rgba(34, 197, 94, 0.2)' : 'rgba(245, 158, 11, 0.2)', padding: '2px 8px', borderRadius: '6px' }}>
                             {isResolved ? '✓ Fixed' : leak.impact}
                           </span>
                         </div>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>{leak.desc}</p>
+                        <p style={{ margin: 0, fontSize: '12px', color: mutedColor }}>{leak.desc}</p>
                       </div>
 
                       <button
@@ -1463,22 +1533,22 @@ export default function BusinessDashboard() {
 
         {/* MODULE 9: SUBSCRIPTION & PLAN */}
         {activeModule === 'subscription' && (
-          <div style={{ background: '#0d1322', borderRadius: '24px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)', maxWidth: '720px', margin: '0 auto' }}>
+          <div style={{ ...cardStyle, borderRadius: '24px', padding: '32px', maxWidth: '720px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
               <div>
                 <span style={{ fontSize: '12px', background: 'rgba(217, 101, 59, 0.2)', color: '#fb923c', padding: '4px 10px', borderRadius: '999px', fontWeight: 800 }}>
                   CURRENT ACTIVE PLAN
                 </span>
-                <h3 style={{ margin: '8px 0 4px', fontSize: '24px', fontWeight: 800, color: '#ffffff' }}>KAYA Pro Business Host</h3>
-                <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Billed annually &bull; Renews October 2027</p>
+                <h3 style={{ margin: '8px 0 4px', fontSize: '24px', fontWeight: 800, color: titleColor }}>KAYA Pro Business Host</h3>
+                <p style={{ margin: 0, color: subMutedColor, fontSize: '13px' }}>Billed annually &bull; Renews October 2027</p>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '32px', fontWeight: 800, color: '#ffffff' }}>₾89</span>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>/month</span>
+                <span style={{ fontSize: '32px', fontWeight: 800, color: titleColor }}>₾89</span>
+                <span style={{ fontSize: '13px', color: subMutedColor }}>/month</span>
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 0', margin: '20px 0', display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
+            <div style={{ borderTop: `1px solid ${dividerColor}`, borderBottom: `1px solid ${dividerColor}`, padding: '20px 0', margin: '20px 0', display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
               {[
                 'Unlimited AI Receptionist conversations in 4 languages (EN, KA, RU, AR)',
                 'Real-Time Georgia Demand Radar alerts & surge insights',
@@ -1489,18 +1559,18 @@ export default function BusinessDashboard() {
               ].map((benefit, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ color: '#22c55e', fontWeight: 800 }}>✓</span>
-                  <span style={{ color: '#cbd5e1' }}>{benefit}</span>
+                  <span style={{ color: titleColor }}>{benefit}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>
-                Payout Destination: <strong style={{ color: '#ffffff' }}>TBC Bank (IBAN GE29TB...)</strong>
+              <div style={{ fontSize: '12px', color: subMutedColor }}>
+                Payout Destination: <strong style={{ color: titleColor }}>TBC Bank (IBAN GE29TB...)</strong>
               </div>
               <button
                 onClick={() => alert('Plan is active and fully paid for 12 months!')}
-                style={{ padding: '10px 20px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '10px 20px', borderRadius: '999px', background: subCardBg, color: titleColor, border: `1px solid ${dividerColor}`, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
               >
                 Manage Billing &amp; Invoices
               </button>

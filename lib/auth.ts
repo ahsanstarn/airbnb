@@ -60,7 +60,7 @@ export async function getCurrentUser(req: NextRequest) {
 
   const db = await getDb();
   let user: any = null;
-  const projection = { password: 0, passwordHash: 0 };
+  const projection = { password: 0, passwordHash: 0, passwordResetToken: 0, passwordResetExpiry: 0 };
   if (ObjectId.isValid(payload.userId)) {
     try {
       user = await db.collection('users').findOne(
@@ -73,7 +73,7 @@ export async function getCurrentUser(req: NextRequest) {
   }
   if (!user) {
     user = await db.collection('users').findOne(
-      { _id: payload.userId },
+      { _id: payload.userId as any },
       { projection }
     );
   }

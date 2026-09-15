@@ -75,48 +75,61 @@ export default function ForgotPasswordPage() {
         )}
 
         {success ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', alignItems: 'center', width: '100%' }}>
             <div style={{
               backgroundColor: 'rgba(44, 157, 111, 0.18)',
               border: '1px solid rgba(44, 157, 111, 0.4)',
               color: '#86efac',
-              padding: '16px',
-              borderRadius: '14px',
-              fontSize: '13px',
+              padding: '18px',
+              borderRadius: '16px',
+              fontSize: '13.5px',
               fontWeight: 500,
               textAlign: 'center',
               width: '100%',
             }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20" style={{ marginBottom: '8px' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="28" height="28" style={{ marginBottom: '8px', display: 'inline-block' }}>
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              <p style={{ margin: 0 }}>If an account exists with that email, a reset link has been sent.</p>
-              <p style={{ margin: '8px 0 0', fontSize: '12px', opacity: 0.7 }}>Check your inbox and follow the link to reset your password.</p>
+              <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>Reset Link Ready!</h4>
+              <p style={{ margin: 0, color: '#bbf7d0', fontSize: '13px' }}>A password reset token has been verified for <strong style={{ color: '#ffffff' }}>{email}</strong>.</p>
             </div>
 
             {resetUrl && (
-              <div style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: '14px',
-                padding: '12px 16px',
-                width: '100%',
-              }}>
-                <p style={{ margin: '0 0 8px', fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
-                  Development Mode — Reset Link:
-                </p>
-                <a
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <Link
                   href={resetUrl}
+                  className="login-submit-btn"
+                  style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center' }}
+                >
+                  <span>Set New Password Now</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="16" height="16">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(resetUrl);
+                    alert('Password reset link copied to clipboard!');
+                  }}
                   style={{
-                    color: '#f59e0b',
-                    fontSize: '12px',
-                    wordBreak: 'break-all',
-                    textDecoration: 'underline',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    color: '#cbd5e1',
+                    padding: '10px 16px',
+                    borderRadius: '999px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%',
+                    transition: 'background 0.2s',
                   }}
                 >
-                  {resetUrl}
-                </a>
+                  📋 Copy Reset Link
+                </button>
               </div>
             )}
 
@@ -127,6 +140,7 @@ export default function ForgotPasswordPage() {
               color: 'rgba(255, 255, 255, 0.75)',
               fontSize: '13.5px',
               textDecoration: 'none',
+              marginTop: '6px',
             }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <line x1="19" y1="12" x2="5" y2="12" />
@@ -168,10 +182,8 @@ export default function ForgotPasswordPage() {
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
-                    <circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12" />
-                  </svg>
-                  <span>Sending...</span>
+                  <span className="button-spinner" />
+                  <span>Sending Reset Link...</span>
                 </>
               ) : (
                 <>

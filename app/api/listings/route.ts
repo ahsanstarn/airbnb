@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         createdAt: now,
         updatedAt: now,
       }));
-      await listingsCollection.insertMany(seedData);
+      await listingsCollection.insertMany(seedData as any);
     }
 
     const searchParams = request.nextUrl.searchParams;

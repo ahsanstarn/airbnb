@@ -18,6 +18,7 @@ import {
   StaysTabView,
   HelpTabView,
 } from './components/TabViews';
+import { useTheme } from '@/lib/theme-context';
 
 type DashboardTab = 
   | 'dashboard' 
@@ -35,6 +36,7 @@ type DashboardTab =
 
 function KayaDashboardInner() {
   const router = useRouter();
+  const { isDark } = useTheme();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as DashboardTab) || 'dashboard';
 
@@ -50,10 +52,10 @@ function KayaDashboardInner() {
 
   // Affiliate dynamic state
   const [affiliateStats, setAffiliateStats] = useState<any>({
-    totalEarnings: 1284.50,
-    totalClicks: 18342,
-    conversions: 523,
-    conversionRate: 2.85,
+    totalEarnings: 0,
+    totalClicks: 0,
+    conversions: 0,
+    conversionRate: 0,
     customLinks: [],
   });
 
@@ -71,11 +73,11 @@ function KayaDashboardInner() {
 
   // Customize Referral Link Modal
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
-  const [customSlugInput, setCustomSlugInput] = useState('alexexplores');
+  const [customSlugInput, setCustomSlugInput] = useState('');
 
   // Payout Modal
   const [showPayoutModal, setShowPayoutModal] = useState(false);
-  const [payoutAmount, setPayoutAmount] = useState('450.00');
+  const [payoutAmount, setPayoutAmount] = useState('100.00');
 
   // Search input
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,19 +89,19 @@ function KayaDashboardInner() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     async function fetchData() {
       try {
         // 1. Fetch user profile first (auth gate)
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
-          if (data.user?.affiliateCode) {
-            setCustomSlugInput(data.user.affiliateCode);
+          if (isMounted) {
+            setUser(data.user);
+            if (data.user?.affiliateCode) {
+              setCustomSlugInput(data.user.affiliateCode);
+            }
           }
-        } else {
-          // Demo fallback
-          setUser({ name: 'Alex', email: 'alex@kaya.ge', role: 'affiliate', affiliateCode: 'alexexplores' });
         }
 
         // 2. Fetch all remaining data in parallel
@@ -109,27 +111,27 @@ function KayaDashboardInner() {
           fetch('/api/listings'),
         ]);
 
-        if (affRes.ok) {
+        if (affRes.ok && isMounted) {
           const affData = await affRes.json();
           setAffiliateStats((prev: any) => ({
             ...prev,
             ...affData,
-            totalEarnings: affData.totalEarnings || 1284.50,
-            totalClicks: affData.totalClicks || 18342,
-            conversions: affData.totalRegistered || 523,
-            conversionRate: affData.conversionRate || 2.85,
+            totalEarnings: affData.totalEarnings ?? 0,
+            totalClicks: affData.totalClicks ?? 0,
+            conversions: affData.totalRegistered ?? affData.conversions ?? 0,
+            conversionRate: affData.conversionRate ?? 0,
             customLinks: affData.customLinks || [],
           }));
         }
 
-        if (bookingsRes.ok) {
+        if (bookingsRes.ok && isMounted) {
           const bookingsData = await bookingsRes.json();
           if (Array.isArray(bookingsData)) {
             setBookings(bookingsData);
           }
         }
 
-        if (listingsRes.ok) {
+        if (listingsRes.ok && isMounted) {
           const listingsData = await listingsRes.json();
           if (listingsData.listings && listingsData.listings.length > 0) {
             setAllListings(listingsData.listings);
@@ -181,7 +183,7 @@ function KayaDashboardInner() {
       } catch {}
     }
 
-    const pollInterval = setInterval(refreshData, 30000);
+    const pollInterval = setInterval(refreshData, 8000);
     const handleFocus = () => refreshData();
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', () => {
@@ -209,7 +211,7 @@ function KayaDashboardInner() {
       setLiveToast({ message: liveEvents[idx % liveEvents.length], visible: true });
       setAffiliateStats((prev: any) => ({
         ...prev,
-        totalClicks: (prev.totalClicks || 18342) + 1,
+        totalClicks: (prev.totalClicks || 0) + 1,
       }));
       idx++;
       setTimeout(() => {
@@ -222,7 +224,7 @@ function KayaDashboardInner() {
   const simulateTestClick = (linkId?: string) => {
     setAffiliateStats((prev: any) => ({
       ...prev,
-      totalClicks: (prev.totalClicks || 18342) + 1,
+      totalClicks: (prev.totalClicks || 0) + 1,
     }));
     setLiveToast({ message: 'Live Test Click logged! Real-time click counter incremented.', visible: true });
     setTimeout(() => {
@@ -242,8 +244,9 @@ function KayaDashboardInner() {
   };
 
   const referralUrl = useMemo(() => {
-    const slug = user?.affiliateCode || customSlugInput || 'alexexplores';
-    return `https://kaya.ge/?ref=${slug}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kaya.ge';
+    const slug = user?.affiliateCode || customSlugInput || (user?.email ? user.email.split('@')[0] : 'kaya');
+    return `${origin}/?ref=${slug}`;
   }, [user, customSlugInput]);
 
   const copyToClipboard = (text: string) => {
@@ -387,10 +390,10 @@ function KayaDashboardInner() {
     );
   }
 
-  const displayName = user?.name || 'Alex';
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Partner');
 
   return (
-    <div style={{ backgroundColor: '#0B132B', color: '#F8FAFC', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ backgroundColor: isDark ? '#0B132B' : 'var(--surface, #fbf7f2)', color: isDark ? '#F8FAFC' : 'var(--ink, #1a120e)', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       <DashboardHeader activeRole="affiliate" user={user} />
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
 
@@ -404,20 +407,21 @@ function KayaDashboardInner() {
       )}
 
       {/* ========================================================
-          ===== LEFT SIDEBAR (Dark Navy #0B132B / 1-to-1 Mockup) =====
+          ===== LEFT SIDEBAR =====
           ======================================================== */}
       <aside 
         className="tourist-sidebar"
         style={{
           width: '260px',
-          backgroundColor: '#0B132B',
-          color: '#F8FAFC',
+          backgroundColor: isDark ? '#0B132B' : '#ffffff',
+          color: isDark ? '#F8FAFC' : 'var(--ink, #1a120e)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '24px 16px',
           flexShrink: 0,
-          borderRight: '1px solid #1E293B',
+          borderRight: isDark ? '1px solid #1E293B' : '1px solid rgba(26, 18, 14, 0.08)',
+          transition: 'background-color 0.3s ease, border-color 0.3s ease',
         }}>
         <div>
           {/* Brand */}
@@ -1718,6 +1722,8 @@ function KayaDashboardInner() {
       {activeTab === 'links' && (
         <LinksTabView
           customLinks={affiliateStats.customLinks || []}
+          user={user}
+          affiliateStats={affiliateStats}
           onOpenCreateModal={() => setShowNewLinkModal(true)}
           onSimulateClick={simulateTestClick}
           copyToClipboard={copyToClipboard}
@@ -1730,6 +1736,7 @@ function KayaDashboardInner() {
           ======================================================== */}
       {activeTab === 'campaigns' && (
         <CampaignsTabView
+          user={user}
           onPromoteCampaign={(cmp) => {
             copyToClipboard(cmp.targetUrl);
           }}
@@ -1752,6 +1759,7 @@ function KayaDashboardInner() {
           ======================================================== */}
       {activeTab === 'payouts' && (
         <PayoutsTabView
+          stats={affiliateStats}
           onOpenPayoutModal={() => setShowPayoutModal(true)}
         />
       )}
@@ -1771,6 +1779,7 @@ function KayaDashboardInner() {
           ======================================================== */}
       {activeTab === 'assets' && (
         <AssetsTabView
+          user={user}
           copyToClipboard={copyToClipboard}
         />
       )}
