@@ -34,8 +34,8 @@ export default function MobileBottomNav() {
   const profileHref = currentUser
     ? currentUser.role === 'business'
       ? '/business/dashboard'
-      : '/dashboard'
-    : '/login';
+      : '/tourist/dashboard'
+    : '/tourist/dashboard';
 
   const profileLabel = currentUser
     ? (currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya') ? currentUser.name.split(' ')[0] : t('nav.account', 'Account'))
