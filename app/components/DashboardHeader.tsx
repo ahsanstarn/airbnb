@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/lib/lang-context';
 
 interface DashboardHeaderProps {
   activeRole: 'tourist' | 'affiliate' | 'business' | 'admin';
@@ -11,12 +12,14 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ activeRole, user }: DashboardHeaderProps) {
   const pathname = usePathname();
+  const { lang, setLang, t } = useLanguage();
+  const [langOpen, setLangOpen] = useState(false);
 
   const ROLES = [
-    { id: 'tourist', label: 'Tourist', icon: '✈️', href: '/tourist/dashboard' },
-    { id: 'affiliate', label: 'Affiliate', icon: '🤝', href: '/dashboard' },
-    { id: 'business', label: 'Business Suite', icon: '💼', href: '/business/dashboard' },
-    { id: 'admin', label: 'Admin Command', icon: '🛡️', href: '/admin' },
+    { id: 'tourist', label: t('dash.tourist', 'Tourist Studio'), icon: '✈️', href: '/tourist/dashboard' },
+    { id: 'affiliate', label: t('dash.affiliate', 'Affiliate Studio'), icon: '🤝', href: '/dashboard' },
+    { id: 'business', label: t('dash.business', 'Business Suite'), icon: '💼', href: '/business/dashboard' },
+    { id: 'admin', label: t('dash.admin', 'Admin Command'), icon: '🛡️', href: '/admin' },
   ];
 
   return (
@@ -79,15 +82,60 @@ export default function DashboardHeader({ activeRole, user }: DashboardHeaderPro
         </div>
       </div>
 
-      {/* Right User Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* Right User Bar & Language Switcher */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+        {/* Language Selector Dropdown */}
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => setLangOpen(!langOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '20px',
+              padding: '6px 12px',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            <span>🌐</span>
+            <span>{lang}</span>
+          </button>
+
+          {langOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                backgroundColor: '#0f172a',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '12px',
+                padding: '6px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                zIndex: 200,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                minWidth: '130px',
+              }}
+            >
+              <button onClick={() => { setLang('EN'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'EN' ? 700 : 400 }}>🇬🇧 English</button>
+              <button onClick={() => { setLang('KA'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'KA' ? 700 : 400 }}>🇬🇪 ქართული</button>
+              <button onClick={() => { setLang('RU'); setLangOpen(false); }} style={{ padding: '8px 12px', border: 'none', background: 'none', color: '#fff', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', textAlign: 'left', fontWeight: lang === 'RU' ? 700 : 400 }}>🇷🇺 Русский</button>
+            </div>
+          )}
+        </div>
+
         {/* Profile Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}>
             {(user?.name || 'K')[0]}
-          </div>
-          <div style={{ display: 'none' }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>{user?.name || 'KAYA Account'}</div>
           </div>
         </div>
       </div>
