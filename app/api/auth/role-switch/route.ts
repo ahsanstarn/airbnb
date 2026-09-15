@@ -5,10 +5,10 @@ import { toPublicUser } from '@/lib/models/user';
 
 export const dynamic = 'force-dynamic';
 
-const ALLOWED_ROLES = ['admin', 'business', 'tourist'] as const;
+const ALLOWED_ROLES = ['admin', 'business', 'tourist', 'affiliate'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
 
-// POST /api/auth/role-switch - Switch active role (Only ahsanstarn@gmail.com)
+// POST /api/auth/role-switch - Switch active role (Admin only)
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser(req);
@@ -16,10 +16,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const email = user.email?.toLowerCase().trim();
-    if (email !== 'ahsanstarn@gmail.com') {
+    if (user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Forbidden. Only ahsanstarn@gmail.com has multi-role authorization.' },
+        { error: 'Forbidden. Only admins can switch roles.' },
         { status: 403 }
       );
     }
@@ -34,14 +33,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Update in MongoDB
     const db = await getDb();
     await db.collection('users').updateOne(
       { _id: user._id },
       { $set: { role: targetRole, updatedAt: new Date() } }
     );
 
-    // Sign fresh token with the newly selected role
     const newToken = signToken({
       userId: user._id.toString(),
       email: user.email,
@@ -63,7 +60,6 @@ export async function POST(req: NextRequest) {
       token: newToken,
     });
 
-    // Update HTTP-only cookie
     response.cookies.set({
       name: 'kaya-token',
       value: newToken,
@@ -90,12 +86,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ canSwitchRoles: false }, { status: 401 });
     }
 
-    const isSuper = user.email?.toLowerCase().trim() === 'ahsanstarn@gmail.com';
+    const isAdmin = user.role === 'admin';
 
     return NextResponse.json({
-      canSwitchRoles: isSuper,
+      canSwitchRoles: isAdmin,
       currentRole: user.role,
-      availableRoles: isSuper ? ALLOWED_ROLES : [user.role || 'tourist'],
+      availableRoles: isAdmin ? ALLOWED_ROLES : [user.role || 'tourist'],
     });
   } catch {
     return NextResponse.json({ canSwitchRoles: false }, { status: 500 });

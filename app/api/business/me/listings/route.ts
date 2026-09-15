@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data: business } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
+    const db = await getDb();
+    const userId = user._id.toString();
 
-    if (!business) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
+    const listings = await db.collection('listings')
+      .find({ $or: [{ businessId: userId }, { hostId: userId }, { owner_id: userId }] })
+      .sort({ created_at: -1, createdAt: -1 })
+      .toArray();
 
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .eq('business_id', business.id)
-      .order('created_at', { ascending: false });
+    const formatted = listings.map(l => ({
+      ...l,
+      id: l._id.toString(),
+      _id: l._id.toString(),
+    }));
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-    return NextResponse.json(data);
+    return NextResponse.json(formatted);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch listings' }, { status: 500 });
   }

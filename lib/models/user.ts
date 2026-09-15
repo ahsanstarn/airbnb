@@ -5,7 +5,7 @@ export interface IUser {
   email: string;
   passwordHash: string;
   name: string;
-  role: 'tourist' | 'business' | 'admin';
+  role: 'tourist' | 'business' | 'admin' | 'affiliate';
   phone?: string;
   avatar?: string;
   language?: string;

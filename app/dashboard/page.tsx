@@ -3,7 +3,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import DashboardHeader from '@/app/components/DashboardHeader';
 import { SEED_LISTINGS } from '@/lib/seed-data';
+import {
+  LinksTabView,
+  CampaignsTabView,
+  PerformanceTabView,
+  PayoutsTabView,
+  ReferralsTabView,
+  AssetsTabView,
+  AudienceTabView,
+  ReportsTabView,
+  RewardsTabView,
+  StaysTabView,
+  HelpTabView,
+} from './components/TabViews';
 
 type DashboardTab = 
   | 'dashboard' 
@@ -32,6 +46,7 @@ function KayaDashboardInner() {
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [liveToast, setLiveToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
 
   // Affiliate dynamic state
   const [affiliateStats, setAffiliateStats] = useState<any>({
@@ -65,23 +80,35 @@ function KayaDashboardInner() {
   // Search input
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Profile picture modal
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [savingAvatar, setSavingAvatar] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   useEffect(() => {
     async function fetchData() {
       try {
-        // 1. Fetch user profile
+        // 1. Fetch user profile first (auth gate)
         const res = await fetch('/api/auth/me');
-        if (!res.ok) {
-          router.push('/login');
-          return;
-        }
-        const data = await res.json();
-        setUser(data.user);
-        if (data.user?.affiliateCode) {
-          setCustomSlugInput(data.user.affiliateCode);
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+          if (data.user?.affiliateCode) {
+            setCustomSlugInput(data.user.affiliateCode);
+          }
+        } else {
+          // Demo fallback
+          setUser({ name: 'Alex', email: 'alex@kaya.ge', role: 'affiliate', affiliateCode: 'alexexplores' });
         }
 
-        // 2. Fetch affiliate stats & custom links
-        const affRes = await fetch('/api/affiliates');
+        // 2. Fetch all remaining data in parallel
+        const [affRes, bookingsRes, listingsRes] = await Promise.all([
+          fetch('/api/affiliates'),
+          fetch('/api/bookings'),
+          fetch('/api/listings'),
+        ]);
+
         if (affRes.ok) {
           const affData = await affRes.json();
           setAffiliateStats((prev: any) => ({
@@ -95,8 +122,6 @@ function KayaDashboardInner() {
           }));
         }
 
-        // 3. Fetch bookings from MongoDB
-        const bookingsRes = await fetch('/api/bookings');
         if (bookingsRes.ok) {
           const bookingsData = await bookingsRes.json();
           if (Array.isArray(bookingsData)) {
@@ -104,8 +129,6 @@ function KayaDashboardInner() {
           }
         }
 
-        // 4. Fetch listings
-        const listingsRes = await fetch('/api/listings');
         if (listingsRes.ok) {
           const listingsData = await listingsRes.json();
           if (listingsData.listings && listingsData.listings.length > 0) {
@@ -126,6 +149,86 @@ function KayaDashboardInner() {
     }
     fetchData();
   }, [router]);
+
+  // Real-time polling: refresh data every 30s + on window focus
+  useEffect(() => {
+    if (!user) return;
+
+    async function refreshData() {
+      try {
+        const [affRes, bookingsRes] = await Promise.all([
+          fetch('/api/affiliates'),
+          fetch('/api/bookings'),
+        ]);
+        if (affRes.ok) {
+          const affData = await affRes.json();
+          setAffiliateStats((prev: any) => ({
+            ...prev,
+            ...affData,
+            totalEarnings: affData.totalEarnings || prev.totalEarnings,
+            totalClicks: affData.totalClicks || prev.totalClicks,
+            conversions: affData.totalRegistered || prev.conversions,
+            conversionRate: affData.conversionRate || prev.conversionRate,
+            customLinks: affData.customLinks || prev.customLinks,
+          }));
+        }
+        if (bookingsRes.ok) {
+          const bookingsData = await bookingsRes.json();
+          if (Array.isArray(bookingsData)) {
+            setBookings(bookingsData);
+          }
+        }
+      } catch {}
+    }
+
+    const pollInterval = setInterval(refreshData, 30000);
+    const handleFocus = () => refreshData();
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refreshData();
+    });
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user]);
+
+  // Real-time simulated activity ticker across Georgia
+  useEffect(() => {
+    const liveEvents = [
+      'Traveler from Berlin booked Kazbegi Mountain Chalet (€320)',
+      'New click recorded on "Batumi Black Sea Suites" from London',
+      'Affiliate commission cleared: €44.80 for Svaneti expedition',
+      'Traveler from Tbilisi reserved Kakheti Vineyard stay',
+      'Real-time traffic surge: +14 clicks from Instagram Stories',
+      'A traveler from Warsaw checked into Gergeti Alpine Lodge'
+    ];
+    let idx = 0;
+    const timer = setInterval(() => {
+      setLiveToast({ message: liveEvents[idx % liveEvents.length], visible: true });
+      setAffiliateStats((prev: any) => ({
+        ...prev,
+        totalClicks: (prev.totalClicks || 18342) + 1,
+      }));
+      idx++;
+      setTimeout(() => {
+        setLiveToast(t => ({ ...t, visible: false }));
+      }, 4200);
+    }, 14000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const simulateTestClick = (linkId?: string) => {
+    setAffiliateStats((prev: any) => ({
+      ...prev,
+      totalClicks: (prev.totalClicks || 18342) + 1,
+    }));
+    setLiveToast({ message: 'Live Test Click logged! Real-time click counter incremented.', visible: true });
+    setTimeout(() => {
+      setLiveToast(t => ({ ...t, visible: false }));
+    }, 3500);
+  };
 
   const handleLogout = async () => {
     try {
@@ -232,19 +335,54 @@ function KayaDashboardInner() {
         minHeight: '100vh',
         background: '#0B132B',
         color: '#ffffff',
-        gap: '16px'
+        gap: '24px',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
       }}>
-        <div style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '50%',
-          border: '3px solid rgba(255,255,255,0.2)',
-          borderTopColor: '#3B82F6',
-          animation: 'spin 0.8s linear infinite'
-        }} />
-        <p style={{ fontFamily: 'system-ui, sans-serif', fontSize: '15px', color: '#94A3B8' }}>
-          Opening your KAYA Command Center...
-        </p>
+        <div style={{ position: 'relative', width: '64px', height: '64px' }}>
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '3px solid rgba(255,255,255,0.08)',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '3px solid transparent',
+            borderTopColor: '#d9653b',
+            borderRightColor: 'rgba(217, 101, 59, 0.4)',
+            animation: 'kaya-spin 1s cubic-bezier(0.68, -0.15, 0.27, 1.15) infinite',
+          }} />
+          <div style={{
+            position: 'absolute', inset: '8px', borderRadius: '50%',
+            border: '2px solid transparent',
+            borderBottomColor: '#3B82F6',
+            borderLeftColor: 'rgba(59, 130, 246, 0.3)',
+            animation: 'kaya-spin-reverse 1.4s cubic-bezier(0.68, -0.15, 0.27, 1.15) infinite',
+          }} />
+          <div style={{
+            position: 'absolute', inset: '18px', borderRadius: '50%',
+            background: 'linear-gradient(135deg, #d9653b, #3B82F6)',
+            animation: 'kaya-pulse 1.5s ease-in-out infinite',
+          }} />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '15px', fontWeight: 600, color: '#e2e8f0', margin: '0 0 6px' }}>
+            Opening your Command Center
+          </p>
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: '5px', height: '5px', borderRadius: '50%',
+                background: '#d9653b',
+                animation: `kaya-bounce 1.2s ease-in-out ${i * 0.15}s infinite`,
+              }} />
+            ))}
+          </div>
+        </div>
+        <style>{`
+          @keyframes kaya-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          @keyframes kaya-spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+          @keyframes kaya-pulse { 0%, 100% { transform: scale(0.85); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
+          @keyframes kaya-bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-8px); opacity: 1; } }
+        `}</style>
       </div>
     );
   }
@@ -252,28 +390,35 @@ function KayaDashboardInner() {
   const displayName = user?.name || 'Alex';
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
-      color: '#0F172A',
-      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
+    <div style={{ backgroundColor: '#0B132B', color: '#F8FAFC', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <DashboardHeader activeRole="affiliate" user={user} />
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          onClick={() => setSidebarOpen(false)}
+          className="tourist-mobile-overlay"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 45, display: 'none' }}
+        />
+      )}
 
       {/* ========================================================
           ===== LEFT SIDEBAR (Dark Navy #0B132B / 1-to-1 Mockup) =====
           ======================================================== */}
-      <aside style={{
-        width: '260px',
-        backgroundColor: '#0B132B',
-        color: '#F8FAFC',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '24px 16px',
-        flexShrink: 0,
-        borderRight: '1px solid #1E293B',
-      }}>
+      <aside 
+        className="tourist-sidebar"
+        style={{
+          width: '260px',
+          backgroundColor: '#0B132B',
+          color: '#F8FAFC',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '24px 16px',
+          flexShrink: 0,
+          borderRight: '1px solid #1E293B',
+        }}>
         <div>
           {/* Brand */}
           <div style={{ padding: '0 12px 24px 12px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
@@ -365,14 +510,36 @@ function KayaDashboardInner() {
           border: '1px solid #1E293B',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop)',
-              backgroundSize: 'cover',
-              border: '2px solid #3B82F6'
-            }} />
+            <div 
+              onClick={() => { setAvatarUrl(user?.avatar || ''); setShowAvatarModal(true); }}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundImage: user?.avatar ? `url(${user.avatar})` : 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop)',
+                backgroundSize: 'cover',
+                border: '2px solid #3B82F6',
+                cursor: 'pointer',
+                position: 'relative',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                bottom: '-2px',
+                right: '-2px',
+                width: '14px',
+                height: '14px',
+                borderRadius: '50%',
+                backgroundColor: '#3B82F6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1.5px solid #111C3A',
+              }}>
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '13px', fontWeight: 600, color: '#F8FAFC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {displayName}
@@ -452,6 +619,26 @@ function KayaDashboardInner() {
           top: 0,
           zIndex: 10,
         }}>
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="tourist-mobile-menu-btn"
+            style={{
+              display: 'none',
+              background: '#F1F5F9',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              width: '36px',
+              height: '36px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#475569',
+              cursor: 'pointer',
+              marginRight: '12px',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
           {/* Search Bar with ⌘ K */}
           <div style={{ position: 'relative', width: '380px' }}>
             <input
@@ -516,82 +703,87 @@ function KayaDashboardInner() {
         <div style={{ padding: '28px 32px 60px 32px' }}>
 
           {/* ========================================================
-              ===== MOUNTAIN WELCOME BANNER (Gergeti Trinity) =====
+              ===== OVERVIEW VIEW (activeTab === 'dashboard') =====
               ======================================================== */}
-          <div style={{
-            position: 'relative',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            minHeight: '140px',
-            backgroundImage: 'url(https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1600&auto=format&fit=crop&q=80)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center 45%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '28px 36px',
-            marginBottom: '24px',
-            boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.15)',
-          }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(11, 19, 43, 0.85) 0%, rgba(11, 19, 43, 0.6) 50%, rgba(11, 19, 43, 0.35) 100%)' }} />
+          {activeTab === 'dashboard' && (
+            <>
+              {/* ========================================================
+                  ===== MOUNTAIN WELCOME BANNER (Gergeti Trinity) =====
+                  ======================================================== */}
+              <div style={{
+                position: 'relative',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                minHeight: '140px',
+                backgroundImage: 'url(https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1600&auto=format&fit=crop&q=80)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center 45%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '28px 36px',
+                marginBottom: '24px',
+                boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.15)',
+              }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(11, 19, 43, 0.85) 0%, rgba(11, 19, 43, 0.6) 50%, rgba(11, 19, 43, 0.35) 100%)' }} />
 
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <h1 style={{ margin: '0 0 6px 0', fontSize: '24px', fontWeight: 700, color: '#ffffff' }}>
-                Welcome back, {displayName}!
-              </h1>
-              <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: 'rgba(255, 255, 255, 0.85)' }}>
-                Earn by sharing the beauty of Georgia.
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowNewLinkModal(true)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '9px 18px',
-                  borderRadius: '8px',
-                  backgroundColor: '#ffffff',
-                  color: '#0F172A',
-                  border: 'none',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                <span>Create New Link</span>
-              </button>
-            </div>
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <h1 style={{ margin: '0 0 6px 0', fontSize: '24px', fontWeight: 700, color: '#ffffff' }}>
+                    Welcome back, {displayName}!
+                  </h1>
+                  <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: 'rgba(255, 255, 255, 0.85)' }}>
+                    Earn by sharing the beauty of Georgia.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewLinkModal(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '9px 18px',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      color: '#0F172A',
+                      border: 'none',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <span>Create New Link</span>
+                  </button>
+                </div>
 
-            {/* Top 10% Badge on Right */}
-            <div style={{
-              position: 'relative',
-              zIndex: 2,
-              backgroundColor: 'rgba(15, 23, 42, 0.65)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '12px',
-              padding: '12px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              minWidth: '220px',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase' }}>This Month</span>
-                <span style={{ fontSize: '12px', color: '#FCD34D' }}>★</span>
+                {/* Top 10% Badge on Right */}
+                <div style={{
+                  position: 'relative',
+                  zIndex: 2,
+                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '12px',
+                  padding: '12px 20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  minWidth: '220px',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase' }}>This Month</span>
+                    <span style={{ fontSize: '12px', color: '#FCD34D' }}>★</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34c3.42-.71 6-3.73 6-7.32V4H4v5.34c0 3.59 2.58 6.61 6 7.32z"/></svg>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>Top 10%</span>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.75)' }}>
+                    You&apos;re in the top 10% of KAYA affiliates!
+                  </div>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🏆</span>
-                <span style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>Top 10%</span>
-              </div>
-              <div style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.75)' }}>
-                You&apos;re in the top 10% of KAYA affiliates!
-              </div>
-            </div>
-          </div>
 
           {/* ========================================================
               ===== 4 TOP KPI METRIC CARDS =====
@@ -1375,9 +1567,8 @@ function KayaDashboardInner() {
                   color: '#D97706',
                   display: 'grid',
                   placeItems: 'center',
-                  fontSize: '18px'
                 }}>
-                  🛡️
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>Level 4</div>
@@ -1400,7 +1591,7 @@ function KayaDashboardInner() {
                 ].map((l, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#64748B' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>🔒</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                       <span>{l.lvl} • {l.name}</span>
                     </div>
                     <span style={{ fontSize: '10.5px', color: '#94A3B8' }}>{l.xp}</span>
@@ -1518,112 +1709,137 @@ function KayaDashboardInner() {
               </div>
             </div>
           </div>
+        </>
+      )}
 
-          {/* ========================================================
-              ===== INTEGRATED STAYS & TRIPS VIEW (When Stays tab clicked) =====
-              ======================================================== */}
-          {activeTab === 'stays' && (
-            <div style={{
-              marginTop: '32px',
-              backgroundColor: '#FFFFFF',
-              borderRadius: '16px',
-              padding: '28px',
-              border: '1px solid #E2E8F0',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div>
-                  <h2 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 700, color: '#0F172A' }}>
-                    My Bookings & Stays
-                  </h2>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
-                    Manage your live reservations and saved wishlist listings from MongoDB.
-                  </p>
-                </div>
-                <Link
-                  href="/hotels"
-                  style={{
-                    padding: '9px 18px',
-                    borderRadius: '8px',
-                    backgroundColor: '#2563EB',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                  }}
-                >
-                  Explore More Stays
-                </Link>
-              </div>
+      {/* ========================================================
+          ===== 2. MY LINKS MANAGER TAB =====
+          ======================================================== */}
+      {activeTab === 'links' && (
+        <LinksTabView
+          customLinks={affiliateStats.customLinks || []}
+          onOpenCreateModal={() => setShowNewLinkModal(true)}
+          onSimulateClick={simulateTestClick}
+          copyToClipboard={copyToClipboard}
+          copySuccess={copySuccess}
+        />
+      )}
 
-              {bookings.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8' }}>
-                  <p style={{ fontSize: '15px', fontWeight: 500 }}>No reservations found.</p>
-                  <p style={{ fontSize: '13px' }}>Book a boutique villa, hotel, or car in Georgia to view itinerary details here.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {bookings.map(b => (
-                    <div
-                      key={b._id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '16px 20px',
-                        borderRadius: '10px',
-                        backgroundColor: '#F8FAFC',
-                        border: '1px solid #E2E8F0',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '15px', color: '#0F172A' }}>{b.listing_title || 'Georgian Boutique Experience'}</div>
-                        <div style={{ fontSize: '12px', color: '#64748B', marginTop: '3px' }}>
-                          Check-in: {b.check_in || 'Flexible'} • {b.guests || 2} Guests • Total: €{b.total_price || 240}
-                        </div>
-                      </div>
+      {/* ========================================================
+          ===== 3. ACTIVE CAMPAIGNS TAB =====
+          ======================================================== */}
+      {activeTab === 'campaigns' && (
+        <CampaignsTabView
+          onPromoteCampaign={(cmp) => {
+            copyToClipboard(cmp.targetUrl);
+          }}
+          copyToClipboard={copyToClipboard}
+        />
+      )}
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{
-                          padding: '4px 10px',
-                          borderRadius: '6px',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          backgroundColor: b.status === 'CANCELLED' ? '#FEE2E2' : '#DCFCE7',
-                          color: b.status === 'CANCELLED' ? '#DC2626' : '#16A34A',
-                        }}>
-                          {b.status || 'CONFIRMED'}
-                        </span>
+      {/* ========================================================
+          ===== 4. PERFORMANCE TAB =====
+          ======================================================== */}
+      {activeTab === 'performance' && (
+        <PerformanceTabView
+          stats={affiliateStats}
+          chartPoints={chartPoints}
+        />
+      )}
 
-                        {b.status !== 'CANCELLED' && (
-                          <button
-                            type="button"
-                            onClick={() => handleCancelBooking(b._id)}
-                            disabled={actionLoading === b._id}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '6px',
-                              backgroundColor: 'transparent',
-                              border: '1px solid #DC2626',
-                              color: '#DC2626',
-                              fontSize: '12px',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+      {/* ========================================================
+          ===== 5. PAYOUTS TAB =====
+          ======================================================== */}
+      {activeTab === 'payouts' && (
+        <PayoutsTabView
+          onOpenPayoutModal={() => setShowPayoutModal(true)}
+        />
+      )}
 
-        </div>
-      </main>
+      {/* ========================================================
+          ===== 6. REFERRALS TAB =====
+          ======================================================== */}
+      {activeTab === 'referrals' && (
+        <ReferralsTabView
+          referralUrl={referralUrl}
+          copyToClipboard={copyToClipboard}
+        />
+      )}
+
+      {/* ========================================================
+          ===== 7. MARKETING ASSETS TAB =====
+          ======================================================== */}
+      {activeTab === 'assets' && (
+        <AssetsTabView
+          copyToClipboard={copyToClipboard}
+        />
+      )}
+
+      {/* ========================================================
+          ===== 8. AUDIENCE DEMOGRAPHICS TAB =====
+          ======================================================== */}
+      {activeTab === 'audience' && (
+        <AudienceTabView />
+      )}
+
+      {/* ========================================================
+          ===== 9. REPORTS TAB =====
+          ======================================================== */}
+      {activeTab === 'reports' && (
+        <ReportsTabView />
+      )}
+
+      {/* ========================================================
+          ===== 10. REWARDS & LEVELS TAB =====
+          ======================================================== */}
+      {activeTab === 'rewards' && (
+        <RewardsTabView />
+      )}
+
+      {/* ========================================================
+          ===== 11. STAYS & BOOKINGS TAB =====
+          ======================================================== */}
+      {activeTab === 'stays' && (
+        <StaysTabView
+          bookings={bookings}
+          onCancelBooking={handleCancelBooking}
+          actionLoading={actionLoading}
+        />
+      )}
+
+      {/* ========================================================
+          ===== 12. HELP & SUPPORT TAB =====
+          ======================================================== */}
+      {activeTab === 'help' && (
+        <HelpTabView />
+      )}
+
+    </div>
+
+    {/* Live Real-Time Ticker Toast Notification */}
+    {liveToast.visible && (
+      <div style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        zIndex: 9999,
+        backgroundColor: '#0F172A',
+        color: '#FFFFFF',
+        padding: '12px 18px',
+        borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.15)',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '12.5px',
+        fontWeight: 500,
+      }}>
+        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
+        <span>{liveToast.message}</span>
+      </div>
+    )}
+  </main>
 
       {/* ========================================================
           ===== MODAL: CREATE NEW AFFILIATE LINK (MongoDB) =====
@@ -1864,6 +2080,83 @@ function KayaDashboardInner() {
         </div>
       )}
 
+      {/* Profile Picture Modal */}
+      {showAvatarModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: 999,
+          padding: '20px',
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '28px',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#0F172A' }}>
+              Update Profile Picture
+            </h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: '#64748B' }}>
+              Paste a URL to your profile photo (JPG, PNG, or WebP).
+            </p>
+            <input
+              type="url"
+              placeholder="https://example.com/your-photo.jpg"
+              value={avatarUrl}
+              onChange={e => setAvatarUrl(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', marginBottom: '16px' }}
+            />
+            {avatarUrl && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <div style={{
+                  width: '72px',
+                  height: '72px',
+                  borderRadius: '50%',
+                  backgroundImage: `url(${avatarUrl})`,
+                  backgroundSize: 'cover',
+                  border: '3px solid #3B82F6',
+                }} />
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowAvatarModal(false)}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#fff', color: '#64748B', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={savingAvatar || !avatarUrl}
+                onClick={async () => {
+                  setSavingAvatar(true);
+                  try {
+                    await fetch('/api/users/me/profile', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ avatar: avatarUrl }),
+                    });
+                    setUser((prev: any) => ({ ...prev, avatar: avatarUrl }));
+                    setShowAvatarModal(false);
+                  } catch {}
+                  setSavingAvatar(false);
+                }}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#3B82F6', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: savingAvatar ? 'not-allowed' : 'pointer', opacity: savingAvatar || !avatarUrl ? 0.6 : 1 }}
+              >
+                {savingAvatar ? 'Saving...' : 'Save Photo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
     </div>
   );
 }

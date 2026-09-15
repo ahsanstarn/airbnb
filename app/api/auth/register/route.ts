@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
-    if (role !== 'tourist' && role !== 'business') {
+    if (role !== 'tourist' && role !== 'business' && role !== 'affiliate') {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 

@@ -13,7 +13,7 @@ export default function SharedNav() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { lang, setLang, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; email?: string; isSuperAdmin?: boolean } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; email?: string } | null>(null);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
@@ -60,11 +60,13 @@ export default function SharedNav() {
   }, [langOpen]);
 
   if (pathname === '/login') return null;
-  if (pathname === '/' && !scrolled) return null;
+
+  const isHome = pathname === '/';
+  const showNav = !isHome || scrolled;
 
   return (
     <>
-      <div className={`global-nav-shell ${scrolled ? 'visible' : ''}`}>
+      <div className={`global-nav-shell ${showNav ? 'visible' : ''} ${isHome ? 'home-nav' : ''}`}>
         <nav className="nav-sticky-bar">
           <Link className="nav-brand" href="/">
             <span className="brandmark-dot"></span>
@@ -127,11 +129,11 @@ export default function SharedNav() {
                 <Link
                   className="nav-auth-link"
                   href={
-                    currentUser.role === 'admin'
-                      ? '/admin'
-                      : currentUser.role === 'business'
+                    currentUser.role === 'business'
                       ? '/business/dashboard'
-                      : '/dashboard'
+                      : currentUser.role === 'admin'
+                      ? '/admin'
+                      : '/tourist/dashboard'
                   }
                   style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
@@ -140,31 +142,13 @@ export default function SharedNav() {
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    backgroundColor: currentUser.email?.toLowerCase() === 'ahsanstarn@gmail.com' ? '#f59e0b' : 'var(--accent, #d9653b)'
+                    backgroundColor: 'var(--accent, #d9653b)'
                   }}></span>
                   <span>
                     {currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya')
                       ? currentUser.name.split(' ')[0]
-                      : t('nav.account', 'Account')}
+                      : t('nav.account', 'My Account')}
                   </span>
-                  {currentUser.email?.toLowerCase() === 'ahsanstarn@gmail.com' && (
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        padding: '2px 6px',
-                        borderRadius: '6px',
-                        background: 'rgba(217, 101, 59, 0.2)',
-                        color: '#d9653b',
-                        border: '1px solid rgba(217, 101, 59, 0.4)',
-                        fontWeight: 700,
-                        letterSpacing: '0.02em',
-                        textTransform: 'capitalize',
-                      }}
-                      title="Superadmin Multi-Role Active"
-                    >
-                      👑 {currentUser.role}
-                    </span>
-                  )}
                 </Link>
                 <button
                   type="button"
@@ -210,7 +194,7 @@ export default function SharedNav() {
         {currentUser ? (
           <>
             <Link href={currentUser.role === 'business' ? '/business/dashboard' : '/dashboard'} onClick={() => setMobileNavOpen(false)}>
-              {t('nav.dashboard', 'Dashboard')} ({currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya') ? currentUser.name : 'Account'})
+              {t('nav.dashboard', 'My Account')} ({currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya') ? currentUser.name.split(' ')[0] : 'Account'})
             </Link>
             <Link href="/dashboard/affiliates" onClick={() => setMobileNavOpen(false)}>
               {t('nav.affiliates', 'Affiliate Program')}

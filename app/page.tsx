@@ -10,55 +10,55 @@ import { SEED_LISTINGS } from '@/lib/seed-data';
 const GEORGIA_DESTINATIONS = [
   {
     id: 'gergeti-kazbegi',
-    title: 'Mount Kazbek',
+    title: 'Kazbegi',
     location: 'Stepantsminda, Georgia',
     tag: 'Caucasus Peak',
-    description: 'Perched at 2,170 meters against the dramatic snowy pyramid of Mount Kazbek, Georgia’s most iconic alpine sanctuary.',
-    image: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=400&h=400&fit=crop',
+    description: 'Perched at 2,170 meters against the dramatic snowy pyramid of Mount Kazbek, Georgia\'s most iconic alpine sanctuary.',
+    image: '/destinations/kazbegi.jpg',
+    thumb: '/destinations/kazbegi.jpg',
   },
   {
-    id: 'batumi-boulevard',
-    title: 'Batumi Boulevard',
-    location: 'Adjara Coast, Georgia',
-    tag: 'Black Sea Coast',
-    description: 'Lush subtropical palms meeting modern architectural silhouettes, magnetic Black Sea sunsets, and lively seaside promenades.',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop',
-  },
-  {
-    id: 'old-tbilisi',
-    title: 'Old Tbilisi',
-    location: 'Tbilisi, Georgia',
-    tag: 'Silk Road Heart',
-    description: 'Winding cobblestone alleyways, intricately carved wooden balconies, ancient fortress views, and atmospheric sulfur baths.',
-    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=400&h=400&fit=crop',
+    id: 'gudauri',
+    title: 'Gudauri',
+    location: 'Stepantsminda, Georgia',
+    tag: 'Adventure Capital',
+    description: 'Georgia\'s premier ski resort and paragliding hub, perched on the Cross Pass with panoramic Caucasus vistas and the iconic Friendship Monument.',
+    image: '/destinations/gudauri.jpg',
+    thumb: '/destinations/gudauri.jpg',
   },
   {
     id: 'svaneti-towers',
-    title: 'Svaneti Towers',
+    title: 'Svaneti',
     location: 'Mestia, Georgia',
     tag: 'High Caucasus',
     description: 'Ancient UNESCO millennium-old defensive stone towers standing vigilant under towering glaciers in the heart of Svaneti.',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
+    image: '/destinations/svaneti.jpg',
+    thumb: '/destinations/svaneti.jpg',
   },
   {
-    id: 'kakheti-valleys',
-    title: 'Kakheti Vineyards',
-    location: 'Sighnaghi, Georgia',
-    tag: 'Cradle of Wine',
-    description: 'Rolling vineyard hills overlooking the Alazani Valley, historic hilltop fortress walls, and 8,000 vintages of ancient qvevri winemaking.',
-    image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1920&q=85',
-    thumb: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=400&fit=crop',
+    id: 'batumi-boulevard',
+    title: 'Batumi',
+    location: 'Adjara Coast, Georgia',
+    tag: 'Black Sea Coast',
+    description: 'Lush subtropical palms meeting modern architectural silhouettes, magnetic Black Sea sunsets, and lively seaside promenades.',
+    image: '/destinations/batumi.jpg',
+    thumb: '/destinations/batumi.jpg',
+  },
+  {
+    id: 'old-tbilisi',
+    title: 'Tbilisi',
+    location: 'Tbilisi, Georgia',
+    tag: 'Silk Road Heart',
+    description: 'Winding cobblestone alleyways, intricately carved wooden balconies, ancient fortress views, and atmospheric sulfur baths beneath the Mother of Georgia.',
+    image: '/destinations/tbilisi.jpg',
+    thumb: '/destinations/tbilisi.jpg',
   }
 ];
 
 export default function Home() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [activeDestIdx, setActiveDestIdx] = useState(2); // Center active portal (Old Tbilisi)
+  const [activeDestIdx, setActiveDestIdx] = useState(0); // Kazbegi as main
   const heroRef = useRef<HTMLDivElement>(null);
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
 
@@ -97,6 +97,33 @@ export default function Home() {
       }
     }
     fetchListings();
+  }, []);
+
+  // Real-time polling: refresh listings every 30s + on window focus
+  useEffect(() => {
+    async function refreshListings() {
+      try {
+        const res = await fetch('/api/listings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.listings && data.listings.length > 0) {
+            setListings(data.listings);
+          }
+        }
+      } catch {}
+    }
+
+    const pollInterval = setInterval(refreshListings, 30000);
+    const handleFocus = () => refreshListings();
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refreshListings();
+    });
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const toggleFavorite = (e: React.MouseEvent, id: string) => {
@@ -231,6 +258,8 @@ export default function Home() {
                   <div
                     key={dest.id}
                     className={`hero-arc-row pos-${idx} ${isActive ? 'active' : ''}`}
+                    onMouseEnter={() => setActiveDestIdx(idx)}
+                    onTouchStart={() => setActiveDestIdx(idx)}
                     onClick={() => setActiveDestIdx(idx)}
                     role="button"
                     tabIndex={0}
@@ -259,6 +288,7 @@ export default function Home() {
                   key={dest.id}
                   type="button"
                   className={`hero-v-dot ${idx === activeDestIdx ? 'active' : ''}`}
+                  onMouseEnter={() => setActiveDestIdx(idx)}
                   onClick={() => setActiveDestIdx(idx)}
                   aria-label={`Go to ${dest.title}`}
                 />
@@ -342,7 +372,11 @@ export default function Home() {
               {filteredListings.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '56px 20px', gridColumn: '1 / -1', background: 'rgba(255,251,246,0.85)', borderRadius: '24px', border: '1px dashed var(--border)', backdropFilter: 'blur(12px)' }}>
                   <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>
-                    {selectedCategory === 'favorites' ? '❤️' : '🔍'}
+                    {selectedCategory === 'favorites' ? (
+                      <svg viewBox="0 0 24 24" fill="var(--accent, #d9653b)" stroke="var(--accent, #d9653b)" strokeWidth="2" width="32" height="32"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" width="32" height="32"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    )}
                   </span>
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px', color: 'var(--ink)', fontFamily: 'var(--font-display), Georgia, serif' }}>
                     {selectedCategory === 'favorites' ? 'No Saved Favorites Yet' : 'No stays found'}
@@ -434,7 +468,7 @@ export default function Home() {
             <div className="features-grid-4">
               {/* 1. Georgian Moment */}
               <Link href="/georgian-moment" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag">⚡ 24–72h Notice</span>
+                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 24-72h Notice</span>
                 <div className="feature-svg-box">
                   {/* Georgian Clay Qvevri Amphora & Wine Goblet SVG */}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
@@ -451,7 +485,7 @@ export default function Home() {
 
               {/* 2. Kaya Connect */}
               <Link href="/connect" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag">🤝 Verified Buddy</span>
+                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Verified Buddy</span>
                 <div className="feature-svg-box" style={{ background: 'rgba(56, 189, 248, 0.12)', color: '#0284c7' }}>
                   {/* Two Travelers with Waypoint Compass SVG */}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
@@ -469,7 +503,7 @@ export default function Home() {
 
               {/* 3. Trip Mood AI Planner */}
               <Link href="/trip-planner" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag">🧠 AI Itinerary</span>
+                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><path d="M12 2v4m0 12v4M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> AI Itinerary</span>
                 <div className="feature-svg-box" style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#9333ea' }}>
                   {/* AI Neural Sparkle Constellation SVG */}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
@@ -486,7 +520,7 @@ export default function Home() {
 
               {/* 4. Georgian Table */}
               <Link href="/georgian-table" className="feature-card-kaya hover-lift">
-                <span className="feature-card-tag">🍲 Family Feasts</span>
+                <span className="feature-card-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12" style={{verticalAlign: 'middle'}}><ellipse cx="12" cy="7" rx="9" ry="4"/><path d="M3 7v3c0 2.2 4 4 9 4s9-1.8 9-4V7"/><path d="M5 13v7m14-7v7m-7-5v5"/></svg> Family Feasts</span>
                 <div className="feature-svg-box" style={{ background: 'rgba(234, 179, 8, 0.14)', color: '#ca8a04' }}>
                   {/* Traditional Georgian Supra Feast Table SVG */}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="28" height="28" strokeLinecap="round" strokeLinejoin="round">
@@ -621,7 +655,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Business Host Banner (20 GEL/month) */}
+          {/* Business Host Banner (50 GEL one-time) */}
           <section className="business-cta-banner fade-up" ref={setRevealRef(3)} style={{ padding: '30px 0 60px' }}>
             <div style={{
               background: 'linear-gradient(135deg, #241712 0%, #3a2218 100%)',
@@ -640,7 +674,7 @@ export default function Home() {
                   {t('hostBanner.badge', 'For Property & Service Hosts')}
                 </span>
                 <h3 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(1.6rem,3vw,2.2rem)', margin: '0 0 10px', color: '#fff' }}>
-                  {t('hostBanner.title', 'Host on Kaya.ge — 0% Commission, Flat 20 GEL/month')}
+                  {t('hostBanner.title', 'Host on Kaya.ge — 0% Commission, Flat 50 GEL One-Time')}
                 </h3>
                 <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.6 }}>
                   {t('hostBanner.desc', 'Keep 100% of what you earn. Unlike Booking.com (15–20%) or Airbnb (14–18%), Kaya charges a flat monthly subscription. Join Georgia\'s fastest growing travel platform.')}
@@ -686,7 +720,8 @@ export default function Home() {
           </div>
           <div className="footer-links">
             <h4>Platform</h4>
-            <Link href="/dashboard">{t('touristDashboard')}</Link>
+            <Link href="/tourist/dashboard">Tourist Dashboard</Link>
+            <Link href="/dashboard">Affiliate Studio</Link>
             <Link href="/business/dashboard">{t('businessDashboard')}</Link>
             <Link href="/admin">{t('adminPanel')}</Link>
             <Link href="/contact">Contact</Link>

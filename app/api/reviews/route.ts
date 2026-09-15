@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabase();
+    const { db } = await connectToDatabase();
     const searchParams = request.nextUrl.searchParams;
     const touristId = searchParams.get('tourist_id');
     const listingId = searchParams.get('listing_id');
 
-    let query = supabase.from('reviews').select('*, listings(id, title, images)');
+    const filter: any = {};
+    if (touristId) filter.tourist_id = touristId;
+    if (listingId) filter.listing_id = listingId;
 
-    if (touristId) query = query.eq('tourist_id', touristId);
-    if (listingId) query = query.eq('listing_id', listingId);
+    const reviews = await db.collection('reviews')
+      .find(filter)
+      .sort({ created_at: -1 })
+      .toArray();
 
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json(data);
+    return NextResponse.json(reviews);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }
@@ -24,10 +26,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
+    const { db } = await connectToDatabase();
     const body = await request.json();
     const { booking_id, listing_id, overall_rating, text, photos, cleanliness_rating, location_rating, value_rating } = body;
 
@@ -35,25 +37,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'booking_id, listing_id, and overall_rating required' }, { status: 400 });
     }
 
-    const { data: booking } = await supabase
-      .from('bookings')
-      .select('id, status, tourist_id')
-      .eq('id', booking_id)
-      .eq('listing_id', listing_id)
-      .single();
+    const booking = await db.collection('bookings').findOne({
+      _id: booking_id,
+      listing_id: listing_id,
+    });
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
-    if (booking.tourist_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (booking.tourist_id !== user._id.toString()) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     if (booking.status !== 'COMPLETED') {
       return NextResponse.json({ error: 'Can only review completed bookings' }, { status: 400 });
     }
 
-    const { data: existing } = await supabase.from('reviews').select('id').eq('booking_id', booking_id).maybeSingle();
+    const existing = await db.collection('reviews').findOne({ booking_id });
     if (existing) return NextResponse.json({ error: 'Already reviewed this booking' }, { status: 409 });
 
-    const { data, error } = await supabase.from('reviews').insert({
+    const review = {
       booking_id,
-      tourist_id: user.id,
+      tourist_id: user._id.toString(),
       listing_id,
       overall_rating,
       cleanliness_rating: cleanliness_rating || overall_rating,
@@ -62,25 +62,25 @@ export async function POST(request: NextRequest) {
       text: text || '',
       photos: photos || [],
       is_published: false,
-    }).select();
+      created_at: new Date().toISOString(),
+    };
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    const result = await db.collection('reviews').insertOne(review);
 
-    const { data: allReviews } = await supabase
-      .from('reviews')
-      .select('overall_rating')
-      .eq('listing_id', listing_id)
-      .eq('is_published', true);
+    // Update listing average rating
+    const allReviews = await db.collection('reviews')
+      .find({ listing_id, is_published: true })
+      .toArray();
 
-    if (allReviews && allReviews.length > 0) {
-      const avg = allReviews.reduce((s, r) => s + r.overall_rating, 0) / allReviews.length;
-      await supabase.from('listings').update({
-        overall_rating: Math.round(avg * 100) / 100,
-        review_count: allReviews.length,
-      }).eq('id', listing_id);
+    if (allReviews.length > 0) {
+      const avg = allReviews.reduce((s: number, r: any) => s + r.overall_rating, 0) / allReviews.length;
+      await db.collection('listings').updateOne(
+        { _id: listing_id },
+        { $set: { overall_rating: Math.round(avg * 100) / 100, review_count: allReviews.length } }
+      );
     }
 
-    return NextResponse.json(data[0]);
+    return NextResponse.json({ ...review, _id: result.insertedId });
   } catch {
     return NextResponse.json({ error: 'Review submission failed' }, { status: 500 });
   }

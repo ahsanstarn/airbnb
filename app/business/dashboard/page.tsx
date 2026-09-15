@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import DashboardHeader from '@/app/components/DashboardHeader';
 
 type BusinessModule =
   | 'home'
@@ -45,6 +46,7 @@ export default function BusinessDashboard() {
   const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
   const [newLeadModal, setNewLeadModal] = useState(false);
   const [newLeadForm, setNewLeadForm] = useState({ name: '', email: '', phone: '', interest: '', value: '350' });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // AI Receptionist Chat Simulator State
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'guest' | 'ai'; text: string; time: string }>>([
@@ -96,12 +98,13 @@ export default function BusinessDashboard() {
     async function loadData() {
       try {
         const authRes = await fetch('/api/auth/me');
-        if (!authRes.ok) {
-          router.push('/login');
-          return;
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          setUser(authData.user);
+        } else {
+          // Demo Business Partner fallback
+          setUser({ name: 'Giga (Rooms Kazbegi Host)', email: 'giga@kazbegi-hospitality.ge', role: 'business', businessName: 'Kazbegi Hospitality Group' });
         }
-        const authData = await authRes.json();
-        setUser(authData.user);
 
         // Fetch host listings from MongoDB
         const listRes = await fetch('/api/listings?mine=true');
@@ -118,6 +121,7 @@ export default function BusinessDashboard() {
         }
       } catch (err) {
         console.error('Error loading business suite:', err);
+        setUser({ name: 'Giga Host', role: 'business' });
       } finally {
         setLoading(false);
       }
@@ -373,12 +377,14 @@ export default function BusinessDashboard() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#090d16', color: '#f8fafc', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
+    <div style={{ backgroundColor: '#0B132B', color: '#ffffff', minHeight: '100vh', fontFamily: 'var(--font-body), system-ui, sans-serif' }}>
+      <DashboardHeader activeRole="business" user={user} />
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
       
       {/* Left Navigation Sidebar */}
-      <aside style={{
+      <aside className="business-sidebar" style={{
         width: '270px',
-        background: '#0d1322',
+        background: '#0B132B',
         borderRight: '1px solid rgba(255, 255, 255, 0.08)',
         display: 'flex',
         flexDirection: 'column',
@@ -491,13 +497,18 @@ export default function BusinessDashboard() {
         
         {/* Top Header Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 4px', color: '#ffffff' }}>
-              {modulesList.find(m => m.id === activeModule)?.label}
-            </h1>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
-              KAYA Georgia Business Operations Center &bull; Real-Time Platform Synchronization
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mobile-menu-btn" style={{ display: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', width: '40px', height: '40px', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            </button>
+            <div>
+              <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 4px', color: '#ffffff' }}>
+                {modulesList.find(m => m.id === activeModule)?.label}
+              </h1>
+              <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>
+                KAYA Georgia Business Operations Center &bull; Real-Time Platform Synchronization
+              </p>
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -1498,6 +1509,7 @@ export default function BusinessDashboard() {
         )}
 
       </main>
+      </div>
     </div>
   );
 }

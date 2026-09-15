@@ -54,7 +54,7 @@ export default function ToursPage() {
   }, []);
 
   return (
-    <main style={{ background: 'var(--bg)', minHeight: '100vh', paddingTop: '100px' }}>
+    <main style={{ background: 'var(--surface)', minHeight: '100vh', paddingTop: '100px' }}>
       <div style={{ maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '0 24px 60px' }}>
         <header style={{ textAlign: 'center', marginBottom: '48px' }}>
           <span style={{ letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent, #d9653b)', fontWeight: 700, fontSize: '12px' }}>Exploration</span>

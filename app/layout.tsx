@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Cormorant_Garamond, Manrope, Caveat } from "next/font/google";
+import { Cormorant_Garamond, Manrope, Caveat, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
 import { LanguageProvider } from "@/lib/lang-context";
 import SharedNav from "@/app/components/SharedNav";
 import MobileBottomNav from "@/app/components/MobileBottomNav";
 import MouseTilt from "@/app/components/MouseTilt";
-import SuperAdminRoleSwitcher from "@/app/components/SuperAdminRoleSwitcher";
+
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -29,17 +29,26 @@ const caveat = Caveat({
   display: "swap",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Kaya.ge — Discover Georgia",
-  description: "Phase 1 foundation for Kaya.ge: curated offers, travel discovery, Muse and core platform routes.",
+  description: "Georgia travel platform, boutique stays, curated experiences, and business suite.",
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/kaya-logo.jpg' }
     ],
     shortcut: '/icon.svg',
     apple: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/apple-icon.jpg' },
+      { url: '/icon.svg', type: 'image/svg+xml' }
     ],
   },
 };
@@ -53,14 +62,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${cormorant.variable} ${manrope.variable} ${caveat.variable} is-guest`}>
+      <body className={`${cormorant.variable} ${manrope.variable} ${caveat.variable} ${playfair.variable} is-guest`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>
           <ThemeProvider>
             <MouseTilt />
             <SharedNav />
             {children}
-            <SuperAdminRoleSwitcher />
+
             <MobileBottomNav />
           </ThemeProvider>
         </LanguageProvider>

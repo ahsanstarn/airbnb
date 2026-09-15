@@ -3,8 +3,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import DashboardHeader from '@/app/components/DashboardHeader';
+import {
+  UsersDirectoryModule,
+  BusinessesModule,
+  BookingsLedgerModule,
+  FinanceModule,
+  GeorgiaMapModule,
+  ApprovalsModule,
+  DestinationsModule,
+  NotificationsModule,
+  SecurityModule,
+  SettingsModule,
+  EventsModule,
+  AnalyticsModule,
+} from './components/AdminModules';
 
-const ADMIN_EMAILS = ['ahsanstarn@gmail.com', 'admin@kaya.ge'];
+const ADMIN_EMAILS: string[] = [];
 
 function getToken() {
   if (typeof window === 'undefined') return null;
@@ -43,6 +58,7 @@ export default function ExecutiveAdminCommandCenter() {
   // Active module in sidebar
   const [activeModule, setActiveModule] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Top header states
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,11 +89,21 @@ export default function ExecutiveAdminCommandCenter() {
 
   // Live Activity Stream
   const [activityFeed, setActivityFeed] = useState<any[]>([
-    { id: 1, action: 'Confirmed Booking', detail: 'Rooms Hotel Kazbegi — 3 nights (₾1,140)', time: 'Just now', icon: '⚡', color: '#10b981' },
-    { id: 2, action: 'New Partner Onboarded', detail: 'Tbilisi Sulphur Spa & Wellness registered', time: '4 min ago', icon: '🏛️', color: '#06b6d4' },
-    { id: 3, action: 'Car Fleet Booked', detail: 'Toyota Land Cruiser 4x4 (Mestia, Svaneti)', time: '12 min ago', icon: '🚙', color: '#8b5cf6' },
-    { id: 4, action: 'Wine Tour Reservation', detail: 'Kakheti Private Cellar Tour (4 guests)', time: '28 min ago', icon: '🍷', color: '#f59e0b' },
-    { id: 5, action: 'Payout Processed', detail: '₾4,820 settled to Stamba Tbilisi', time: '1 hr ago', icon: '💳', color: '#10b981' },
+    { id: 1, action: 'Confirmed Booking', detail: 'Rooms Hotel Kazbegi — 3 nights (₾1,140)', time: 'Just now', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    ), color: '#10b981' },
+    { id: 2, action: 'New Partner Onboarded', detail: 'Tbilisi Sulphur Spa & Wellness registered', time: '4 min ago', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+    ), color: '#06b6d4' },
+    { id: 3, action: 'Car Fleet Booked', detail: 'Toyota Land Cruiser 4x4 (Mestia, Svaneti)', time: '12 min ago', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    ), color: '#8b5cf6' },
+    { id: 4, action: 'Wine Tour Reservation', detail: 'Kakheti Private Cellar Tour (4 guests)', time: '28 min ago', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><path d="M8 22h8M12 15v7M17 2H7l2 8c0 3 3 5 3 5s3-2 3-5l2-8z"/></svg>
+    ), color: '#f59e0b' },
+    { id: 5, action: 'Payout Processed', detail: '₾4,820 settled to Stamba Tbilisi', time: '1 hr ago', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8"/></svg>
+    ), color: '#10b981' },
   ]);
 
   // Modals
@@ -210,11 +236,61 @@ export default function ExecutiveAdminCommandCenter() {
     verifyAuth();
   }, [router]);
 
+  // Real-time polling for admin telemetry
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    async function refreshTelemetry() {
+      try {
+        const token = getToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const [listingsRes, statsRes, bookingsRes] = await Promise.all([
+          fetch('/api/listings?limit=50').catch(() => null),
+          fetch('/api/admin/stats').catch(() => null),
+          fetch('/api/bookings?limit=30', { headers }).catch(() => null),
+        ]);
+
+        if (listingsRes?.ok) {
+          const lData = await listingsRes.json();
+          if (lData.listings) setListings(lData.listings);
+        }
+        if (statsRes?.ok) {
+          const sData = await statsRes.json();
+          setStats(prev => ({
+            ...prev,
+            listings: sData.listings ?? prev.listings,
+            bookings: sData.bookings ? Math.max(sData.bookings, prev.bookings) : prev.bookings,
+            users: sData.users ? Math.max(sData.users, prev.users) : prev.users,
+            revenueGEL: sData.revenueGEL ?? prev.revenueGEL,
+            revenueEUR: sData.revenueEUR ?? prev.revenueEUR,
+            liveViewers: sData.liveViewers ?? prev.liveViewers,
+          }));
+        }
+        if (bookingsRes?.ok) {
+          const bData = await bookingsRes.json();
+          if (Array.isArray(bData) && bData.length > 0) setBookings(bData);
+        }
+      } catch {}
+    }
+
+    const pollInterval = setInterval(refreshTelemetry, 30000);
+    const handleFocus = () => refreshTelemetry();
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refreshTelemetry();
+    });
+
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [isAdmin]);
+
   // Handle Approvals
   const handleApprove = (id: string, name: string) => {
     setPendingApprovals(prev => prev.filter(item => item.id !== id));
     setActivityFeed(prev => [
-      { id: Date.now(), action: 'Entity Approved', detail: `Admin verified "${name}" for live production`, time: 'Just now', icon: '✅', color: '#10b981' },
+      { id: Date.now(), action: 'Entity Approved', detail: `Admin verified "${name}" for live production`, time: 'Just now', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>), color: '#10b981' },
       ...prev,
     ]);
   };
@@ -222,7 +298,7 @@ export default function ExecutiveAdminCommandCenter() {
   const handleReject = (id: string, name: string) => {
     setPendingApprovals(prev => prev.filter(item => item.id !== id));
     setActivityFeed(prev => [
-      { id: Date.now(), action: 'Entity Rejected', detail: `Admin declined "${name}" (compliance check)`, time: 'Just now', icon: '❌', color: '#ef4444' },
+      { id: Date.now(), action: 'Entity Rejected', detail: `Admin declined "${name}" (compliance check)`, time: 'Just now', icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>), color: '#ef4444' },
       ...prev,
     ]);
   };
@@ -276,27 +352,63 @@ export default function ExecutiveAdminCommandCenter() {
 
   // 19 Module Navigation Items
   const navModules = [
-    { id: 'dashboard', label: 'Command Cockpit', icon: '⚡', category: 'CORE' },
-    { id: 'users', label: 'User Directory', icon: '👥', category: 'CORE', count: '248K' },
-    { id: 'businesses', label: 'Verified Partners', icon: '🏢', category: 'CORE', count: '6.8K' },
-    { id: 'listings', label: 'Listings & Assets', icon: '🏡', category: 'CORE', count: listings.length || 19 },
-    { id: 'bookings', label: 'Bookings Ledger', icon: '📅', category: 'CORE', count: '12.4K' },
-    { id: 'finance', label: 'Revenue & Payouts', icon: '💳', category: 'CORE', count: '₾125K' },
+    { id: 'dashboard', label: 'Command Cockpit', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    ), category: 'CORE' },
+    { id: 'users', label: 'User Directory', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    ), category: 'CORE', count: '248K' },
+    { id: 'businesses', label: 'Verified Partners', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg>
+    ), category: 'CORE', count: '6.8K' },
+    { id: 'listings', label: 'Listings & Assets', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    ), category: 'CORE', count: listings.length || 19 },
+    { id: 'bookings', label: 'Bookings Ledger', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    ), category: 'CORE', count: '12.4K' },
+    { id: 'finance', label: 'Revenue & Payouts', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    ), category: 'CORE', count: '₾125K' },
 
-    { id: 'georgia-map', label: 'Georgia Demand Radar', icon: '🗺️', category: 'INTELLIGENCE' },
-    { id: 'demographics', label: 'Demographics & Audience', icon: '🌐', category: 'INTELLIGENCE' },
-    { id: 'activity-feed', label: 'Live Activity Stream', icon: '📡', category: 'INTELLIGENCE' },
-    { id: 'analytics', label: 'Platform Analytics', icon: '📈', category: 'INTELLIGENCE' },
+    { id: 'georgia-map', label: 'Georgia Demand Radar', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    ), category: 'INTELLIGENCE' },
+    { id: 'demographics', label: 'Demographics & Audience', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    ), category: 'INTELLIGENCE' },
+    { id: 'activity-feed', label: 'Live Activity Stream', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4.93 4.93a10 10 0 0 1 14.14 0M7.76 7.76a6 6 0 0 1 8.48 0M12 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+    ), category: 'INTELLIGENCE' },
+    { id: 'analytics', label: 'Platform Analytics', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    ), category: 'INTELLIGENCE' },
 
-    { id: 'approvals', label: 'Approvals & Moderation', icon: '🛡️', category: 'OPERATIONS', badge: pendingApprovals.length },
-    { id: 'destinations', label: 'Destinations & Regions', icon: '🏔️', category: 'OPERATIONS', count: '1.9K' },
-    { id: 'events', label: 'Georgian Events & Fairs', icon: '🍷', category: 'OPERATIONS' },
-    { id: 'notifications', label: 'Broadcast Center', icon: '📢', category: 'OPERATIONS' },
+    { id: 'approvals', label: 'Approvals & Moderation', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    ), category: 'OPERATIONS', badge: pendingApprovals.length },
+    { id: 'destinations', label: 'Destinations & Regions', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    ), category: 'OPERATIONS', count: '1.9K' },
+    { id: 'events', label: 'Georgian Events & Fairs', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 22h8M12 15v7M17 2H7l2 8c0 3 3 5 3 5s3-2 3-5l2-8z"/></svg>
+    ), category: 'OPERATIONS' },
+    { id: 'notifications', label: 'Broadcast Center', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    ), category: 'OPERATIONS' },
 
-    { id: 'system-health', label: 'System Health & DB', icon: '🟢', category: 'INFRASTRUCTURE' },
-    { id: 'security', label: 'Security & Audit Logs', icon: '🔒', category: 'INFRASTRUCTURE' },
-    { id: 'ai-automation', label: 'AI & Automation', icon: '⚡', category: 'INFRASTRUCTURE' },
-    { id: 'settings', label: 'Platform Settings & API', icon: '⚙️', category: 'INFRASTRUCTURE' },
+    { id: 'system-health', label: 'System Health & DB', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    ), category: 'INFRASTRUCTURE' },
+    { id: 'security', label: 'Security & Audit Logs', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    ), category: 'INFRASTRUCTURE' },
+    { id: 'ai-automation', label: 'AI & Automation', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    ), category: 'INFRASTRUCTURE' },
+    { id: 'settings', label: 'Platform Settings & API', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    ), category: 'INFRASTRUCTURE' },
   ];
 
   // Map Hotspots
@@ -407,12 +519,13 @@ export default function ExecutiveAdminCommandCenter() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#080c14',
+      backgroundColor: '#0B132B',
       color: '#f3f4f6',
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <DashboardHeader activeRole="admin" user={session || { name: 'Admin Superuser' }} />
       {/* ========================================================================= */}
       {/* 1. TOP EXECUTIVE APP BAR */}
       {/* ========================================================================= */}
@@ -431,8 +544,9 @@ export default function ExecutiveAdminCommandCenter() {
         {/* Brand & Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: '6px' }}
+            onClick={() => { setSidebarCollapsed(!sidebarCollapsed); setSidebarOpen(!sidebarOpen); }}
+            className="admin-mobile-menu-btn"
+            style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: '6px', display: 'flex' }}
             title="Toggle Sidebar"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -500,8 +614,9 @@ export default function ExecutiveAdminCommandCenter() {
         {/* Right Tools & Admin Profile */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {/* Live Georgia Time */}
-          <div style={{ fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', background: 'rgba(255,255,255,0.04)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
-            🕒 {liveTime || 'Tbilisi GMT+4'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', background: 'rgba(255,255,255,0.04)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>{liveTime || 'Tbilisi GMT+4'}</span>
           </div>
 
           {/* Date Range Selector */}
@@ -595,21 +710,32 @@ export default function ExecutiveAdminCommandCenter() {
         </div>
       </header>
 
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          onClick={() => setSidebarOpen(false)}
+          className="admin-mobile-overlay"
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 45, display: 'none' }}
+        />
+      )}
+
       {/* ========================================================================= */}
       {/* 2. BODY LAYOUT: 19-MODULE SIDEBAR + EXECUTIVE CONTENT CANVAS */}
       {/* ========================================================================= */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* SIDEBAR NAVIGATION */}
-        <aside style={{
-          width: sidebarCollapsed ? '72px' : '260px',
-          backgroundColor: '#0b101b',
-          borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'width 0.2s ease',
-          overflowY: 'auto',
-          paddingBottom: '24px',
-        }}>
+        <aside 
+          className="admin-sidebar"
+          style={{
+            width: sidebarCollapsed ? '72px' : '260px',
+            backgroundColor: '#0b101b',
+            borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'width 0.2s ease',
+            overflowY: 'auto',
+            paddingBottom: '24px',
+          }}>
           {/* Quick Jump Modules */}
           <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {['CORE', 'INTELLIGENCE', 'OPERATIONS', 'INFRASTRUCTURE'].map((sectionCategory) => {
@@ -689,7 +815,7 @@ export default function ExecutiveAdminCommandCenter() {
                 fontWeight: 600,
               }}
             >
-              <span>💼</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
               {!sidebarCollapsed && <span>Host Dashboard</span>}
             </Link>
             <Link
@@ -706,7 +832,7 @@ export default function ExecutiveAdminCommandCenter() {
                 textDecoration: 'none',
               }}
             >
-              <span>🌐</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               {!sidebarCollapsed && <span>Live Marketplace</span>}
             </Link>
           </div>
@@ -796,7 +922,7 @@ export default function ExecutiveAdminCommandCenter() {
                   cursor: 'pointer',
                 }}
               >
-                <span>📢 Send Broadcast</span>
+                <span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', marginRight: '4px'}}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Send Broadcast</span>
               </button>
             </div>
           </div>
@@ -810,12 +936,12 @@ export default function ExecutiveAdminCommandCenter() {
             gap: '16px',
           }}>
             {[
-              { label: 'Total Users', value: stats.users.toLocaleString(), change: '+12.4%', up: true, icon: '👥', color: '#3b82f6' },
-              { label: 'Active Users', value: stats.activeUsers.toLocaleString(), change: '+8.2%', up: true, icon: '⚡', color: '#10b981' },
-              { label: 'Total Businesses', value: stats.businesses.toLocaleString(), change: '+15.3%', up: true, icon: '🏢', color: '#8b5cf6' },
-              { label: 'Total Bookings', value: stats.bookings.toLocaleString(), change: '+22.1%', up: true, icon: '📅', color: '#f59e0b' },
-              { label: 'Platform Revenue', value: `₾${stats.revenueGEL.toLocaleString()}`, sub: `€${stats.revenueEUR.toLocaleString()}`, change: '+18.7%', up: true, icon: '💰', color: '#10b981' },
-              { label: 'Total Destinations', value: stats.destinations.toLocaleString(), change: '+5.8%', up: true, icon: '🏔️', color: '#06b6d4' },
+              { label: 'Total Users', value: stats.users.toLocaleString(), change: '+12.4%', up: true, icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>), color: '#3b82f6' },
+              { label: 'Active Users', value: stats.activeUsers.toLocaleString(), change: '+8.2%', up: true, icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>), color: '#10b981' },
+              { label: 'Total Businesses', value: stats.businesses.toLocaleString(), change: '+15.3%', up: true, icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg>), color: '#8b5cf6' },
+              { label: 'Total Bookings', value: stats.bookings.toLocaleString(), change: '+22.1%', up: true, icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>), color: '#f59e0b' },
+              { label: 'Platform Revenue', value: `₾${stats.revenueGEL.toLocaleString()}`, sub: `€${stats.revenueEUR.toLocaleString()}`, change: '+18.7%', up: true, icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8"/></svg>), color: '#10b981' },
+              { label: 'Total Destinations', value: stats.destinations.toLocaleString(), change: '+5.8%', up: true, icon: (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>), color: '#06b6d4' },
             ].map((kpi, idx) => (
               <div
                 key={idx}
@@ -1626,35 +1752,101 @@ export default function ExecutiveAdminCommandCenter() {
           )}
 
           {/* ===================================================================== */}
-          {/* FALLBACK VIEW FOR OTHER 15 MODULES */}
+          {/* DEDICATED OPERATIONAL MODULES */}
           {/* ===================================================================== */}
-          {!['dashboard', 'listings', 'ai-automation', 'system-health'].includes(activeModule) && (
-            <div style={{
-              backgroundColor: '#111827',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '20px',
-              padding: '36px',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-            }}>
-              <span style={{ fontSize: '42px' }}>
-                {navModules.find(m => m.id === activeModule)?.icon || '📊'}
-              </span>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#ffffff' }}>
-                {navModules.find(m => m.id === activeModule)?.label}
-              </h2>
-              <p style={{ color: '#9ca3af', fontSize: '13px', maxWidth: '500px', lineHeight: 1.6, margin: 0 }}>
-                This operational module is fully provisioned and streaming live data from the Republic of Georgia KAYA database engine.
-              </p>
-              <button
-                onClick={() => setActiveModule('dashboard')}
-                style={{ padding: '10px 20px', borderRadius: '10px', background: '#2563eb', color: '#ffffff', border: 'none', fontWeight: 700, fontSize: '12px', cursor: 'pointer', marginTop: '8px' }}
-              >
-                ← Return to Command Cockpit
-              </button>
+          {activeModule === 'users' && (
+            <UsersDirectoryModule currentUser={session?.user} />
+          )}
+
+          {activeModule === 'businesses' && (
+            <BusinessesModule />
+          )}
+
+          {activeModule === 'bookings' && (
+            <BookingsLedgerModule bookings={recentBookings} />
+          )}
+
+          {activeModule === 'finance' && (
+            <FinanceModule />
+          )}
+
+          {activeModule === 'georgia-map' && (
+            <GeorgiaMapModule />
+          )}
+
+          {activeModule === 'approvals' && (
+            <ApprovalsModule
+              pendingApprovals={pendingApprovals}
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
+          )}
+
+          {activeModule === 'destinations' && (
+            <DestinationsModule />
+          )}
+
+          {activeModule === 'events' && (
+            <EventsModule />
+          )}
+
+          {activeModule === 'notifications' && (
+            <NotificationsModule />
+          )}
+
+          {activeModule === 'security' && (
+            <SecurityModule currentUser={session?.user} />
+          )}
+
+          {activeModule === 'analytics' && (
+            <AnalyticsModule />
+          )}
+
+          {activeModule === 'settings' && (
+            <SettingsModule />
+          )}
+
+          {activeModule === 'demographics' && (
+            <div style={{ backgroundColor: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#FFFFFF' }}>Platform Traveler Demographics & Regional Origins</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                {[
+                  { country: 'Germany & DACH', pct: '28%', count: '69,500 travelers' },
+                  { country: 'Georgia Domestic', pct: '24%', count: '59,600 travelers' },
+                  { country: 'Poland & Central Europe', pct: '18%', count: '44,700 travelers' },
+                  { country: 'United Kingdom', pct: '15%', count: '37,200 travelers' },
+                  { country: 'Gulf & Middle East', pct: '15%', count: '37,200 travelers' },
+                ].map((c, i) => (
+                  <div key={i} style={{ padding: '16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>{c.country}</div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: '#38BDF8', margin: '4px 0' }}>{c.pct}</div>
+                    <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{c.count}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeModule === 'activity-feed' && (
+            <div style={{ backgroundColor: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#FFFFFF' }}>Full Platform Live Activity Stream</h2>
+                <span style={{ fontSize: '11.5px', color: '#10B981', fontWeight: 600 }}>• Real-Time WebSocket Streaming</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {activityFeed.map((act) => (
+                  <div key={act.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>{act.icon}</div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#FFFFFF' }}>{act.action}</div>
+                        <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{act.detail}</div>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '11.5px', color: '#6B7280' }}>{act.time}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </main>
@@ -1799,7 +1991,7 @@ export default function ExecutiveAdminCommandCenter() {
           }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>
-                📢 Send Platform Broadcast
+                Send Platform Broadcast
               </h3>
               <button onClick={() => setModalType(null)} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '18px', cursor: 'pointer' }}>✕</button>
             </div>
@@ -1847,7 +2039,7 @@ export default function ExecutiveAdminCommandCenter() {
           }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>
-                🏔️ Add New Georgia Destination
+                Add New Georgia Destination
               </h3>
               <button onClick={() => setModalType(null)} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '18px', cursor: 'pointer' }}>✕</button>
             </div>

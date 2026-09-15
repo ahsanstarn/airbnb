@@ -213,6 +213,31 @@ function SignupForm() {
                 />
                 <span>🏨 Host / Business</span>
               </label>
+              <label style={{ 
+                flex: 1, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px',
+                padding: '12px',
+                border: role === 'affiliate' ? '2px solid var(--accent, #d9653b)' : '1px solid var(--border-mid, rgba(26, 18, 14, 0.15))',
+                backgroundColor: role === 'affiliate' ? 'rgba(217, 101, 59, 0.08)' : '#fff',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontWeight: role === 'affiliate' ? 700 : 500,
+                color: role === 'affiliate' ? 'var(--accent, #d9653b)' : 'var(--ink)',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name="role"
+                  value="affiliate"
+                  checked={role === 'affiliate'}
+                  onChange={(e) => setRole(e.target.value)}
+                  style={{ display: 'none' }}
+                />
+                <span>💰 Affiliate</span>
+              </label>
             </div>
           </div>
 

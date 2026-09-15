@@ -46,8 +46,6 @@ export default function LoginPage() {
       
       if (redirectUrl && !redirectUrl.startsWith('//') && (redirectUrl.startsWith('/') || redirectUrl.startsWith('http'))) {
         router.push(redirectUrl);
-      } else if (data.user?.role === 'admin') {
-        router.push('/admin');
       } else if (data.user?.role === 'business') {
         router.push('/business/dashboard');
       } else {

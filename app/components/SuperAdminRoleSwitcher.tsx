@@ -41,6 +41,16 @@ const ROLE_CONFIG = {
     route: '/dashboard',
     desc: 'Travel itineraries, booked stays, favorites & travel profile',
   },
+  affiliate: {
+    label: 'Affiliate Partner',
+    shortLabel: 'Affiliate',
+    icon: '💰',
+    color: '#d4a373',
+    bgColor: 'rgba(212, 163, 115, 0.15)',
+    borderColor: 'rgba(212, 163, 115, 0.4)',
+    route: '/dashboard',
+    desc: 'Referral links, commissions, payouts & affiliate analytics',
+  },
 };
 
 export default function SuperAdminRoleSwitcher({ initialUser }: { initialUser?: UserRoleInfo | null }) {
@@ -48,7 +58,7 @@ export default function SuperAdminRoleSwitcher({ initialUser }: { initialUser?: 
   const [user, setUser] = useState<UserRoleInfo | null>(initialUser || null);
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
-  const [activeRole, setActiveRole] = useState<'admin' | 'business' | 'tourist'>('admin');
+  const [activeRole, setActiveRole] = useState<'admin' | 'business' | 'tourist' | 'affiliate'>('admin');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,7 +90,7 @@ export default function SuperAdminRoleSwitcher({ initialUser }: { initialUser?: 
   }, []);
 
   // STRICT AUTHORIZATION: ONLY show for ahsanstarn@gmail.com
-  if (user?.email?.toLowerCase().trim() !== 'ahsanstarn@gmail.com') {
+  if (user?.role !== 'admin') {
     return null;
   }
 

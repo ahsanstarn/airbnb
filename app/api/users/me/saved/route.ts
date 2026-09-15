@@ -1,26 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('saved_listings')
-      .select('*, listings(*)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    const db = await getDb();
+    const userId = user._id.toString();
 
-    if (error) {
-      if (error.message.includes('relation') && error.message.includes('does not exist')) {
-        return NextResponse.json([]);
-      }
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    const saved = await db.collection('saved_listings')
+      .find({ user_id: userId })
+      .sort({ created_at: -1 })
+      .toArray();
 
-    return NextResponse.json(data);
+    return NextResponse.json(saved);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch saved listings' }, { status: 500 });
   }

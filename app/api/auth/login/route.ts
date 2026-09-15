@@ -15,51 +15,20 @@ export async function POST(req: NextRequest) {
     const db = await getDb();
     const usersCollection = db.collection('users');
 
-    // Auto-seed default accounts on clean DB setup
+    // Auto-seed default admin on clean DB setup
     const userCount = await usersCollection.countDocuments();
     if (userCount === 0) {
       const now = new Date();
       const adminHash = await hashPassword('admin123');
-      const hostHash = await hashPassword('host123');
-      const touristHash = await hashPassword('tourist123');
-      await usersCollection.insertMany([
-        {
-          name: 'Kaya Administrator',
-          email: 'admin@kaya.ge',
-          password: adminHash,
-          role: 'admin',
-          affiliateCode: 'KAYAADMIN',
-          createdAt: now,
-          updatedAt: now,
-        },
-        {
-          name: 'Ahsan Admin',
-          email: 'ahsanstarn@gmail.com',
-          password: adminHash,
-          role: 'admin',
-          affiliateCode: 'KAYASTAR',
-          createdAt: now,
-          updatedAt: now,
-        },
-        {
-          name: 'Dato Host',
-          email: 'host@kaya.ge',
-          password: hostHash,
-          role: 'business',
-          affiliateCode: 'HOSTDATO',
-          createdAt: now,
-          updatedAt: now,
-        },
-        {
-          name: 'Elena Traveler',
-          email: 'tourist@kaya.ge',
-          password: touristHash,
-          role: 'tourist',
-          affiliateCode: 'ELENATRAVEL',
-          createdAt: now,
-          updatedAt: now,
-        },
-      ]);
+      await usersCollection.insertOne({
+        name: 'Platform Admin',
+        email: 'admin@kaya.ge',
+        password: adminHash,
+        role: 'admin',
+        affiliateCode: 'KAYAADMIN',
+        createdAt: now,
+        updatedAt: now,
+      });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -84,10 +53,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const isSuper = normalizedEmail === 'ahsanstarn@gmail.com';
     const publicUser = {
       ...toPublicUser(user),
-      isSuperAdmin: isSuper,
     };
 
     const token = signToken({
@@ -114,4 +81,3 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
-

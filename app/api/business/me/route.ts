@@ -1,22 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('businesses')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    const db = await getDb();
+    const userId = user._id.toString();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    if (!data) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
+    const business = await db.collection('businesses').findOne({ user_id: userId });
+    if (!business) {
+      // Return user as business profile if no separate business record
+      return NextResponse.json({
+        _id: userId,
+        user_id: userId,
+        name: user.name || 'My Business',
+        email: user.email,
+        role: user.role,
+        status: 'active',
+      });
+    }
 
-    return NextResponse.json(data);
+    return NextResponse.json(business);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch business' }, { status: 500 });
   }
@@ -24,22 +33,20 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
+    const db = await getDb();
     const body = await request.json();
+    const userId = user._id.toString();
 
-    const { data, error } = await supabase
-      .from('businesses')
-      .update(body)
-      .eq('user_id', user.id)
-      .select();
+    await db.collection('businesses').updateOne(
+      { user_id: userId },
+      { $set: { ...body, updatedAt: new Date() } },
+      { upsert: true }
+    );
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    if (!data || data.length === 0) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
-
-    return NextResponse.json(data[0]);
+    return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }

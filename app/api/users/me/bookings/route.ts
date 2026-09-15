@@ -1,20 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*, listings(id, title, images, location, price_per_night, category)')
-      .eq('tourist_id', user.id)
-      .order('created_at', { ascending: false });
+    const db = await getDb();
+    const userId = user._id.toString();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json(data);
+    const bookings = await db.collection('bookings')
+      .find({
+        $or: [
+          { tourist_id: userId },
+          { user_id: userId },
+          { user_email: user.email },
+        ],
+      })
+      .sort({ createdAt: -1, created_at: -1 })
+      .toArray();
+
+    const formatted = bookings.map(b => ({
+      ...b,
+      id: b._id.toString(),
+      _id: b._id.toString(),
+    }));
+
+    return NextResponse.json(formatted);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
   }

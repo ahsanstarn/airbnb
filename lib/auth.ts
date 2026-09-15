@@ -81,10 +81,8 @@ export async function getCurrentUser(req: NextRequest) {
   return user;
 }
 
-export const SUPERADMIN_EMAIL = 'ahsanstarn@gmail.com';
-
-export function isSuperAdmin(email?: string | null): boolean {
-  return email?.toLowerCase() === SUPERADMIN_EMAIL.toLowerCase();
+export function isAdminRole(role?: string | null): boolean {
+  return role === 'admin';
 }
 
 // Generate a unique affiliate code

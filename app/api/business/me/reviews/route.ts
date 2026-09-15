@@ -1,29 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getDb } from '@/lib/mongodb';
+import { getCurrentUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const { data: business } = await supabase
-      .from('businesses')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
+    const db = await getDb();
+    const userId = user._id.toString();
 
-    if (!business) return NextResponse.json({ error: 'Business not found' }, { status: 404 });
+    // Get listings owned by this user
+    const listings = await db.collection('listings')
+      .find({ $or: [{ businessId: userId }, { hostId: userId }, { owner_id: userId }] })
+      .toArray();
 
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*, listings!inner(id, title, images, business_id)')
-      .eq('listings.business_id', business.id)
-      .order('created_at', { ascending: false });
+    const listingIds = listings.map(l => l._id.toString());
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    const reviews = await db.collection('reviews')
+      .find({ listing_id: { $in: listingIds.length > 0 ? listingIds : ['none'] } })
+      .sort({ created_at: -1 })
+      .toArray();
 
-    return NextResponse.json(data);
+    return NextResponse.json(reviews);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }

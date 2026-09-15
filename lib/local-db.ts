@@ -37,13 +37,11 @@ function loadDb(): LocalSchema {
   // Initialize initial seed data
   const now = new Date().toISOString();
   const adminPasswordHash = bcrypt.hashSync('admin123', 10);
-  const hostPasswordHash = bcrypt.hashSync('host123', 10);
-  const touristPasswordHash = bcrypt.hashSync('tourist123', 10);
 
   const initialUsers = [
     {
       _id: createId(),
-      name: 'Kaya Administrator',
+      name: 'Platform Admin',
       email: 'admin@kaya.ge',
       password: adminPasswordHash,
       role: 'admin',
@@ -51,39 +49,9 @@ function loadDb(): LocalSchema {
       createdAt: now,
       updatedAt: now,
     },
-    {
-      _id: createId(),
-      name: 'Ahsan Admin',
-      email: 'ahsanstarn@gmail.com',
-      password: adminPasswordHash,
-      role: 'admin',
-      affiliateCode: 'KAYASTAR',
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
-      _id: createId(),
-      name: 'Giorgi Mchedlishvili',
-      email: 'host@kaya.ge',
-      password: hostPasswordHash,
-      role: 'business',
-      affiliateCode: 'KAYAHOST',
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
-      _id: createId(),
-      name: 'Nino Bakradze',
-      email: 'tourist@kaya.ge',
-      password: touristPasswordHash,
-      role: 'tourist',
-      affiliateCode: 'KAYATOUR',
-      createdAt: now,
-      updatedAt: now,
-    },
   ];
 
-  const hostId = initialUsers[2]._id;
+  const hostId = initialUsers[0]._id;
 
   const initialListings = SEED_LISTINGS.map((l, index) => {
     const id = createId();
@@ -105,9 +73,9 @@ function loadDb(): LocalSchema {
       listing_title: initialListings[0].title,
       listing_image: initialListings[0].images[0],
       listing_location: initialListings[0].location,
-      tourist_id: initialUsers[3]._id,
-      tourist_name: initialUsers[3].name,
-      tourist_email: initialUsers[3].email,
+      tourist_id: initialUsers[0]._id,
+      tourist_name: initialUsers[0].name,
+      tourist_email: initialUsers[0].email,
       business_id: hostId,
       check_in: '2026-09-20',
       check_out: '2026-09-24',
@@ -128,16 +96,7 @@ function loadDb(): LocalSchema {
     users: initialUsers,
     listings: initialListings,
     bookings: initialBookings,
-    affiliates: [
-      {
-        _id: createId(),
-        referrerUserId: initialUsers[2]._id,
-        code: 'KAYAHOST',
-        status: 'registered',
-        referredUserId: initialUsers[3]._id,
-        createdAt: now,
-      }
-    ],
+    affiliates: [],
   };
 
   saveDb(cachedDb);

@@ -155,7 +155,7 @@ export default function BusinessRegister() {
                   <input type="email" required value={form.contactEmail} onChange={e => setForm(p => ({ ...p, contactEmail: e.target.value }))} placeholder="business@example.com" style={inputStyle} />
                 </div>
                 <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(236,198,166,.2)', fontSize: '12px', color: '#7a4530', lineHeight: 1.6 }}>
-                  By submitting, you agree to Kaya.ge&apos;s <Link href="/terms" style={{ fontWeight: 700, color: '#7a4530' }}>Terms of Service</Link>. Your business will be reviewed before going live. The 20 GEL/month subscription fee applies after verification.
+                  By submitting, you agree to Kaya.ge&apos;s <Link href="/terms" style={{ fontWeight: 700, color: '#7a4530' }}>Terms of Service</Link>. Your business will be reviewed before going live. The 50 GEL one-time registration fee applies after verification.
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
