@@ -43,6 +43,15 @@ const nextConfig = {
         ],
       },
       {
+        source: '/(favicon.ico|icon.png|apple-touch-icon.png|favicon-32x32.png|favicon-16x16.png)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
         source: '/:all*\\.(svg|jpg|jpeg|png|webp|avif|ico|woff2|woff)',
         headers: [
           {
