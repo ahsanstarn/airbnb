@@ -709,17 +709,18 @@ export function DestinationsModule() {
       </div>
 
       <div style={{ backgroundColor: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-          <thead>
-            <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#9CA3AF', fontSize: '11px', textTransform: 'uppercase' }}>
-              <th style={{ padding: '14px 20px' }}>Destination Region</th>
-              <th style={{ padding: '14px 20px' }}>Administrative Zone</th>
-              <th style={{ padding: '14px 20px', textAlign: 'right' }}>Active Stays</th>
-              <th style={{ padding: '14px 20px', textAlign: 'right' }}>Monthly Traffic</th>
-              <th style={{ padding: '14px 20px', textAlign: 'center' }}>Hero Carousel</th>
-              <th style={{ padding: '14px 20px', textAlign: 'right' }}>Action</th>
-            </tr>
-          </thead>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+            <thead>
+              <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#9CA3AF', fontSize: '11px', textTransform: 'uppercase' }}>
+                <th style={{ padding: '14px 20px' }}>Destination Region</th>
+                <th style={{ padding: '14px 20px' }}>Administrative Zone</th>
+                <th style={{ padding: '14px 20px', textAlign: 'right' }}>Active Stays</th>
+                <th style={{ padding: '14px 20px', textAlign: 'right' }}>Monthly Traffic</th>
+                <th style={{ padding: '14px 20px', textAlign: 'center' }}>Hero Carousel</th>
+                <th style={{ padding: '14px 20px', textAlign: 'right' }}>Action</th>
+              </tr>
+            </thead>
           <tbody>
             {destinations.map((d, i) => (
               <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -752,6 +753,7 @@ export function DestinationsModule() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
@@ -1019,34 +1021,36 @@ export function EventsModule() {
       </div>
 
       <div style={{ backgroundColor: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-          <thead>
-            <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#9CA3AF', fontSize: '11px', textTransform: 'uppercase' }}>
-              <th style={{ padding: '14px 20px' }}>Event Name</th>
-              <th style={{ padding: '14px 20px' }}>Location</th>
-              <th style={{ padding: '14px 20px' }}>Dates</th>
-              <th style={{ padding: '14px 20px' }}>Category</th>
-              <th style={{ padding: '14px 20px', textAlign: 'right' }}>Est. Attendees</th>
-              <th style={{ padding: '14px 20px', textAlign: 'center' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map(ev => (
-              <tr key={ev.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: '14px 20px', fontWeight: 600, color: '#FFFFFF' }}>{ev.name}</td>
-                <td style={{ padding: '14px 20px', color: '#D1D5DB' }}>{ev.location}</td>
-                <td style={{ padding: '14px 20px', color: '#9CA3AF' }}>{ev.dates}</td>
-                <td style={{ padding: '14px 20px', color: '#38BDF8' }}>{ev.category}</td>
-                <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: '#10B981' }}>{ev.attendees}</td>
-                <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                  <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, backgroundColor: ev.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)', color: ev.status === 'ACTIVE' ? '#10B981' : '#60A5FA' }}>
-                    {ev.status}
-                  </span>
-                </td>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+            <thead>
+              <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)', color: '#9CA3AF', fontSize: '11px', textTransform: 'uppercase' }}>
+                <th style={{ padding: '14px 20px' }}>Event Name</th>
+                <th style={{ padding: '14px 20px' }}>Location</th>
+                <th style={{ padding: '14px 20px' }}>Dates</th>
+                <th style={{ padding: '14px 20px' }}>Category</th>
+                <th style={{ padding: '14px 20px', textAlign: 'right' }}>Est. Attendees</th>
+                <th style={{ padding: '14px 20px', textAlign: 'center' }}>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {events.map(ev => (
+                <tr key={ev.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <td style={{ padding: '14px 20px', fontWeight: 600, color: '#FFFFFF' }}>{ev.name}</td>
+                  <td style={{ padding: '14px 20px', color: '#D1D5DB' }}>{ev.location}</td>
+                  <td style={{ padding: '14px 20px', color: '#9CA3AF' }}>{ev.dates}</td>
+                  <td style={{ padding: '14px 20px', color: '#38BDF8' }}>{ev.category}</td>
+                  <td style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: '#10B981' }}>{ev.attendees}</td>
+                  <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                    <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, backgroundColor: ev.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)', color: ev.status === 'ACTIVE' ? '#10B981' : '#60A5FA' }}>
+                      {ev.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

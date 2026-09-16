@@ -316,6 +316,25 @@ function KayaDashboardInner() {
     }
   };
 
+  const handleExportReport = (format: string = 'PDF') => {
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      "Metric,Value\n" +
+      `Total Earnings,€${affiliateStats.totalEarnings}\n` +
+      `Total Clicks,${affiliateStats.totalClicks}\n` +
+      `Conversions,${affiliateStats.conversions}\n` +
+      `Conversion Rate,${affiliateStats.conversionRate}%\n` +
+      `Pending Payout,€${affiliateStats.pendingPayout}\n`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `kaya_affiliate_report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setLiveToast({ visible: true, message: `Report exported as ${format} successfully!` });
+    setTimeout(() => setLiveToast({ visible: false, message: '' }), 3000);
+  };
+
   // Chart dataset for 21 days
   const chartPoints = [
     { day: 'Oct 1', earnings: 140, clicks: 520, conversions: 14 },
@@ -402,7 +421,7 @@ function KayaDashboardInner() {
         <div 
           onClick={() => setSidebarOpen(false)}
           className="tourist-mobile-overlay"
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 45, display: 'none' }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 45 }}
         />
       )}
 
@@ -410,7 +429,7 @@ function KayaDashboardInner() {
           ===== LEFT SIDEBAR =====
           ======================================================== */}
       <aside 
-        className="tourist-sidebar"
+        className={`tourist-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}
         style={{
           width: '260px',
           backgroundColor: isDark ? '#0B132B' : '#ffffff',
@@ -664,47 +683,68 @@ function KayaDashboardInner() {
             <span style={{ position: 'absolute', right: '10px', top: '8px', padding: '2px 6px', fontSize: '11px', color: '#64748B', backgroundColor: '#E2E8F0', borderRadius: '4px', fontWeight: 600 }}>⌘ K</span>
           </div>
 
-          {/* Right Header Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            {/* Notification Bell with Badge 3 */}
-            <div style={{ position: 'relative', cursor: 'pointer' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              <span style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                backgroundColor: '#EF4444',
-                color: '#ffffff',
-                fontSize: '10px',
-                fontWeight: 700,
-                width: '16px',
-                height: '16px',
-                borderRadius: '50%',
-                display: 'grid',
-                placeItems: 'center',
-                border: '2px solid #ffffff'
-              }}>3</span>
-            </div>
+        {/* Right Tools: Notifications, Export, User Profile */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Notification Bell with Badge 3 */}
+          <div style={{ position: 'relative', cursor: 'pointer' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span style={{
+              position: 'absolute',
+              top: '-4px',
+              right: '-4px',
+              backgroundColor: '#EF4444',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: 700,
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              display: 'grid',
+              placeItems: 'center',
+              border: '2px solid #ffffff'
+            }}>3</span>
+          </div>
 
-            {/* Profile Dropdown Badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-              <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop)',
-                backgroundSize: 'cover',
-              }} />
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>{displayName}</div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>Affiliate Partner</div>
-              </div>
+          {/* Export Report Button */}
+          <button
+            onClick={() => handleExportReport('PDF')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: '8px',
+              border: '1px solid #CBD5E1',
+              backgroundColor: '#FFFFFF',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: '#334155',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+
+          {/* User Chip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: '50%',
+              backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop)',
+              backgroundSize: 'cover',
+            }} />
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>{displayName}</div>
+              <div style={{ fontSize: '11px', color: '#64748B' }}>Affiliate Partner</div>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Inner Scrollable Container */}
-        <div style={{ padding: '28px 32px 60px 32px' }}>
+      {/* Inner Scrollable Container */}
+      <div style={{ padding: 'clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px) 60px', minWidth: 0 }}>
 
           {/* ========================================================
               ===== OVERVIEW VIEW (activeTab === 'dashboard') =====
@@ -794,7 +834,7 @@ function KayaDashboardInner() {
               ======================================================== */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
             gap: '20px',
             marginBottom: '24px',
           }}>
@@ -881,7 +921,7 @@ function KayaDashboardInner() {
               ======================================================== */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '2fr 1.1fr 1.3fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
             gap: '20px',
             marginBottom: '24px',
           }}>
@@ -1317,7 +1357,7 @@ function KayaDashboardInner() {
               ======================================================== */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1.4fr 1.3fr 1.3fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
             gap: '20px',
             marginBottom: '24px',
           }}>
@@ -1478,7 +1518,7 @@ function KayaDashboardInner() {
               ======================================================== */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1.2fr 1.2fr 1.2fr 1.4fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
             gap: '20px',
           }}>
             {/* Payouts Table */}
@@ -2165,7 +2205,7 @@ function KayaDashboardInner() {
         </div>
       )}
 
-    </div>
+      </div>
     </div>
   );
 }

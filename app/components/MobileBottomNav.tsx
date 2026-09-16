@@ -24,10 +24,16 @@ export default function MobileBottomNav() {
         }
       })
       .catch(() => {});
-  }, [pathname]);
+  }, []); // Run on initial mount only, avoid repeated network requests on every route switch
 
-  // Hide on admin routes or checkout booking flows to maintain focused checkout
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/book/')) {
+  // Hide on admin routes, checkout booking flows, and authentication screens
+  if (
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/book/') ||
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname?.startsWith('/auth/')
+  ) {
     return null;
   }
 
@@ -35,7 +41,7 @@ export default function MobileBottomNav() {
     ? currentUser.role === 'business'
       ? '/business/dashboard'
       : '/tourist/dashboard'
-    : '/tourist/dashboard';
+    : '/login';
 
   const profileLabel = currentUser
     ? (currentUser.name && !currentUser.name.toLowerCase().startsWith('kaya') ? currentUser.name.split(' ')[0] : t('nav.account', 'Account'))

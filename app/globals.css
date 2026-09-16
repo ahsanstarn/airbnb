@@ -1515,7 +1515,8 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
    ======================================================== */
 .hero-1to1-stage {
   position: relative;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   height: 100vh;
   border-radius: 0;
@@ -2269,9 +2270,63 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   transform: scale(1.1) rotate(4deg);
 }
 
-/* ============================================================
-   RESPONSIVE DASHBOARD STYLES
-   ============================================================ */
+/* Unified Dashboard Header Responsive */
+.dash-header-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dash-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dash-header-roles {
+  display: flex;
+  align-items: center;
+}
+
+.dash-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .dash-header-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "logo actions"
+      "roles roles";
+    gap: 10px 12px;
+  }
+  .dash-header-left {
+    display: contents;
+  }
+  .dash-header-left > a {
+    grid-area: logo;
+  }
+  .dash-header-right {
+    grid-area: actions;
+  }
+  .dash-header-roles {
+    grid-area: roles;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .dash-header-roles::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 /* Business Dashboard Responsive */
 @media (max-width: 900px) {
@@ -2312,6 +2367,12 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   }
   .admin-mobile-overlay {
     display: block !important;
+  }
+  .admin-header-desktop {
+    display: none !important;
+  }
+  .admin-search-container {
+    display: none !important;
   }
 }
 
@@ -2364,5 +2425,28 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   }
   .footer-grid {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* Mobile Input Zoom Prevention (iOS Safari requires 16px to prevent zoom) */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  select,
+  textarea,
+  .login-input-field {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-glass-card {
+    padding: 28px 20px !important;
+    border-radius: 20px !important;
   }
 }

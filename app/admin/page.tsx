@@ -597,7 +597,7 @@ export default function ExecutiveAdminCommandCenter() {
         </div>
 
         {/* Global Search Bar */}
-        <div style={{ flex: 1, maxWidth: '420px', margin: '0 24px', position: 'relative' }}>
+        <div className="admin-search-container" style={{ flex: 1, maxWidth: '420px', margin: '0 24px', position: 'relative' }}>
           <input
             type="text"
             placeholder="Search listings, hosts, bookings, destinations (Ctrl + K)..."
@@ -624,13 +624,14 @@ export default function ExecutiveAdminCommandCenter() {
         {/* Right Tools & Admin Profile */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {/* Live Georgia Time */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', background: 'rgba(255,255,255,0.04)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="admin-header-desktop" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace', background: 'rgba(255,255,255,0.04)', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span>{liveTime || 'Tbilisi GMT+4'}</span>
           </div>
 
           {/* Date Range Selector */}
           <select
+            className="admin-header-desktop"
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
             style={{
@@ -735,7 +736,7 @@ export default function ExecutiveAdminCommandCenter() {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* SIDEBAR NAVIGATION */}
         <aside 
-          className="admin-sidebar"
+          className={`admin-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}
           style={{
             width: sidebarCollapsed ? '72px' : '260px',
             backgroundColor: '#0b101b',
@@ -1004,7 +1005,7 @@ export default function ExecutiveAdminCommandCenter() {
           {activeModule === 'dashboard' && (
             <>
               {/* ROW 1: USER ACTIVITY CHART + LIVE GEORGIA DEMAND RADAR MAP */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1.1fr)', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '20px' }}>
                 {/* 1. Interactive Multi-Line Activity Chart */}
                 <div style={{
                   backgroundColor: '#111827',
@@ -1258,7 +1259,7 @@ export default function ExecutiveAdminCommandCenter() {
               </div>
 
               {/* ROW 2: PENDING APPROVALS + LIVE ACTIVITY STREAM */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.3fr) minmax(0, 1fr)', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '20px' }}>
                 {/* 1. Pending Approvals Panel */}
                 <div style={{
                   backgroundColor: '#111827',
@@ -1408,7 +1409,7 @@ export default function ExecutiveAdminCommandCenter() {
               </div>
 
               {/* ROW 3: RECENT BOOKINGS GRID FROM MONGODB + DEMOGRAPHICS DONUT */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '20px' }}>
                 {/* 1. Recent Bookings Grid */}
                 <div style={{
                   backgroundColor: '#111827',
@@ -1888,7 +1889,7 @@ export default function ExecutiveAdminCommandCenter() {
             </div>
 
             <form onSubmit={handleAddListingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af' }}>Title</label>
                   <input
@@ -1918,7 +1919,7 @@ export default function ExecutiveAdminCommandCenter() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af' }}>Price (GEL)</label>
                   <input

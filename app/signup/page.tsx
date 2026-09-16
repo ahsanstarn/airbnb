@@ -163,9 +163,9 @@ function SignupForm() {
 
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--ink, #241712)' }}>Account Type</label>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <label style={{ 
-                flex: 1, 
+                flex: '1 1 120px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
@@ -177,7 +177,8 @@ function SignupForm() {
                 cursor: 'pointer',
                 fontWeight: role === 'tourist' ? 700 : 500,
                 color: role === 'tourist' ? 'var(--accent, #d9653b)' : 'var(--ink)',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                fontSize: '13px',
               }}>
                 <input
                   type="radio"
@@ -190,7 +191,7 @@ function SignupForm() {
                 <span>🎒 Traveler / Tourist</span>
               </label>
               <label style={{ 
-                flex: 1, 
+                flex: '1 1 120px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
@@ -202,7 +203,8 @@ function SignupForm() {
                 cursor: 'pointer',
                 fontWeight: role === 'business' ? 700 : 500,
                 color: role === 'business' ? 'var(--accent, #d9653b)' : 'var(--ink)',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                fontSize: '13px',
               }}>
                 <input
                   type="radio"
@@ -215,7 +217,7 @@ function SignupForm() {
                 <span>🏨 Host / Business</span>
               </label>
               <label style={{ 
-                flex: 1, 
+                flex: '1 1 120px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
@@ -227,7 +229,8 @@ function SignupForm() {
                 cursor: 'pointer',
                 fontWeight: role === 'affiliate' ? 700 : 500,
                 color: role === 'affiliate' ? 'var(--accent, #d9653b)' : 'var(--ink)',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                fontSize: '13px',
               }}>
                 <input
                   type="radio"

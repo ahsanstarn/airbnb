@@ -44,10 +44,24 @@ export default function SharedNav() {
   };
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
+    const handleScroll = () => {
+      const threshold = window.location.pathname === '/' ? Math.min(window.innerHeight * 0.6, 450) : 20;
+      setScrolled(window.scrollY > threshold);
+    };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = mobileNavOpen ? 'hidden' : '';
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [mobileNavOpen]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -59,7 +73,19 @@ export default function SharedNav() {
     return () => document.removeEventListener('click', handleOutsideClick);
   }, [langOpen]);
 
-  if (pathname === '/login') return null;
+  // Hide SharedNav on checkout, dashboards, and auth pages which render their own focused headers
+  if (
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname?.startsWith('/auth/') ||
+    pathname?.startsWith('/book/') ||
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/tourist/dashboard') ||
+    pathname?.startsWith('/business/dashboard') ||
+    pathname === '/dashboard'
+  ) {
+    return null;
+  }
 
   const isHome = pathname === '/';
   const showNav = !isHome || scrolled;

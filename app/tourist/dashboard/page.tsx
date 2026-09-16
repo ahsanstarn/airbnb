@@ -242,8 +242,35 @@ export default function TouristDashboard() {
           ☰
         </button>
 
+        {/* Mobile Backdrop Overlay */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="tourist-mobile-overlay"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0,0,0,0.65)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 49,
+            }}
+          />
+        )}
+
         {/* Unified Sidebar */}
-        <aside style={{ width: '270px', backgroundColor: isDark ? 'rgba(11, 19, 43, 0.95)' : '#ffffff', borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0 }}>
+        <aside
+          className={`tourist-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}
+          style={{
+            width: '270px',
+            backgroundColor: isDark ? 'rgba(11, 19, 43, 0.95)' : '#ffffff',
+            borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)',
+            padding: '24px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            flexShrink: 0,
+          }}
+        >
           <div>
             <div style={{ padding: '0 12px 20px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(26, 18, 14, 0.08)', marginBottom: '20px' }}>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#c8a983', fontWeight: 700, marginBottom: '4px' }}>KAYA Traveler Portal</div>
@@ -315,12 +342,12 @@ export default function TouristDashboard() {
         </aside>
 
         {/* Main Dashboard Content Area */}
-        <main style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+        <main style={{ flex: 1, padding: 'clamp(16px, 3vw, 32px)', overflowY: 'auto', minWidth: 0 }}>
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
               {/* Caucasus Welcome Hero */}
-              <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', padding: '40px', background: 'linear-gradient(135deg, rgba(11, 19, 43, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&h=600&fit=crop) center/cover', border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(200, 169, 131, 0.3)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
+              <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', padding: 'clamp(20px, 4vw, 40px)', background: 'linear-gradient(135deg, rgba(11, 19, 43, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&h=600&fit=crop) center/cover', border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(200, 169, 131, 0.3)', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
                 <div style={{ maxWidth: '650px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
                     <span style={{ backgroundColor: 'rgba(200, 169, 131, 0.2)', color: '#c8a983', border: '1px solid rgba(200, 169, 131, 0.4)', padding: '5px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -330,10 +357,10 @@ export default function TouristDashboard() {
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} /> Live Real-Time Sync
                     </span>
                   </div>
-                  <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '0 0 12px', color: '#ffffff', lineHeight: '1.2' }}>
+                  <h1 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, margin: '0 0 12px', color: '#ffffff', lineHeight: '1.2' }}>
                     Welcome back, {displayName}!
                   </h1>
-                  <p style={{ fontSize: '16px', color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 24px' }}>
+                  <p style={{ fontSize: 'clamp(14px, 2vw, 16px)', color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 24px' }}>
                     {upcomingBooking ? (
                       <>Your stay at <strong style={{ color: '#fff' }}>{upcomingBooking.listing_title || 'Georgian Boutique Experience'}</strong> in <span style={{ color: '#c8a983', fontWeight: 700 }}>{upcomingBooking.city || 'Georgia'}</span> is confirmed ({upcomingBooking.check_in || 'Upcoming'}). Get ready for breathtaking Caucasus views!</>
                     ) : (
@@ -353,7 +380,7 @@ export default function TouristDashboard() {
               </div>
 
               {/* 4 Stat Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '16px' }}>
                 {[
                   { label: 'Upcoming Stays', val: bookings.filter(b => b.status === 'CONFIRMED').length, sub: upcomingBooking ? `Next: ${upcomingBooking.check_in || 'Upcoming'} (${upcomingBooking.city || 'Georgia'})` : 'No active stay', icon: '🏨', color: '#38bdf8' },
                   { label: 'Saved Wishlist', val: wishlist.length, sub: 'Boutique stays & tours', icon: '❤️', color: '#f43f5e' },
@@ -372,7 +399,7 @@ export default function TouristDashboard() {
               </div>
 
               {/* Wishlist Preview & Quick Explore */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
                 {/* Wishlist Preview */}
                 <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -380,7 +407,7 @@ export default function TouristDashboard() {
                     <button onClick={() => setActiveTab('wishlist')} style={{ background: 'none', border: 'none', color: '#c8a983', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>View All ({wishlist.length}) →</button>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '16px' }}>
                     {wishlist.slice(0, 3).map(item => (
                       <div key={item.id} style={{ borderRadius: '14px', overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
                         <img src={item.image} alt={item.title} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
@@ -417,7 +444,7 @@ export default function TouristDashboard() {
           {/* TAB 2: MY BOOKINGS */}
           {activeTab === 'bookings' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
                   <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', margin: 0 }}>My Stays & Bookings</h2>
                   <p style={{ fontSize: '14px', color: '#94a3b8', margin: '4px 0 0' }}>Manage upcoming reservations, check-in vouchers, and cancellations</p>
@@ -429,25 +456,25 @@ export default function TouristDashboard() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {bookings.map(b => (
-                  <div key={b.id || b._id} style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '24px', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <img src={b.listing_image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'} alt={b.listing_title} style={{ width: '180px', height: '120px', borderRadius: '14px', objectFit: 'cover' }} />
-                    <div style={{ flex: 1, minWidth: '240px' }}>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+                  <div key={b.id || b._id} style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <img src={b.listing_image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop'} alt={b.listing_title} style={{ width: '100%', maxWidth: '180px', height: '120px', borderRadius: '14px', objectFit: 'cover' }} />
+                    <div style={{ flex: '1 1 240px', minWidth: '200px' }}>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
                         <span style={{ backgroundColor: b.status === 'CONFIRMED' ? 'rgba(16, 185, 129, 0.15)' : b.status === 'CANCELLED' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)', color: b.status === 'CONFIRMED' ? '#10b981' : b.status === 'CANCELLED' ? '#f43f5e' : '#f59e0b', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700 }}>
                           ● {b.status}
                         </span>
                         <span style={{ fontSize: '13px', color: '#94a3b8' }}>📍 {b.city || 'Georgia'}</span>
                       </div>
                       <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>{b.listing_title || 'Georgia Boutique Stay'}</h3>
-                      <div style={{ fontSize: '13px', color: '#cbd5e1', display: 'flex', gap: '18px' }}>
+                      <div style={{ fontSize: '13px', color: '#cbd5e1', display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
                         <span>📅 Check-in: <strong style={{ color: '#fff' }}>{b.check_in}</strong></span>
                         <span>📅 Check-out: <strong style={{ color: '#fff' }}>{b.check_out}</strong></span>
                         <span>👥 Guests: <strong style={{ color: '#fff' }}>{b.guests || 2}</strong></span>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '10px', flex: '0 0 auto' }}>
                       <div style={{ fontSize: '22px', fontWeight: 800, color: '#c8a983' }}>€{b.total_price}</div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button onClick={() => setSelectedVoucher(b)} style={{ padding: '8px 14px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.2)', fontSize: '12px', cursor: 'pointer' }}>
                           📄 View Voucher
                         </button>
@@ -472,7 +499,7 @@ export default function TouristDashboard() {
                 <p style={{ fontSize: '14px', color: '#94a3b8', margin: '4px 0 0' }}>Your curated collection of Georgian retreats, wine tours, and boutique stays</p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
                 {wishlist.map(w => (
                   <div key={w.id} style={{ backgroundColor: 'rgba(15, 23, 42, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ position: 'relative' }}>

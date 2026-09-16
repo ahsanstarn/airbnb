@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Cormorant_Garamond, Manrope, Caveat, Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond, Manrope, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme-context";
 import { LanguageProvider } from "@/lib/lang-context";
 import SharedNav from "@/app/components/SharedNav";
@@ -18,24 +18,28 @@ const cormorant = Cormorant_Garamond({
 
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "600", "700"],
   variable: "--font-body",
-  display: "swap",
-});
-
-const caveat = Caveat({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-script",
   display: "swap",
 });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["600", "700"],
   variable: "--font-playfair",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B132B" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "Kaya.ge — Discover Georgia",
@@ -65,11 +69,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-icon.jpg" />
       </head>
-      <body className={`${cormorant.variable} ${manrope.variable} ${caveat.variable} ${playfair.variable} is-guest`}>
+      <body className={`${cormorant.variable} ${manrope.variable} ${playfair.variable} is-guest`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <LanguageProvider>
           <ThemeProvider>

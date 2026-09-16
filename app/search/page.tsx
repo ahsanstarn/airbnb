@@ -178,7 +178,7 @@ function SearchContent() {
             overflow: 'hidden',
             background: '#6e4c3a',
             boxShadow: 'var(--shadow)',
-            padding: '80px 64px 48px',
+            padding: 'clamp(40px, 8vw, 80px) clamp(20px, 5vw, 64px) clamp(32px, 6vw, 48px)',
             position: 'relative',
             isolation: 'isolate',
             minHeight: '380px',
@@ -206,7 +206,7 @@ function SearchContent() {
                 {filters.category ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)} in Georgia` : t('discoverGeorgia', 'Discover Georgia')}
               </h1>
               <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', maxWidth: '700px' }}>
-                <div style={{ flex: '1', minWidth: '200px', position: 'relative' }}>
+                <div style={{ flex: '1 1 180px', minWidth: 0, position: 'relative' }}>
                   <input
                     type="text"
                     placeholder={t('searchDestinations', 'Search destinations...')}
@@ -340,13 +340,14 @@ function SearchContent() {
                 const price = listing.price_per_night || listing.price || 150;
                 return (
                   <Link key={itemId} href={`/listing/${itemId}`} className="listing-card animate-card card-3d-glow">
-                  <div className="listing-card-media" style={{ backgroundImage: `url(${listing.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=70'})` }} />
-                  <div className="listing-card-top">
-                    <span className="price-tag">{price} GEL / night</span>
-                    <span className="icon-badge">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M12 21s-7-4.5-9.3-9.2C1 8.5 3 5 6.5 5 8.7 5 10.5 6 12 7.7 13.5 6 15.3 5 17.5 5 21 5 23 8.5 21.3 11.8 19 16.5 12 21 12 21Z"></path></svg>
-                    </span>
-                  </div>
+                    <div className="listing-card-media" style={{ backgroundImage: `url(${listing.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=70'})` }}>
+                      <div className="listing-card-top">
+                        <span className="price-tag">{price} GEL / night</span>
+                        <span className="icon-badge">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M12 21s-7-4.5-9.3-9.2C1 8.5 3 5 6.5 5 8.7 5 10.5 6 12 7.7 13.5 6 15.3 5 17.5 5 21 5 23 8.5 21.3 11.8 19 16.5 12 21 12 21Z"></path></svg>
+                        </span>
+                      </div>
+                    </div>
                   <div className="listing-card-body">
                     <h3>{listing.title}</h3>
                     <div className="listing-meta">

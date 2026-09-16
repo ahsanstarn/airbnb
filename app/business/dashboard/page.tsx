@@ -445,8 +445,23 @@ export default function BusinessDashboard() {
       <DashboardHeader activeRole="business" user={user} />
       <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
       
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="business-mobile-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 49,
+          }}
+        />
+      )}
+
       {/* Left Navigation Sidebar */}
-      <aside className="business-sidebar" style={{
+      <aside className={`business-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} style={{
         width: '270px',
         background: isDark ? '#0B132B' : 'var(--card-bg)',
         borderRight: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid var(--border)',
@@ -456,7 +471,7 @@ export default function BusinessDashboard() {
         position: 'sticky',
         top: 0,
         height: '100vh',
-        zIndex: 40,
+        zIndex: 50,
       }}>
         {/* Brand Header */}
         <div style={{ padding: '24px 20px', borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -557,12 +572,12 @@ export default function BusinessDashboard() {
       </aside>
 
       {/* Main Business Suite Workspace */}
-      <main style={{ flex: 1, padding: '32px 40px', overflowY: 'auto', minHeight: '100vh', background: isDark ? '#090d16' : 'var(--surface)' }}>
+      <main style={{ flex: 1, padding: 'clamp(16px, 3vw, 32px)', overflowY: 'auto', minHeight: '100vh', minWidth: 0, background: isDark ? '#090d16' : 'var(--surface)' }}>
         
         {/* Top Header Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mobile-menu-btn" style={{ display: 'none', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid var(--border)', borderRadius: '10px', width: '40px', height: '40px', alignItems: 'center', justifyContent: 'center', color: isDark ? '#fff' : 'var(--ink)', cursor: 'pointer', flexShrink: 0 }}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mobile-menu-btn" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid var(--border)', borderRadius: '10px', width: '40px', height: '40px', alignItems: 'center', justifyContent: 'center', color: isDark ? '#fff' : 'var(--ink)', cursor: 'pointer', flexShrink: 0 }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
             </button>
             <div>
@@ -657,7 +672,7 @@ export default function BusinessDashboard() {
             </div>
 
             {/* AI Assistant Banner & Demand Signal */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
               <div style={{ background: 'linear-gradient(135deg, #111827 0%, #1e293b 100%)', borderRadius: '20px', padding: '24px 28px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.08)' }}>
                 <div>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(217, 101, 59, 0.25)', color: '#fb923c', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, marginBottom: '12px' }}>
@@ -774,7 +789,7 @@ export default function BusinessDashboard() {
 
         {/* MODULE 2: AI RECEPTIONIST & SIMULATOR */}
         {activeModule === 'receptionist' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px' }}>
             {/* Live Chat Simulator */}
             <div style={{ ...cardStyle, borderRadius: '24px', display: 'flex', flexDirection: 'column', height: '620px' }}>
               <div style={{ padding: '18px 24px', borderBottom: `1px solid ${dividerColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -960,7 +975,7 @@ export default function BusinessDashboard() {
 
         {/* MODULE 4: EMPTY SLOT / LAST MINUTE DEAL ENGINE */}
         {activeModule === 'empty-slot' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px' }}>
             <div style={{ ...cardStyle, borderRadius: '24px', padding: '28px' }}>
               <div style={{ marginBottom: '20px' }}>
                 <span style={{ fontSize: '11px', color: '#fb923c', fontWeight: 800, textTransform: 'uppercase' }}>Last Minute Deal Engine</span>
@@ -1195,47 +1210,49 @@ export default function BusinessDashboard() {
             </div>
 
             {/* Calendar Grid Representation (October 2026) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                <div key={day} style={{ textAlign: 'center', fontWeight: 800, fontSize: '12px', color: subMutedColor, padding: '8px' }}>
-                  {day}
-                </div>
-              ))}
-              {Array.from({ length: 31 }, (_, i) => i + 1).map(dateNum => {
-                const isBooked = [14, 15, 16, 17, 18, 23, 24, 25, 29, 30].includes(dateNum);
-                const isDeal = [19, 20].includes(dateNum);
-                return (
-                  <div
-                    key={dateNum}
-                    style={{
-                      minHeight: '80px',
-                      background: isBooked ? 'rgba(34, 197, 94, 0.08)' : isDeal ? 'rgba(245, 158, 11, 0.08)' : subCardBg,
-                      borderRadius: '12px',
-                      padding: '8px',
-                      border: isBooked ? '1px solid rgba(34, 197, 94, 0.25)' : isDeal ? '1px solid rgba(245, 158, 11, 0.25)' : `1px solid ${dividerColor}`,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
-                      <span style={{ color: titleColor }}>{dateNum}</span>
-                      {isBooked && <span style={{ color: '#4ade80' }}>● Booked</span>}
-                      {isDeal && <span style={{ color: '#fb923c' }}>Flash Deal</span>}
-                    </div>
-                    {isBooked && (
-                      <div style={{ fontSize: '10px', background: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', padding: '3px 6px', borderRadius: '6px', fontWeight: 600 }}>
-                        Kazbegi Check-in
-                      </div>
-                    )}
-                    {isDeal && (
-                      <div style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.2)', color: '#fb923c', padding: '3px 6px', borderRadius: '6px', fontWeight: 600 }}>
-                        Empty Slot (-40%)
-                      </div>
-                    )}
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%', paddingBottom: '8px' }}>
+              <div style={{ minWidth: '580px', display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                  <div key={day} style={{ textAlign: 'center', fontWeight: 800, fontSize: '12px', color: subMutedColor, padding: '8px' }}>
+                    {day}
                   </div>
-                );
-              })}
+                ))}
+                {Array.from({ length: 31 }, (_, i) => i + 1).map(dateNum => {
+                  const isBooked = [14, 15, 16, 17, 18, 23, 24, 25, 29, 30].includes(dateNum);
+                  const isDeal = [19, 20].includes(dateNum);
+                  return (
+                    <div
+                      key={dateNum}
+                      style={{
+                        minHeight: '80px',
+                        background: isBooked ? 'rgba(34, 197, 94, 0.08)' : isDeal ? 'rgba(245, 158, 11, 0.08)' : subCardBg,
+                        borderRadius: '12px',
+                        padding: '8px',
+                        border: isBooked ? '1px solid rgba(34, 197, 94, 0.25)' : isDeal ? '1px solid rgba(245, 158, 11, 0.25)' : `1px solid ${dividerColor}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
+                        <span style={{ color: titleColor }}>{dateNum}</span>
+                        {isBooked && <span style={{ color: '#4ade80' }}>● Booked</span>}
+                        {isDeal && <span style={{ color: '#fb923c' }}>Flash Deal</span>}
+                      </div>
+                      {isBooked && (
+                        <div style={{ fontSize: '10px', background: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', padding: '3px 6px', borderRadius: '6px', fontWeight: 600 }}>
+                          Kazbegi Check-in
+                        </div>
+                      )}
+                      {isDeal && (
+                        <div style={{ fontSize: '10px', background: 'rgba(245, 158, 11, 0.2)', color: '#fb923c', padding: '3px 6px', borderRadius: '6px', fontWeight: 600 }}>
+                          Empty Slot (-40%)
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -1493,7 +1510,8 @@ export default function BusinessDashboard() {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        gap: '20px',
+                        flexWrap: 'wrap',
+                        gap: '16px',
                       }}
                     >
                       <div style={{ flex: 1 }}>
