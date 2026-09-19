@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { hashPassword, signToken, generateAffiliateCode } from '@/lib/auth';
 import { toPublicUser } from '@/lib/models/user';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const { data: body, error: jsonError } = await parseJsonBody(req);
+    if (jsonError) {
+      return jsonError;
+    }
     const { email, password, name, role, referralCode } = body;
 
     if (!email || !password || !name || !role) {
@@ -20,8 +24,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
     const db = await getDb();
-    const existingUser = await db.collection('users').findOne({ email });
+    const existingUser = await db.collection('users').findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
@@ -31,9 +36,9 @@ export async function POST(req: NextRequest) {
     const affiliateCode = generateAffiliateCode();
 
     const newUser: any = {
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
-      name,
+      name: name.trim(),
       role,
       affiliateCode,
       createdAt: new Date(),
@@ -44,11 +49,13 @@ export async function POST(req: NextRequest) {
     newUser._id = result.insertedId;
 
     if (referralCode) {
-      const referrer = await db.collection('users').findOne({ affiliateCode: referralCode });
+      const referrer = await db.collection('users').findOne({ affiliateCode: referralCode.trim() });
       if (referrer) {
         await db.collection('affiliates').insertOne({
+          referrerUserId: referrer._id,
           referrerId: referrer._id,
           referredUserId: newUser._id,
+          code: referralCode.trim(),
           status: 'registered',
           createdAt: new Date(),
         });

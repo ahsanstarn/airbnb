@@ -13,7 +13,16 @@ export async function GET(request: NextRequest) {
     const userId = user._id.toString();
 
     const listings = await db.collection('listings')
-      .find({ $or: [{ businessId: userId }, { hostId: userId }, { owner_id: userId }] })
+      .find({
+        $or: [
+          { businessId: userId },
+          { businessId: user._id },
+          { hostId: userId },
+          { hostId: user._id },
+          { owner_id: userId },
+          { businessEmail: user.email },
+        ],
+      })
       .sort({ created_at: -1, createdAt: -1 })
       .toArray();
 

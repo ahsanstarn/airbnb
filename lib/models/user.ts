@@ -59,6 +59,8 @@ export function toPublicUser(user: any): IUserPublic {
     language: user.language || 'en',
     affiliateCode: user.affiliateCode,
     referredBy: user.referredBy || '',
-    createdAt: user.createdAt?.toISOString?.() || new Date().toISOString(),
+    createdAt: typeof user.createdAt === 'string'
+      ? user.createdAt
+      : (user.createdAt?.toISOString ? user.createdAt.toISOString() : new Date().toISOString()),
   };
 }

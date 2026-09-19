@@ -151,7 +151,7 @@ export default function BookingFlow({ params }: { params: { id: string } }) {
             </div>
             <p style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', margin: '0 0 20px' }}>A confirmation has been saved to your account and verified in MongoDB.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <Link href="/dashboard" style={{ flex: 1, textAlign: 'center', padding: '14px', borderRadius: '999px', background: '#1a120e', color: '#fff8ef', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>View My Bookings</Link>
+              <Link href="/tourist/dashboard" style={{ flex: 1, textAlign: 'center', padding: '14px', borderRadius: '999px', background: '#1a120e', color: '#fff8ef', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>View My Bookings</Link>
               <Link href="/search" style={{ flex: 1, textAlign: 'center', padding: '14px', borderRadius: '999px', border: '1px solid rgba(26,18,14,.1)', background: 'rgba(255,251,246,.7)', fontSize: '13px', fontWeight: 600, color: 'var(--ink)', textDecoration: 'none' }}>Continue Exploring</Link>
             </div>
           </div>

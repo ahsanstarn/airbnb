@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import jwt from 'jsonwebtoken';
+import { parseJsonBody } from '@/lib/api-utils';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kaya-ge-secret-change-me-in-production';
 
@@ -9,7 +10,11 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
+    const { email } = body;
     if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
 
     const db = await getDb();

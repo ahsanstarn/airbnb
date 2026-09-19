@@ -17,6 +17,7 @@ interface LocalSchema {
   listings: any[];
   bookings: any[];
   affiliates: any[];
+  [key: string]: any[];
 }
 
 let cachedDb: LocalSchema | null = null;
@@ -136,18 +137,46 @@ function matchFilter(item: any, filter: any): boolean {
 
     const itemValue = item[key];
 
+    if (condition instanceof RegExp) {
+      if (!condition.test(String(itemValue || ''))) return false;
+      continue;
+    }
+
     if (condition && typeof condition === 'object' && !Array.isArray(condition)) {
       if (condition.$regex) {
-        const regex = new RegExp(condition.$regex, condition.$options || '');
+        const regex = condition.$regex instanceof RegExp
+          ? condition.$regex
+          : new RegExp(condition.$regex, condition.$options || '');
         if (!regex.test(String(itemValue || ''))) return false;
       }
-      if (condition.$gte !== undefined && Number(itemValue) < Number(condition.$gte)) return false;
-      if (condition.$lte !== undefined && Number(itemValue) > Number(condition.$lte)) return false;
+      if (condition.$gt !== undefined) {
+        const val = (typeof itemValue === 'number' && typeof condition.$gt === 'number') ? itemValue : String(itemValue || '');
+        const target = (typeof itemValue === 'number' && typeof condition.$gt === 'number') ? condition.$gt : String(condition.$gt || '');
+        if (!(val > target)) return false;
+      }
+      if (condition.$lt !== undefined) {
+        const val = (typeof itemValue === 'number' && typeof condition.$lt === 'number') ? itemValue : String(itemValue || '');
+        const target = (typeof itemValue === 'number' && typeof condition.$lt === 'number') ? condition.$lt : String(condition.$lt || '');
+        if (!(val < target)) return false;
+      }
+      if (condition.$gte !== undefined) {
+        const val = (typeof itemValue === 'number' && typeof condition.$gte === 'number') ? itemValue : String(itemValue || '');
+        const target = (typeof itemValue === 'number' && typeof condition.$gte === 'number') ? condition.$gte : String(condition.$gte || '');
+        if (!(val >= target)) return false;
+      }
+      if (condition.$lte !== undefined) {
+        const val = (typeof itemValue === 'number' && typeof condition.$lte === 'number') ? itemValue : String(itemValue || '');
+        const target = (typeof itemValue === 'number' && typeof condition.$lte === 'number') ? condition.$lte : String(condition.$lte || '');
+        if (!(val <= target)) return false;
+      }
+      if (condition.$ne !== undefined) {
+        if (String(itemValue) === String(condition.$ne)) return false;
+      }
       if (condition.$nin && Array.isArray(condition.$nin)) {
-        if (condition.$nin.includes(itemValue)) return false;
+        if (condition.$nin.some((v: any) => String(v) === String(itemValue))) return false;
       }
       if (condition.$in && Array.isArray(condition.$in)) {
-        if (!condition.$in.includes(itemValue)) return false;
+        if (!condition.$in.some((v: any) => String(v) === String(itemValue))) return false;
       }
     } else {
       // Direct equality check (supports string vs object ID comparison)
@@ -168,9 +197,9 @@ function matchFilter(item: any, filter: any): boolean {
 
 // Emulates MongoDB Collection
 export class LocalCollection {
-  private collectionName: keyof LocalSchema;
+  private collectionName: string;
 
-  constructor(collectionName: keyof LocalSchema) {
+  constructor(collectionName: string) {
     this.collectionName = collectionName;
   }
 
@@ -235,6 +264,9 @@ export class LocalCollection {
       createdAt: doc.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    if (!db[this.collectionName]) {
+      db[this.collectionName] = [];
+    }
     db[this.collectionName].push(newDoc);
     saveDb(db);
     return { insertedId: id, acknowledged: true };
@@ -243,6 +275,9 @@ export class LocalCollection {
   async insertMany(docs: any[]) {
     const db = loadDb();
     const insertedIds: string[] = [];
+    if (!db[this.collectionName]) {
+      db[this.collectionName] = [];
+    }
     for (const doc of docs) {
       const id = doc._id || createId();
       const newDoc = {
@@ -259,9 +294,9 @@ export class LocalCollection {
     return { insertedIds, acknowledged: true };
   }
 
-  async updateOne(filter: any, update: any) {
+  async updateOne(filter: any, update: any, options?: { upsert?: boolean }) {
     const db = loadDb();
-    const items = db[this.collectionName];
+    const items = this.getItems();
     const index = items.findIndex(i => matchFilter(i, filter));
 
     if (index !== -1) {
@@ -279,12 +314,51 @@ export class LocalCollection {
       return { matchedCount: 1, modifiedCount: 1 };
     }
 
+    if (options?.upsert) {
+      const id = createId();
+      const newDoc = {
+        _id: id,
+        id: id,
+        ...(update.$set || {}),
+        ...(update.$setOnInsert || {}),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      items.push(newDoc);
+      saveDb(db);
+      return { matchedCount: 0, modifiedCount: 0, upsertedId: id };
+    }
+
     return { matchedCount: 0, modifiedCount: 0 };
+  }
+
+  async updateMany(filter: any, update: any) {
+    const db = loadDb();
+    const items = this.getItems();
+    let count = 0;
+    for (const current of items) {
+      if (matchFilter(current, filter)) {
+        if (update.$set) {
+          Object.assign(current, update.$set);
+        }
+        if (update.$inc) {
+          for (const [k, v] of Object.entries(update.$inc)) {
+            current[k] = (Number(current[k]) || 0) + Number(v);
+          }
+        }
+        current.updatedAt = new Date().toISOString();
+        count++;
+      }
+    }
+    if (count > 0) {
+      saveDb(db);
+    }
+    return { matchedCount: count, modifiedCount: count };
   }
 
   async deleteOne(filter: any) {
     const db = loadDb();
-    const items = db[this.collectionName];
+    const items = this.getItems();
     const index = items.findIndex(i => matchFilter(i, filter));
     if (index !== -1) {
       items.splice(index, 1);
@@ -294,6 +368,16 @@ export class LocalCollection {
     return { deletedCount: 0 };
   }
 
+  async deleteMany(filter: any = {}) {
+    const db = loadDb();
+    const items = this.getItems();
+    const initialLen = items.length;
+    const remaining = items.filter(i => !matchFilter(i, filter));
+    db[this.collectionName] = remaining;
+    saveDb(db);
+    return { deletedCount: initialLen - remaining.length };
+  }
+
   async countDocuments(filter: any = {}) {
     return this.getItems().filter(item => matchFilter(item, filter)).length;
   }
@@ -301,7 +385,7 @@ export class LocalCollection {
 
 export class LocalDb {
   collection(name: string) {
-    return new LocalCollection(name as keyof LocalSchema);
+    return new LocalCollection(name);
   }
 }
 

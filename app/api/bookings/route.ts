@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
+import { parseJsonBody } from '@/lib/api-utils';
+import { SEED_LISTINGS } from '@/lib/seed-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,7 +66,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized. Please login to book.' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const { listing_id, check_in, check_out, guest_count, guests, payment_method, notes } = body;
 
     if (!listing_id || !check_in || !check_out) {
@@ -76,6 +81,10 @@ export async function POST(request: NextRequest) {
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+    }
+
+    if (endDate <= startDate) {
+      return NextResponse.json({ error: 'Check-out date must be after check-in date' }, { status: 400 });
     }
 
     const db = await getDb();
@@ -99,7 +108,7 @@ export async function POST(request: NextRequest) {
       }, { status: 409 });
     }
 
-    // 2. Fetch listing details
+    // 2. Fetch listing details with multi-layer fallback
     let listingQuery: any = {};
     if (ObjectId.isValid(listing_id)) {
       listingQuery = { _id: new ObjectId(listing_id) };
@@ -107,7 +116,22 @@ export async function POST(request: NextRequest) {
       listingQuery = { $or: [{ _id: listing_id }, { id: listing_id }] };
     }
 
-    const listing = await listingsCollection.findOne(listingQuery);
+    let listing = await listingsCollection.findOne(listingQuery);
+
+    // Listing lookup fallback to SEED_LISTINGS if not yet in MongoDB
+    if (!listing) {
+      const seedMatch = SEED_LISTINGS.find(
+        s => s.id === listing_id || s._id === listing_id || String(s.id).toLowerCase() === String(listing_id).toLowerCase()
+      );
+      if (seedMatch) {
+        listing = seedMatch as any;
+      } else {
+        const numId = parseInt(listing_id, 10);
+        if (!isNaN(numId) && numId >= 1 && numId <= SEED_LISTINGS.length) {
+          listing = SEED_LISTINGS[numId - 1] as any;
+        }
+      }
+    }
     const pricePerNight = listing?.price_per_night || listing?.price || 150;
     const title = listing?.title || 'Georgian Stay';
     const image = (listing?.images && listing.images[0]) || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&h=700&fit=crop';

@@ -226,11 +226,12 @@ export default function CarsPage() {
             position: 'fixed',
             inset: 0,
             background: 'rgba(26,18,14,0.6)',
+            WebkitBackdropFilter: 'blur(8px)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 1000,
+            zIndex: 10050,
             padding: '20px',
           }}>
             <div style={{

@@ -3,6 +3,7 @@ import { getDb } from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/auth';
 import { SEED_LISTINGS } from '@/lib/seed-data';
 import { ObjectId } from 'mongodb';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const mine = searchParams.get('mine');
     const category = searchParams.get('category') || searchParams.get('type');
-    const city = searchParams.get('city') || searchParams.get('location');
+    const city = searchParams.get('city') || searchParams.get('location') || searchParams.get('region');
     const q = searchParams.get('q');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
@@ -139,7 +140,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const {
       title,
       description,

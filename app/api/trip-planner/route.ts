@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { parseJsonBody } from '@/lib/api-utils';
 
 const SYSTEM_PROMPT = `You are an AI travel planner for Kaya.ge — Georgia's travel marketplace. Create detailed, personalized Georgia travel itineraries based on the user's mood, interests, duration, and budget. Be specific: recommend actual towns, restaurants, activities, and estimated prices in GEL (₾). Keep it practical and actionable. Respond in markdown.`;
 
@@ -107,7 +108,11 @@ Find your perfect stay on Kaya.ge!`;
 
 export async function POST(req: NextRequest) {
   try {
-    const { mood, duration, budget } = await req.json();
+    const { data: body, error: jsonError } = await parseJsonBody(req);
+    if (jsonError) {
+      return jsonError;
+    }
+    const { mood, duration, budget } = body;
     if (!mood || !duration) {
       return NextResponse.json({ error: 'Mood and duration required' }, { status: 400 });
     }

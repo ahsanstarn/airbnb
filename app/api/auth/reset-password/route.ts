@@ -3,6 +3,7 @@ import { getDb } from '@/lib/mongodb';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
+import { parseJsonBody } from '@/lib/api-utils';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'kaya-ge-secret-change-me-in-production';
 
@@ -18,7 +19,11 @@ async function findUserById(db: any, userId: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, newPassword } = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
+    const { token, newPassword } = body;
     if (!token || !newPassword) {
       return NextResponse.json({ error: 'Token and new password required' }, { status: 400 });
     }

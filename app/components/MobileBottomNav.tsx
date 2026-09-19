@@ -29,6 +29,7 @@ export default function MobileBottomNav() {
   // Hide on admin routes, checkout booking flows, and authentication screens
   if (
     pathname?.startsWith('/admin') ||
+    pathname === '/book' ||
     pathname?.startsWith('/book/') ||
     pathname === '/login' ||
     pathname === '/signup' ||

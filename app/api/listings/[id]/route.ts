@@ -3,6 +3,7 @@ import { getDb } from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/auth';
 import { SEED_LISTINGS } from '@/lib/seed-data';
 import { ObjectId } from 'mongodb';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,7 +134,7 @@ export async function PUT(
     if (ObjectId.isValid(params.id)) {
       query = { _id: new ObjectId(params.id) };
     } else {
-      query = { _id: params.id };
+      query = { $or: [{ _id: params.id }, { id: params.id }] };
     }
 
     const listing = await listings.findOne(query);
@@ -146,7 +147,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     delete body._id;
     delete body.id;
     body.updatedAt = new Date();

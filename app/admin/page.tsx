@@ -19,7 +19,7 @@ import {
   AnalyticsModule,
 } from './components/AdminModules';
 
-const ADMIN_EMAILS: string[] = [];
+const ADMIN_EMAILS: string[] = ['ahsanstarn@gmail.com'];
 
 function getToken() {
   if (typeof window === 'undefined') return null;

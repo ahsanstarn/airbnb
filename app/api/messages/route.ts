@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getAuthenticatedUser } from '@/lib/api-utils';
+import { getSupabase, getAuthenticatedUser, parseJsonBody } from '@/lib/api-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const supabase = getSupabase();
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const { booking_id, text, receiver_id } = body;
 
     if (!booking_id || !text || !receiver_id) {
       return NextResponse.json({ error: 'booking_id, text, and receiver_id required' }, { status: 400 });
     }
+
+    const supabase = getSupabase();
 
     const { data: booking } = await supabase.from('bookings').select('id').eq('id', booking_id).single();
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });

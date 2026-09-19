@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { parseJsonBody } from '@/lib/api-utils';
+
+export const dynamic = 'force-dynamic';
 
 // This route handles AI chat requests SERVER-SIDE
 // The Anthropic API key is NEVER exposed to the client
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const { data: body, error: jsonError } = await parseJsonBody(req);
+    if (jsonError) {
+      return jsonError;
+    }
+    const messages = Array.isArray(body?.messages) ? body.messages : [];
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
 

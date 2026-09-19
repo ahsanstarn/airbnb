@@ -421,7 +421,7 @@ function KayaDashboardInner() {
         <div 
           onClick={() => setSidebarOpen(false)}
           className="tourist-mobile-overlay"
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 45 }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', WebkitBackdropFilter: 'blur(4px)', backdropFilter: 'blur(4px)', zIndex: 10000 }}
         />
       )}
 
@@ -1898,10 +1898,11 @@ function KayaDashboardInner() {
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          WebkitBackdropFilter: 'blur(4px)',
           backdropFilter: 'blur(4px)',
           display: 'grid',
           placeItems: 'center',
-          zIndex: 999,
+          zIndex: 10050,
           padding: '20px',
         }}>
           <div style={{
@@ -1997,10 +1998,11 @@ function KayaDashboardInner() {
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          WebkitBackdropFilter: 'blur(4px)',
           backdropFilter: 'blur(4px)',
           display: 'grid',
           placeItems: 'center',
-          zIndex: 999,
+          zIndex: 10050,
           padding: '20px',
         }}>
           <div style={{
@@ -2061,10 +2063,11 @@ function KayaDashboardInner() {
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          WebkitBackdropFilter: 'blur(4px)',
           backdropFilter: 'blur(4px)',
           display: 'grid',
           placeItems: 'center',
-          zIndex: 999,
+          zIndex: 10050,
           padding: '20px',
         }}>
           <div style={{
@@ -2135,10 +2138,11 @@ function KayaDashboardInner() {
           position: 'fixed',
           inset: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          WebkitBackdropFilter: 'blur(4px)',
           backdropFilter: 'blur(4px)',
           display: 'grid',
           placeItems: 'center',
-          zIndex: 999,
+          zIndex: 10050,
           padding: '20px',
         }}>
           <div style={{

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { parseJsonBody } from '@/lib/api-utils';
 
 const SYSTEM_PROMPT = `You are KLARA, the AI travel assistant for Kaya.ge — Georgia's travel marketplace. You are knowledgeable, warm, and helpful. You know everything about Georgian tourism: hotels, restaurants, wine regions, hiking, culture, food, history, and practical travel tips. You respond in a friendly, concise way. When recommending places, mention prices in GEL (₾). Always suggest users check listings on Kaya.ge for bookings. Keep responses under 200 words.`;
 
@@ -58,7 +59,11 @@ const smartReplies = (msg: string): string => {
 
 export async function POST(req: NextRequest) {
   try {
-    const { message } = await req.json();
+    const { data: body, error: jsonError } = await parseJsonBody(req);
+    if (jsonError) {
+      return jsonError;
+    }
+    const { message } = body;
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }

@@ -57,7 +57,7 @@ function SearchContent() {
     }));
   }, [searchParams]);
 
-  const fiterListingsStatic = useCallback((all: any[], queryText?: string) => {
+  const filterListingsStatic = useCallback((all: any[], queryText?: string) => {
     let filtered = [...all];
     const q = (queryText !== undefined ? queryText : searchInput).trim().toLowerCase();
     if (q) {
@@ -108,13 +108,13 @@ function SearchContent() {
         }
       }
       // Fall back to static data
-      fiterListingsStatic(staticListings, q);
+      filterListingsStatic(staticListings, q);
     } catch {
-      fiterListingsStatic(staticListings, customQuery !== undefined ? customQuery : searchInput);
+      filterListingsStatic(staticListings, customQuery !== undefined ? customQuery : searchInput);
     } finally {
       setLoading(false);
     }
-  }, [filters, searchInput, fiterListingsStatic]);
+  }, [filters, searchInput, filterListingsStatic]);
 
   useEffect(() => {
     fetchListings();
@@ -340,7 +340,7 @@ function SearchContent() {
                 const price = listing.price_per_night || listing.price || 150;
                 return (
                   <Link key={itemId} href={`/listing/${itemId}`} className="listing-card animate-card card-3d-glow">
-                    <div className="listing-card-media" style={{ backgroundImage: `url(${listing.images?.[0] || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=70'})` }}>
+                    <div className="listing-card-media" style={{ backgroundImage: `url(${listing.images?.[0] || listing.img || 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=70'})` }}>
                       <div className="listing-card-top">
                         <span className="price-tag">{price} GEL / night</span>
                         <span className="icon-badge">

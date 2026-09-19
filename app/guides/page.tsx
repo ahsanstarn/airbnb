@@ -710,7 +710,7 @@ export default function GuidesPage() {
           </div>
           <div className="footer-links">
             <h4>Platform</h4>
-            <Link href="/dashboard">Tourist dashboard</Link>
+            <Link href="/tourist/dashboard">Tourist dashboard</Link>
             <Link href="/business/dashboard">Business dashboard</Link>
             <Link href="/admin">Admin panel</Link>
           </div>

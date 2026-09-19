@@ -1953,6 +1953,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     -ms-overflow-style: none;
     position: relative;
     z-index: 10;
+    scroll-padding: 0 16px;
   }
   .hero-1to1-right::-webkit-scrollbar {
     display: none;
@@ -1963,7 +1964,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     align-items: center;
     gap: 16px;
     justify-content: flex-start;
-    padding: 10px 4px;
+    padding: 12px 16px;
     width: max-content;
   }
   .hero-arc-row {
@@ -2335,7 +2336,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     left: -280px;
     top: 0;
     height: 100vh;
-    z-index: 50;
+    z-index: 10001 !important;
     transition: left 0.3s ease;
   }
   .business-sidebar.sidebar-open {
@@ -2346,6 +2347,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   }
   .mobile-overlay {
     display: block !important;
+    z-index: 10000 !important;
   }
 }
 
@@ -2356,7 +2358,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     left: -270px;
     top: 0;
     height: 100vh;
-    z-index: 50;
+    z-index: 10001 !important;
     transition: left 0.3s ease;
   }
   .admin-sidebar.sidebar-open {
@@ -2367,6 +2369,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   }
   .admin-mobile-overlay {
     display: block !important;
+    z-index: 10000 !important;
   }
   .admin-header-desktop {
     display: none !important;
@@ -2383,7 +2386,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     left: -270px;
     top: 0;
     height: 100vh;
-    z-index: 50;
+    z-index: 10001 !important;
     transition: left 0.3s ease;
   }
   .tourist-sidebar.sidebar-open {
@@ -2394,6 +2397,7 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
   }
   .tourist-mobile-overlay {
     display: block !important;
+    z-index: 10000 !important;
   }
 }
 
@@ -2450,3 +2454,30 @@ html[data-theme=dark] .site-footer, html[data-theme=dark] .footer {
     border-radius: 20px !important;
   }
 }
+
+.mobile-listing-reserve-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-listing-reserve-bar {
+    display: flex !important;
+    position: fixed;
+    bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 20px;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    z-index: 999;
+  }
+  [data-theme="dark"] .mobile-listing-reserve-bar {
+    background: rgba(11, 19, 43, 0.96);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+

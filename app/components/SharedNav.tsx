@@ -78,11 +78,12 @@ export default function SharedNav() {
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname?.startsWith('/auth/') ||
+    pathname === '/book' ||
     pathname?.startsWith('/book/') ||
     pathname?.startsWith('/admin') ||
     pathname?.startsWith('/tourist/dashboard') ||
     pathname?.startsWith('/business/dashboard') ||
-    pathname === '/dashboard'
+    pathname?.startsWith('/dashboard')
   ) {
     return null;
   }

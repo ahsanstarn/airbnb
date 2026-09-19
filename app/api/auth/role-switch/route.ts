@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser, signToken } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { toPublicUser } from '@/lib/models/user';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const { data: body, error: jsonError } = await parseJsonBody(req);
+    if (jsonError) {
+      return jsonError;
+    }
     const targetRole = (body?.role || '').toLowerCase().trim() as AllowedRole;
 
     if (!ALLOWED_ROLES.includes(targetRole)) {

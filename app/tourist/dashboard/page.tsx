@@ -237,7 +237,25 @@ export default function TouristDashboard() {
         {/* Mobile Toggle Bar */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 50, backgroundColor: '#c8a983', color: '#0B132B', border: 'none', borderRadius: '50%', width: '54px', height: '54px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', boxShadow: '0 8px 24px rgba(0,0,0,0.4)', cursor: 'pointer' }}
+          aria-label="Toggle Navigation Drawer"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
+            right: '20px',
+            zIndex: 9999,
+            backgroundColor: '#c8a983',
+            color: '#0B132B',
+            border: 'none',
+            borderRadius: '50%',
+            width: '54px',
+            height: '54px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '22px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            cursor: 'pointer',
+          }}
         >
           ☰
         </button>
@@ -251,8 +269,9 @@ export default function TouristDashboard() {
               position: 'fixed',
               inset: 0,
               backgroundColor: 'rgba(0,0,0,0.65)',
+              WebkitBackdropFilter: 'blur(4px)',
               backdropFilter: 'blur(4px)',
-              zIndex: 49,
+              zIndex: 10000,
             }}
           />
         )}
@@ -759,6 +778,62 @@ export default function TouristDashboard() {
             <button onClick={() => { triggerToast('Voucher PDF downloaded'); setSelectedVoucher(null); }} style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
               Download PDF Pass ⬇️
             </button>
+          </div>
+        </div>
+      )}
+      {/* Review Submission Modal */}
+      {showReviewModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 10050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}>
+          <div style={{ backgroundColor: '#0B132B', border: '1px solid rgba(200, 169, 131, 0.4)', borderRadius: '24px', padding: '32px', maxWidth: '480px', width: '100%', color: '#fff', position: 'relative' }}>
+            <button onClick={() => setShowReviewModal(false)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: '#94a3b8', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ fontSize: '12px', color: '#c8a983', fontWeight: 700, textTransform: 'uppercase' }}>Verified Feedback</div>
+              <h3 style={{ fontSize: '22px', fontWeight: 800, margin: '6px 0' }}>Write a Review</h3>
+              <div style={{ fontSize: '13px', color: '#94a3b8' }}>Share your experience with the Kaya community</div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setReviewRating(star)}
+                  style={{ background: 'none', border: 'none', fontSize: '28px', color: star <= reviewRating ? '#f59e0b' : '#475569', cursor: 'pointer' }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <textarea
+                rows={4}
+                value={reviewText}
+                onChange={e => setReviewText(e.target.value)}
+                placeholder="What made your stay special? (hospitality, views, amenities...)"
+                style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '14px', resize: 'none' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowReviewModal(false)}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  triggerToast('Review submitted for verification!');
+                  setShowReviewModal(false);
+                  setReviewText('');
+                }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', backgroundColor: '#c8a983', color: '#0B132B', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+              >
+                Submit Review
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,10 +15,19 @@ export async function GET(request: NextRequest) {
     }
 
     const db = await getDb();
+    const userObjectId = ObjectId.isValid(user._id) ? new ObjectId(user._id) : null;
     
-    // Find all referrals where referrerUserId is this user's _id
+    // Find all referrals where referrerUserId / referrerId is this user's ID or code
     const referrals = await db.collection('affiliates').find({ 
-      referrerUserId: new ObjectId(user._id) 
+      $or: [
+        { referrerUserId: user._id },
+        { referrerUserId: user._id.toString() },
+        ...(userObjectId ? [{ referrerUserId: userObjectId }] : []),
+        { referrerId: user._id },
+        { referrerId: user._id.toString() },
+        ...(userObjectId ? [{ referrerId: userObjectId }] : []),
+        ...(user.affiliateCode ? [{ affiliateCode: user.affiliateCode }, { code: user.affiliateCode }] : []),
+      ],
     }).toArray();
     
     // Calculate stats
@@ -27,7 +37,11 @@ export async function GET(request: NextRequest) {
 
     // Fetch user's custom created links
     const customLinks = await db.collection('affiliate_links').find({
-      userId: new ObjectId(user._id)
+      $or: [
+        { userId: user._id },
+        { userId: user._id.toString() },
+        ...(userObjectId ? [{ userId: userObjectId }] : []),
+      ],
     }).sort({ createdAt: -1 }).toArray();
 
     return NextResponse.json({
@@ -53,7 +67,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const { title, destination, customSlug, targetUrl } = body;
 
     const db = await getDb();
@@ -61,7 +78,7 @@ export async function POST(request: NextRequest) {
     const fullUrl = `https://kaya.ge/${targetUrl || 'hotels'}?ref=${slug}`;
 
     const newLink = {
-      userId: new ObjectId(user._id),
+      userId: user._id.toString(),
       title: title || destination || 'Custom Georgian Link',
       destination: destination || 'Georgia',
       slug,

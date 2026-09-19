@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/api-utils';
+import { getSupabase, parseJsonBody } from '@/lib/api-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const { refresh_token } = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
+    const { refresh_token } = body;
     if (!refresh_token) {
       return NextResponse.json({ error: 'Refresh token required' }, { status: 400 });
     }

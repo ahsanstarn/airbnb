@@ -48,8 +48,12 @@ export default function LoginPage() {
         router.push(redirectUrl);
       } else if (data.user?.role === 'business') {
         router.push('/business/dashboard');
-      } else {
+      } else if (data.user?.role === 'admin') {
+        router.push('/admin');
+      } else if (data.user?.role === 'affiliate') {
         router.push('/dashboard');
+      } else {
+        router.push('/tourist/dashboard');
       }
     } catch (err: any) {
       setError(err.message);

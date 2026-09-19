@@ -1,26 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/api-utils';
+import { getSupabase, parseJsonBody } from '@/lib/api-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase();
-
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const { visitor_id, page_path, referrer } = body;
 
-    const { error } = await supabase.from('page_views').insert({
-      visitor_id: visitor_id || 'anonymous',
-      page_path: page_path || '/',
-      referrer: referrer || null,
-      user_agent: request.headers.get('user-agent') || null,
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    try {
+      const supabase = getSupabase();
+      await supabase.from('page_views').insert({
+        visitor_id: visitor_id || 'anonymous',
+        page_path: page_path || '/',
+        referrer: referrer || null,
+        user_agent: request.headers.get('user-agent') || null,
+      });
+    } catch {}
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Ping failed' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ ok: true });
   }
 }

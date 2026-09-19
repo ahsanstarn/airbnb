@@ -230,9 +230,13 @@ export default function BusinessDashboard() {
   // Publish to MongoDB
   const handlePublishListing = async () => {
     try {
+      const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('kaya_token')) : null;
       const res = await fetch('/api/listings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           title: builderForm.title,
           description: builderForm.description,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { getCurrentUser } from '@/lib/auth';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,8 +33,11 @@ export async function PUT(request: NextRequest) {
     const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const db = await getDb();
-    const body = await request.json();
 
     const updateFields: any = {};
     if (body.name !== undefined) updateFields.name = body.name;

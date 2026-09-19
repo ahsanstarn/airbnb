@@ -80,11 +80,33 @@ export default function ListingPage({ params }: { params: { id: string } }) {
     fetchListing();
   }, [params.id]);
 
-  const listing = liveListing || listingData[params.id] || defaultData;
+  const rawListing = liveListing || listingData[params.id] || defaultData;
+  const listing = {
+    ...rawListing,
+    price: rawListing.price ?? rawListing.price_per_night ?? 180,
+    desc: rawListing.desc ?? rawListing.description ?? 'A curated luxury stay nestled in the scenic heart of Georgia.',
+    rating: rawListing.rating ?? rawListing.overall_rating ?? 4.9,
+    reviews: rawListing.reviews ?? rawListing.review_count ?? 24,
+    lat: rawListing.lat ?? rawListing.latitude ?? 41.7151,
+    lng: rawListing.lng ?? rawListing.longitude ?? 44.8271,
+    host: rawListing.host || 'Kaya Superhost',
+    location: rawListing.location || 'Tbilisi, Georgia',
+    title: rawListing.title || 'Curated Georgian Sanctuary',
+    category: rawListing.category || 'Luxury Stay',
+    type: rawListing.type || 'Entire Villa',
+    guests: rawListing.guests ?? 2,
+    beds: rawListing.beds ?? 1,
+    baths: rawListing.baths ?? 1,
+    amenities: (rawListing.amenities && rawListing.amenities.length > 0) ? rawListing.amenities : ['Fast WiFi', 'Mountain View', 'Fireplace', 'Kitchen', 'Free Parking', 'Espresso Machine'],
+    images: (rawListing.images && rawListing.images.length > 0) ? rawListing.images : [rawListing.img || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop'],
+  };
 
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
+
+  const prevImage = () => setActiveImage(prev => (prev - 1 + listing.images.length) % listing.images.length);
+  const nextImage = () => setActiveImage(prev => (prev + 1) % listing.images.length);
 
   const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)) : 3;
   const total = listing.price * nights;
@@ -124,28 +146,46 @@ export default function ListingPage({ params }: { params: { id: string } }) {
               src={listing.images?.[activeImage] || 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&h=600&fit=crop'} 
               alt={listing.title} 
               fill 
-              sizes="100vw" 
-              style={{ objectFit: 'cover' }} 
+              sizes="(max-width: 768px) 100vw, 800px" 
+              className={styles.photoMainImg} 
               priority 
             />
+            {listing.images && listing.images.length > 1 && (
+              <>
+                <button 
+                  className={`${styles.photoNavBtn} ${styles.photoNavPrev}`} 
+                  onClick={prevImage}
+                  aria-label="Previous image"
+                >
+                  ‹
+                </button>
+                <button 
+                  className={`${styles.photoNavBtn} ${styles.photoNavNext}`} 
+                  onClick={nextImage}
+                  aria-label="Next image"
+                >
+                  ›
+                </button>
+                <div className={styles.photoCounter}>
+                  {activeImage + 1} / {listing.images.length}
+                </div>
+              </>
+            )}
           </div>
-          {listing.images?.length > 1 && (
-            <>
-              <button className={styles.galleryPrev} onClick={() => setActiveImage(prev => (prev - 1 + listing.images.length) % listing.images.length)} aria-label="Previous photo">‹</button>
-              <button className={styles.galleryNext} onClick={() => setActiveImage(prev => (prev + 1) % listing.images.length)} aria-label="Next photo">›</button>
-              <div className={styles.photoCounter}>{activeImage + 1} / {listing.images.length}</div>
-            </>
+          {listing.images && listing.images.length > 1 && (
+            <div className={styles.thumbnails}>
+              {listing.images.slice(0, 5).map((img: string, index: number) => (
+                <div 
+                  key={index} 
+                  className={`${styles.thumbWrap} ${index === activeImage ? styles.thumbActive : ''}`}
+                  onClick={() => setActiveImage(index)}
+                >
+                  <Image src={img} alt={`Thumbnail ${index + 1}`} fill sizes="100px" className={styles.thumbImg} />
+                </div>
+              ))}
+            </div>
           )}
         </div>
-        {listing.images?.length > 1 && (
-          <div className={styles.thumbnailStrip}>
-            {listing.images.map((img: string, i: number) => (
-              <div key={i} className={`${styles.thumbnail} ${i === activeImage ? styles.thumbnailActive : ''}`} onClick={() => setActiveImage(i)}>
-                <Image src={img} alt={`Thumbnail ${i + 1}`} fill sizes="80px" style={{ objectFit: 'cover' }} />
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Content */}
         <div className={`${styles.content} animate-section`}>
@@ -158,7 +198,7 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                   <p className={styles.hostMeta}>{listing.guests} guests · {listing.beds} bedroom{listing.beds > 1 ? 's' : ''} · {listing.baths} bath{listing.baths > 1 ? 's' : ''}</p>
                 </div>
                 <div className={styles.hostAvatar}>
-                  {listing.host[0]}
+                  {(listing.host || 'H')[0]}
                 </div>
               </div>
             </div>
@@ -296,6 +336,30 @@ export default function ListingPage({ params }: { params: { id: string } }) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Sticky Reservation Bar */}
+        <div className="mobile-listing-reserve-bar">
+          <div>
+            <div style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink, #1a120e)' }}>₾{listing.price} <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--muted, #666)' }}>/ night</span></div>
+            <div style={{ fontSize: '11px', color: 'var(--muted, #888)' }}>★ {listing.rating} · {listing.reviews} reviews</div>
+          </div>
+          <button 
+            onClick={handleReserve}
+            style={{
+              padding: '11px 26px',
+              backgroundColor: '#c8a07a',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '100px',
+              fontWeight: 700,
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(200, 160, 122, 0.4)'
+            }}
+          >
+            Reserve
+          </button>
         </div>
       </main>
 

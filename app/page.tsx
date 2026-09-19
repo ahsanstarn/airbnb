@@ -208,8 +208,8 @@ export default function Home() {
             <Link href="/" className="hero-1to1-menu-item active">Home</Link>
             <Link href="/hotels" className="hero-1to1-menu-item">Destinations</Link>
             <Link href="/tours" className="hero-1to1-menu-item">Travel Packages</Link>
-            <Link href="/pricing" className="hero-1to1-menu-item">About Us</Link>
-            <Link href="/dashboard" className="hero-1to1-menu-item">Contact</Link>
+            <Link href="/about" className="hero-1to1-menu-item">About Us</Link>
+            <Link href="/contact" className="hero-1to1-menu-item">Contact</Link>
           </nav>
 
           <div className="hero-1to1-actions">

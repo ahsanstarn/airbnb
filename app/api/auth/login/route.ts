@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { comparePassword, signToken, hashPassword } from '@/lib/auth';
 import { toPublicUser } from '@/lib/models/user';
+import { parseJsonBody } from '@/lib/api-utils';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const { data: body, error: jsonError } = await parseJsonBody(req);
+    if (jsonError) {
+      return jsonError;
+    }
     const { email, password } = body;
 
     if (!email || !password) {

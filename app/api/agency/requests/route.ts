@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin, getAuthenticatedUser, requireAuth } from '@/lib/api-utils';
+import { getSupabaseAdmin, getAuthenticatedUser, requireAuth, parseJsonBody } from '@/lib/api-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   const user = await getAuthenticatedUser(request);
@@ -7,7 +9,10 @@ export async function POST(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const { service_type, details } = body;
 
     if (!service_type) {

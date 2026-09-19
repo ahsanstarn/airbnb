@@ -1,7 +1,8 @@
 import { Anthropic } from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { parseJsonBody } from '@/lib/api-utils';
 
-const client = new Anthropic();
+export const dynamic = 'force-dynamic';
 
 const SYSTEM_PROMPT = `You are NINO, an AI travel companion for Georgia (Sakartvelo). You are knowledgeable, friendly, and passionate about Georgian culture, food, wine, and experiences.
 
@@ -18,15 +19,30 @@ Respond in a warm, conversational tone. Always be helpful and genuine about shar
 // POST /api/ai/chat
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationHistory } = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
+    const { message, conversationHistory } = body;
 
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
 
-    // Prepare messages for Claude
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({
+        message: `Gamarjoba! 🇬🇪 I am NINO, your Georgia travel companion. Georgia is a land of 8,000 vintages of wine, dramatic Caucasus mountain ranges in Kazbegi and Svaneti, and warm feasts (supra). How can I help you plan your journey?`,
+        role: 'assistant',
+      });
+    }
+
+    const client = new Anthropic({ apiKey });
+
+    // Prepare messages for Claude safely
+    const history = Array.isArray(conversationHistory) ? conversationHistory : [];
     const messages = [
-      ...conversationHistory.map((msg: { role: string; content: string }) => ({
+      ...history.map((msg: { role: string; content: string }) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       })),
@@ -49,6 +65,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('AI Chat Error:', error);
-    return NextResponse.json({ error: 'Chat failed' }, { status: 500 });
+    return NextResponse.json({
+      message: `Gamarjoba! Welcome to Georgia. I can help recommend stays in Tbilisi, Batumi, Kazbegi, or Kakheti!`,
+      role: 'assistant',
+    });
   }
 }

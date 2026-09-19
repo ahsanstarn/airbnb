@@ -4,17 +4,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 
 export function getSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  );
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co';
+  const key = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder';
+  return createClient(url, key);
 }
 
 export function getSupabaseAdmin() {
-  return createClient(
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  );
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder';
+  return createClient(url, key);
 }
 
 export async function getAuthenticatedUser(request: NextRequest) {
@@ -61,3 +59,44 @@ export function errorResponse(error: unknown, message: string) {
   console.error(message, error);
   return NextResponse.json({ error: message }, { status: 500 });
 }
+
+/**
+ * Safely parse JSON from a NextRequest without throwing uncaught 500 exceptions.
+ * Returns either { data, error: null } on valid JSON or { data: null, error: NextResponse } with 400 status.
+ */
+export async function parseJsonBody<T = any>(
+  request: NextRequest
+): Promise<{ data: T; error: null } | { data: null; error: NextResponse }> {
+  try {
+    const text = await request.text();
+    if (!text || !text.trim()) {
+      return {
+        data: null,
+        error: NextResponse.json(
+          { error: 'Missing or empty request body' },
+          { status: 400 }
+        ),
+      };
+    }
+    const data = JSON.parse(text);
+    if (data === null || typeof data !== 'object') {
+      return {
+        data: null,
+        error: NextResponse.json(
+          { error: 'Invalid JSON payload. Expected a JSON object' },
+          { status: 400 }
+        ),
+      };
+    }
+    return { data, error: null };
+  } catch (err: any) {
+    return {
+      data: null,
+      error: NextResponse.json(
+        { error: 'Malformed JSON payload', details: err?.message },
+        { status: 400 }
+      ),
+    };
+  }
+}
+

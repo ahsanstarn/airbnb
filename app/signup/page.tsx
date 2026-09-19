@@ -51,8 +51,10 @@ function SignupForm() {
       
       if (role === 'business') {
         router.push('/business/dashboard');
-      } else {
+      } else if (role === 'affiliate') {
         router.push('/dashboard');
+      } else {
+        router.push('/tourist/dashboard');
       }
     } catch (err: any) {
       setError(err.message);

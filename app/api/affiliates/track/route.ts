@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
+import { parseJsonBody } from '@/lib/api-utils';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const { data: body, error: jsonError } = await parseJsonBody(request);
+    if (jsonError) {
+      return jsonError;
+    }
     const { code } = body;
     
     if (!code) {
@@ -22,6 +28,7 @@ export async function POST(request: NextRequest) {
     // Create an affiliate record
     await db.collection('affiliates').insertOne({
       referrerUserId: referrer._id,
+      referrerId: referrer._id,
       code,
       status: 'clicked',
       createdAt: new Date(),
